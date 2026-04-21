@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IOC Terminal</title>
+<link rel="icon" type="image/png" href="optionchain_fevicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* 1. Theme Variables */
+:root {
+  --bg: #09090b;         
+  --card: #141415;       
+  --section: #202023;    
+  --border: #27272a;     
+  --text: #f4f4f5;       
+  --muted: #a1a1aa;      
+  --accent: #3b82f6;       
+  --accent-glow: rgba(59, 130, 246, 0.4);
+  --gold: #f59e0b;         
+  --green: #10b981;        
+  --red: #ef4444;          
+  --itm-ce: #0e1411;       
+  --itm-pe: #161011;       
+}
+
+/* 2. Light Theme Overrides */
+.light-theme {
+  --bg: #f8fafc; 
+  --card: #ffffff; 
+  --section: #f1f5f9; 
+  --border: #e2e8f0;
+  --text: #0f172a; 
+  --muted: #64748b; 
+  --itm-ce: #f0fdf4; 
+  --itm-pe: #fef2f2;
+  --accent: #2563eb;
+}
+
+body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+
+/* --- SLEEK HEADER --- */
+header { 
+    height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
+}
+
+.logo { font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border); letter-spacing: 0.5px;}
+.logo span { color: var(--accent); }
+.divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+header select, header button { 
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; outline: none; 
+}
+
+header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
+header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
+
+/* GREEKS DROPDOWN POPOVER */
+#greeks-dropdown-wrapper { position: relative; display: flex; align-items: center; }
+#greeks-menu {
+    display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
+}
+.light-theme #greeks-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.greek-option { display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); font-weight: 500; }
+.greek-option:hover { background: var(--section); color: var(--text); }
+.greek-option input { margin: 0; accent-color: var(--accent); }
+
+/* 🟢 UNIFIED CUSTOM DROPDOWN MENUS */
+.custom-dropdown-wrapper { position: relative; display: flex; align-items: center; }
+.custom-menu {
+    display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
+}
+.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.custom-option {
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
+}
+.custom-option:hover { background: var(--section); color: var(--text); }
+.custom-option input { margin: 0; accent-color: var(--accent); }
+
+
+/* --- MAIN WORKSPACE --- */
+.left-nav {
+    width: 52px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 20; position: relative;
+}
+
+.nav-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; }
+.nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
+.nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+
+.workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); transition: background-color 0.3s; }
+.table-wrapper { flex: 1; overflow: auto; position: relative; transition: width 0.3s ease; }
+
+/* 🟢 PURE NATIVE TABLE CSS */
+table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; table-layout: auto; }
+th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
+.light-theme th { background-color: var(--red); color: var(--text); }
+th.strike-cell { background: #abc2dd !important; color: #fafafc !important; border-bottom: 1px solid var(--accent); }
+.light-theme th.strike-cell { background: #abc2dd !important; color: var(--text) !important; }
+
+/* CE and PE Header Colors */
+th.ce-header { background-color: var(--red) !important; color: #fff !important; border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important; }
+th.pe-header { background-color: var(--green) !important; color: #fff !important; border-bottom: 1px solid rgba(16, 185, 129, 0.3) !important; }
+.light-theme th.ce-header { background-color: var(--red) !important; color: #fff !important; }
+.light-theme th.pe-header { background-color: var(--green) !important; color: #fff !important; }
+
+tr { height: 38px; border-bottom: 1px solid var(--border); transition: background 0.1s;}
+tr:hover { background: var(--section) !important; }
+td { padding: 0 4px; border-right: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--text); vertical-align: middle;}
+td:last-child { border-right: none; }
+
+.val-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.1; }
+.spot-line td { border: none !important; position: relative; height: 28px; background: transparent !important; }
+.spot-divider { display: flex; align-items: center; justify-content: center; width: 100%; height: 1px; background: var(--accent); position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; box-shadow: 0 0 10px var(--accent-glow);}
+.spot-divider span { background: var(--bg); color: var(--accent); padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: 20px; border: 1px solid var(--accent); letter-spacing: 0.5px; z-index: 6; font-family: 'Inter', sans-serif; box-shadow: 0 0 10px var(--accent-glow);}
+
+.itm-ce { background-color: var(--itm-ce); }
+.itm-pe { background-color: var(--itm-pe); }
+
+.max-ce-heat { background-color: var(--red) !important; color: #fff !important; font-weight: 800 !important; }
+.max-pe-heat { background-color: var(--green) !important; color: #fff !important; font-weight: 800 !important; }
+.heat-2nd { background-color: var(--gold) !important; color: #000 !important; font-weight: 800 !important; }
+.heat-75 { background-color: #3f3f46 !important; color: #fff !important; font-weight: 600 !important; }
+.light-theme .heat-75 { background-color: #cbd5e1 !important; color: #000 !important; }
+.pct-tag { font-size: 9px; color: var(--accent); background: rgba(59, 130, 246, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2);}
+td.strike-cell { color: var(--text); font-weight: 700; background: rgba(0,0,0,0.3); border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
+td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent); box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
+
+/* --- CHART MODAL STYLING --- */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+.modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.modal-close:hover { color: var(--red); transform: scale(1.1); }
+.modal-header { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
+.modal-header span { color: var(--accent); }
+.charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
+.chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
+
+/* 🟢 TRADINGVIEW CHART SIDEBAR */
+.chart-sidebar {
+    position: relative; 
+    width: 0px; 
+    height: 100%; 
+    background: #131722; 
+    border-left: 1px solid #2a2e39;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.chart-sidebar.open { width: 340px; }
+
+/* 🟢 THE RESIZER BAR */
+.chart-sidebar .resizer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 50;
+    transition: background 0.2s;
+}
+.chart-sidebar .resizer:hover { background: var(--accent); }
+
+.chart-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 6px 8px;
+    background: #131722;
+    border-bottom: 1px solid #2a2e39;
+    overflow-x: auto; 
+}
+.chart-toolbar::-webkit-scrollbar { height: 0px; }
+
+.chart-btn {
+    background: transparent;
+    color: #b2b5be;
+    border: 1px solid transparent;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    transition: 0.15s;
+    white-space: nowrap;
+}
+.chart-btn:hover { background: #2a2e39; color: #d1d4dc; }
+.chart-btn.active { color: #2962FF; background: rgba(41, 98, 255, 0.1); }
+select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2e39; }
+#tv-chart { flex-grow: 1; width: 100%; position: relative; }
+
+/* 🟢 RIGHT SIDEBAR (MARKET INTELLIGENCE) */
+.right-sidebar { width: 320px; background: var(--card); border-left: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: background-color 0.3s; }
+.intel-section { padding: 18px; border-bottom: 1px solid var(--border); }
+.intel-header { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.intel-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+.intel-sub { font-size: 12px; color: var(--accent); font-weight: 500; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'JetBrains Mono', monospace;}
+.history-table th { background: transparent; padding: 6px 0; border: none; text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); position: static; font-weight: 600;}
+.history-table td { padding: 8px 0; border: none; border-bottom: 1px solid rgba(150,150,150,0.1); text-align: left; color: var(--text);}
+
+/* --- SLEEK FOOTER --- */
+footer { height: 48px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; flex-shrink: 0; font-size: 11px; transition: background-color 0.3s; }
+.footer-left { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
+.footer-left b { color: var(--text); font-weight: 600; }
+.footer-left .highlight { color: var(--accent); }
+.footer-right { display: flex; align-items: center; gap: 15px; }
+.live-clock { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text); }
+.status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+.recording-active { color: var(--red) !important; animation: blink 2s infinite; }
+
+/* Theme Switch Button */
+.theme-switch-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: 0.2s ease;
+    margin-left: auto;
+}
+.theme-switch-btn:hover { background: var(--section); }
+
+</style>
+</head>
+<body>
+
+<header>
+    <div class="logo"><span>IOC</span> Terminal</div>
+    
+   <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="min-width: 130px; display: flex; justify-content: space-between; align-items: center;">
+            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+        <div class="custom-menu" id="symbol-menu">
+            <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
+            <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
+            <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
+            <div class="custom-option" onclick="selectSymbol('CRUDEOIL', 'CRUDE OIL (MCX)')">CRUDE OIL (MCX)</div>
+            <div class="custom-option" onclick="selectSymbol('NATURALGAS', 'NATURAL GAS (MCX)')">NATURAL GAS (MCX)</div>
+        </div>
+    </div>
+    <input type="hidden" id="sel-symbol" value="NIFTY">
+    
+    <div class="divider"></div>
+    
+    <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
+        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+        <div class="custom-menu" id="expiry-menu">
+            <div class="custom-option">Loading...</div>
+        </div>
+    </div>
+    <input type="hidden" id="sel-expiry" value="">
+    <div class="divider"></div>
+
+    <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
+
+    <div class="divider"></div>
+
+    <button id="btn-record" onclick="toggleRecording()" style="display: flex; align-items: center; gap: 6px;">
+        <span id="record-dot">⏺</span> <span id="record-text">REC OFF</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <div id="greeks-dropdown-wrapper">
+        <button onclick="toggleGreeksMenu(event)" style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            Greeks ▾
+        </button>
+        <div id="greeks-menu">
+            <label class="greek-option"><input type="checkbox" class="greek-cb" value="delta" onchange="reRenderTable()"> Delta (Δ)</label>
+            <label class="greek-option"><input type="checkbox" class="greek-cb" value="theta" onchange="reRenderTable()"> Theta (Θ)</label>
+            <label class="greek-option"><input type="checkbox" class="greek-cb" value="vega" onchange="reRenderTable()"> Vega (V)</label>
+            <label class="greek-option"><input type="checkbox" class="greek-cb" value="gamma" onchange="reRenderTable()"> Gamma (Γ)</label>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+    <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        Scenario Panel
+    </button>
+
+    <div class="divider"></div>
+    <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Live Chart
+    </button>
+
+    <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
+    
+    <button id="theme-toggle" class="theme-switch-btn" title="Switch Theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
+</header>
+
+<div class="workspace">
+    <div class="left-nav">
+        <button class="nav-btn" onclick="window.location.href='index.html'" title="Return to Home">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </button>
+        <button class="nav-btn" id="btn-flip-table" onclick="toggleTableFlip()" title="Flip Strike Order">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        </button>
+        <div style="flex:1;"></div>
+        <button class="nav-btn" onclick="window.open('backtester.html', '_blank')" title="Open Backtester">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+        </button>
+    </div>
+    
+    <div class="table-wrapper" id="table-scroll-area">
+        <table id="main-table">
+          <thead>
+            <tr>
+              <th class="ce-header" style="width:45px;">IV</th><th class="ce-header">OI Chg</th><th class="ce-header">OI</th><th class="ce-header">Vol</th><th class="ce-header" style="width:55px;">LTP</th><th class="ce-header" style="color:var(--red);">RPL</th>
+              <th class="strike-cell" style="width:60px;">STRIKE</th>
+              <th class="pe-header" style="color:var(--green);">SPL</th><th class="pe-header" style="width:55px;">LTP</th><th class="pe-header">Vol</th><th class="pe-header">OI</th><th class="pe-header">OI Chg</th><th class="pe-header" style="width:45px;">IV</th>
+            </tr>
+          </thead>
+          <tbody id="oc-body">
+            <tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">Select a Symbol and click "Fetch Data" to load options chain...</td></tr>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="chart-sidebar" id="chart-sidebar">
+        <div class="resizer" id="chart-resizer"></div>
+        <div class="chart-toolbar">
+            <select class="chart-btn" title="Timeframe">
+                <option value="1">1m</option>
+                <option value="3">3m</option>
+                <option value="5">5m</option>
+                <option value="15">15m</option>
+            </select>
+            <div style="width: 1px; height: 20px; background: #2a2e39; margin: 0 4px;"></div>
+            
+            <button class="chart-btn" id="btn-tv-type" onclick="toggleTVType()" title="Candle / Line">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21V10M15 21V4M9 10H5v6h4M15 4h-4v10h4"></path></svg>
+            </button>
+            <button class="chart-btn" onclick="refreshTVChart()" title="Reset Scale">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </button>
+        </div>
+        <div id="tv-chart"></div>
+    </div>
+
+    <div class="right-sidebar" id="intel-panel">
+        <div class="intel-section" style="background: var(--bg);">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Live Scenario
+            </div>
+            <div class="intel-value" id="coa-scenario">Waiting...</div>
+            <div class="intel-sub" id="coa-desc">Fetch data to analyze market.</div>
+            <div style="margin-top: 12px; font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; font-family: 'JetBrains Mono', monospace;">
+                <span style="color: var(--muted);">SUP: <b id="coa-sup-state" style="color:var(--green);">--</b></span>
+                <span style="color: var(--muted);">RES: <b id="coa-res-state" style="color:var(--red);">--</b></span>
+            </div>
+        </div>
+
+        <div class="intel-section">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                Intraday Range
+            </div>
+            <div class="intel-value" id="coa-range">0.00 - 0.00</div>
+            <div style="font-size: 11px; color: var(--muted);">EOS to EOR Boundaries</div>
+        </div>
+
+        <div class="intel-section" style="flex: 1; display: flex; flex-direction: column; border-bottom: none;">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Change History
+            </div>
+            <div style="flex: 1; overflow-y: auto;">
+                <table class="history-table">
+                    <thead><tr><th>TIME</th><th>EOR</th><th>EOS</th></tr></thead>
+                    <tbody id="coa-logs-body">
+                        <tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">No logs yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-left" id="footer-data" style="opacity: 0;">
+        <span>CE GREEKS: <b class="highlight" id="f-ce-greeks">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>PE GREEKS: <b class="highlight" id="f-pe-greeks">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>PCR: <b id="f-pcr">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>CE OI: <b id="f-ce-oi">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>PE OI: <b id="f-pe-oi">--</b></span>
+    </div>
+
+    <div class="footer-right">
+        <div class="status-indicator">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="chain-status">Ready</span>
+        </div>
+        <div class="divider" style="height: 16px;"></div>
+        <span class="live-clock" id="live-clock">--:--:--</span>
+    </div>
+    <input type="number" id="inp-spot" style="display:none;">
+</footer>
+
+<div class="modal-overlay" id="chart-modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeCharts()">✖</button>
+        <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
+        
+        <div class="charts-container">
+            <div class="chart-box">
+                <canvas id="volChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="oiChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="oiChgChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// IMPORTANT: Pointing to Live Python Backend
+const UPSTOX_API = 'https://sauravyadav.pythonanywhere.com';
+
+let globalRows = [];
+let globalSym = '';
+let globalData = {};
+let isRecording = false;
+let isFlipped = false; 
+
+let liveHistory = []; 
+
+// Chart Instances
+let volChartInst = null;
+let oiChartInst = null;
+let oiChgChartInst = null;
+
+// 🟢 TRADINGVIEW CHART VARIABLES
+let tvChartInst = null;
+let tvCandleSeries = null;
+let tvLineSeries = null;
+let tvIsCandle = false; 
+let activePriceLines = []; 
+
+Chart.defaults.color = '#a1a1aa';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+
+// 🟢 LIGHT/DARK THEME LOGIC
+document.addEventListener('DOMContentLoaded', () => {
+    const themeBtn = document.getElementById('theme-toggle');
+    if (localStorage.getItem('owl-theme') === 'light') document.body.classList.add('light-theme');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            const isLightModeNow = document.body.classList.contains('light-theme');
+            localStorage.setItem('owl-theme', isLightModeNow ? 'light' : 'dark');
+        });
+    }
+});
+
+// 🟢 DRAG RESIZER LOGIC
+document.addEventListener("DOMContentLoaded", () => {
+    const resizer = document.getElementById('chart-resizer');
+    const sidebar = document.getElementById('chart-sidebar');
+    let isResizing = false;
+
+    if (resizer && sidebar) {
+        resizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isResizing = true;
+            sidebar.style.transition = 'none'; 
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const containerRight = document.body.clientWidth; 
+            const newWidth = containerRight - e.clientX;
+            if (newWidth > 200 && newWidth < window.innerWidth * 0.8) {
+                sidebar.style.width = newWidth + 'px';
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                sidebar.style.transition = 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                if(tvChartInst) tvChartInst.timeScale().fitContent();
+            }
+        });
+    }
+});
+
+
+// 🟢 AUDIO ALERT SETUP
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let lastLogSignature = "";
+
+function playAlertSound() {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    function playNote(freq, startTime, duration) {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.05); 
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration); 
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+    }
+    const now = audioCtx.currentTime;
+    playNote(523.25, now, 0.6);        
+    playNote(659.25, now + 0.15, 0.6); 
+    playNote(783.99, now + 0.30, 1.0); 
+}
+
+document.addEventListener('click', () => { if(audioCtx.state === 'suspended') audioCtx.resume(); }, {once:true});
+
+
+// --- CLOCK ---
+function updateClock() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+  document.getElementById('live-clock').innerText = timeStr;
+}
+setInterval(updateClock, 1000); updateClock();
+
+// --- UI TOGGLES ---
+function toggleIntelPanel() {
+    const panel = document.getElementById('intel-panel');
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'flex';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function toggleMenu(menuId, event) {
+    if(event) event.stopPropagation();
+    const menu = document.getElementById(menuId);
+    const isVisible = menu.style.display === 'flex';
+    
+    document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+    document.getElementById('greeks-menu').style.display = 'none'; 
+    
+    if (!isVisible) {
+        menu.style.display = 'flex';
+    }
+}
+
+function toggleGreeksMenu(event) {
+    if(event) event.stopPropagation();
+    const menu = document.getElementById('greeks-menu');
+    const isVisible = menu.style.display === 'flex';
+    document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+    menu.style.display = isVisible ? 'none' : 'flex';
+}
+
+function selectSymbol(val, text) {
+    document.getElementById('sel-symbol').value = val;
+    document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('symbol-menu').style.display = 'none';
+    loadExpiries(); 
+}
+
+function selectExpiry(val) {
+    document.getElementById('sel-expiry').value = val;
+    document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('expiry-menu').style.display = 'none';
+}
+
+document.addEventListener('click', function(event) {
+    if (!document.getElementById('greeks-dropdown-wrapper').contains(event.target)) document.getElementById('greeks-menu').style.display = 'none';
+    if (!document.getElementById('symbol-dropdown-wrapper').contains(event.target)) document.getElementById('symbol-menu').style.display = 'none';
+    if (!document.getElementById('expiry-dropdown-wrapper').contains(event.target)) document.getElementById('expiry-menu').style.display = 'none';
+});
+
+function fmtN(n, dec) { return n == null || isNaN(n) ? '—' : Number(n).toLocaleString('en-IN', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }); }
+
+function setStatus(statusType, msg) { 
+    document.getElementById('chain-status').innerText = msg; 
+    document.getElementById('status-dot').style.background = statusType === 'live' ? 'var(--green)' : statusType === 'loading' ? 'var(--accent)' : 'var(--red)'; 
+    if(statusType === 'live') {
+        document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+    } else if (statusType === 'loading') {
+        document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.5)';
+    } else {
+        document.getElementById('status-dot').style.boxShadow = 'none';
+    }
+}
+
+function showErr(msg) { const e = document.getElementById('error-bar'); e.textContent = msg; e.style.display = 'block'; setStatus('error', 'Error');}
+function clearErr() { document.getElementById('error-bar').style.display = 'none'; }
+
+function toggleTableFlip() {
+    isFlipped = !isFlipped;
+    const btn = document.getElementById('btn-flip-table');
+    if (isFlipped) btn.classList.add('active');
+    else btn.classList.remove('active');
+    if (globalRows.length > 0) reRenderTable(); 
+}
+
+async function loadExpiries() {
+  const sym = document.getElementById('sel-symbol').value;
+  const menu = document.getElementById('expiry-menu');
+  const btn = document.getElementById('btn-expiry');
+  
+  menu.innerHTML = '<div class="custom-option">Loading...</div>';
+  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+  document.getElementById('sel-expiry').value = '';
+
+  try {
+    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`);
+    const d = await r.json();
+    if (d.error) { 
+        menu.innerHTML = `<div class="custom-option">Error</div>`; 
+        btn.innerHTML = 'Error <span style="font-size: 10px; color: var(--muted);">▾</span>';
+        showErr(d.error); return; 
+    }
+    const limitedExpiries = d.expiries.slice(0, 2);
+    
+    menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
+    
+    if (limitedExpiries.length > 0) {
+        selectExpiry(limitedExpiries[0]);
+    }
+    clearErr();
+  } catch(e) { 
+      menu.innerHTML = `<div class="custom-option">Offline</div>`; 
+      btn.innerHTML = 'Offline <span style="font-size: 10px; color: var(--muted);">▾</span>';
+      showErr("Backend Offline"); 
+  }
+}
+
+function toggleRecording() {
+  isRecording = !isRecording;
+  const btn = document.getElementById('btn-record');
+  if (isRecording) {
+    btn.classList.add('recording-active');
+    document.getElementById('record-text').innerText = 'REC ON';
+    if (globalData && globalData.chain) sendRecordToBackend();
+  } else {
+    btn.classList.remove('recording-active');
+    document.getElementById('record-text').innerText = 'REC OFF';
+  }
+}
+
+async function sendRecordToBackend() {
+  if (!globalData || !globalData.chain) return;
+  try { await fetch(`${UPSTOX_API}/record`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(globalData) }); } catch (e) { }
+}
+
+function getStrikeInterval(symbol) {
+  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
+}
+
+async function fetchUpstoxChain(quiet = false) {
+  const sym = document.getElementById('sel-symbol').value;
+  const expiry = document.getElementById('sel-expiry').value;
+  if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
+  
+  if (!quiet) setStatus('loading', 'Fetching...');
+  if (!quiet) clearErr();
+
+  try {
+    const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`);
+    if (!r.ok) throw new Error('Server error');
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    
+    document.getElementById('inp-spot').value = data.spot || 0;
+    
+    globalRows = data.chain || [];
+    globalSym = sym; globalData = data;
+    
+    const nowStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    liveHistory.push({
+        time: nowStr,
+        rows: globalRows.map(r => ({
+            strike: r.strike,
+            ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
+            ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
+            ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0
+        }))
+    });
+
+    if (isRecording) sendRecordToBackend();
+    renderTable(globalRows, sym, data, quiet); 
+    
+    // 🟢 SYNC THE LIVE CHART IF OPEN
+    if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
+        updateLiveDummyCandles(data.spot);
+        updateTVChartEOR_EOS(data.chain, data.coa);
+    }
+
+  } catch (e) {
+    if(!quiet) showErr(e.message);
+    setStatus('error', 'Offline');
+  }
+}
+
+// 🟢 TRADINGVIEW CHART ENGINE FOR LIVE TERMINAL
+function toggleChartSidebar() {
+    const sidebar = document.getElementById('chart-sidebar');
+    sidebar.classList.toggle('open');
+    if (sidebar.classList.contains('open') && !tvChartInst) {
+        initTVChart();
+    }
+}
+
+function initTVChart() {
+    const container = document.getElementById('tv-chart');
+    
+    setTimeout(() => {
+        tvChartInst = LightweightCharts.createChart(container, {
+            width: container.clientWidth || 340,
+            height: container.clientHeight || 500,
+            layout: { background: { type: 'solid', color: '#131722' }, textColor: '#b2b5be', fontFamily: "'Inter', sans-serif" },
+            grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            rightPriceScale: { borderColor: '#2a2e39' },
+            timeScale: { borderColor: '#2a2e39', timeVisible: true },
+            watermark: { color: 'rgba(255, 255, 255, 0.03)', visible: true, text: 'AOC', fontSize: 100, fontFamily: "'Inter', sans-serif", fontStyle: 'bold', horzAlign: 'center', vertAlign: 'center' },
+        });
+
+        tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
+        tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
+        
+        tvCandleSeries.applyOptions({ visible: false }); 
+
+        const spot = parseFloat(document.getElementById('inp-spot').value) || 24000;
+        updateLiveDummyCandles(spot);
+
+        if (globalData && globalData.chain && globalData.coa) {
+            updateTVChartEOR_EOS(globalData.chain, globalData.coa);
+        }
+
+        new ResizeObserver(entries => {
+            if (entries.length === 0 || entries[0].target !== container) return;
+            tvChartInst.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+        }).observe(container);
+    }, 300);
+}
+
+function toggleTVType() {
+    tvIsCandle = !tvIsCandle;
+    tvCandleSeries.applyOptions({ visible: tvIsCandle });
+    tvLineSeries.applyOptions({ visible: !tvIsCandle });
+    
+    const btn = document.getElementById('btn-tv-type');
+    if (tvIsCandle) {
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>`;
+    } else {
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21V10M15 21V4M9 10H5v6h4M15 4h-4v10h4"></path></svg>`;
+    }
+    
+    // Redraw EOR/EOS lines on the newly active series
+    if (globalData && globalData.chain && globalData.coa) {
+        updateTVChartEOR_EOS(globalData.chain, globalData.coa);
+    }
+}
+
+function refreshTVChart() { 
+    if(tvChartInst) {
+        tvChartInst.timeScale().fitContent(); 
+        tvChartInst.priceScale('right').applyOptions({ autoScale: true }); 
+    }
+}
+
+function updateLiveDummyCandles(currentSpot) {
+    if(!tvLineSeries) return;
+    let res = [];
+    let time = Math.floor(Date.now() / 1000) - (100 * 60);
+    let price = currentSpot;
+    for (let i = 0; i < 100; i++) {
+        let open = price;
+        let close = open + (Math.random() - 0.5) * 15;
+        let high = Math.max(open, close) + Math.random() * 5;
+        let low = Math.min(open, close) - Math.random() * 5;
+        res.push({ time: time, open, high, low, close });
+        price = close;
+        time += 60;
+    }
+    res[res.length-1].close = currentSpot;
+    
+    tvCandleSeries.setData(res);
+    tvLineSeries.setData(res.map(d => ({ time: d.time, value: d.close })));
+}
+
+function updateTVChartEOR_EOS(chainData, coaData) {
+    if (!tvChartInst || !tvLineSeries) return;
+
+    activePriceLines.forEach(l => {
+        try { l.series.removePriceLine(l.line); } catch(e){}
+    });
+    activePriceLines = [];
+
+    const resStrike = coaData.resistance.strike;
+    const supStrike = coaData.support.strike;
+
+    const resRow = chainData.find(r => r.strike === resStrike);
+    const supRow = chainData.find(r => r.strike === supStrike);
+
+    if (!resRow || !supRow) return;
+
+    const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike;
+    const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike;
+
+    const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
+
+    let eorPlus1Val = eorVal + step; 
+    let eosMinus1Val = eosVal - step; 
+
+    const nextResRow = chainData.find(r => r.strike === (resStrike + step));
+    const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
+
+    if (nextResRow && nextResRow.ce_prz > 0) eorPlus1Val = nextResRow.ce_prz;
+    if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
+
+    const baseSeries = tvIsCandle ? tvCandleSeries : tvLineSeries;
+
+    const drawLine = (price, color, width, style, title) => {
+        const pLine = baseSeries.createPriceLine({ price: price, color: color, lineWidth: width, lineStyle: style, axisLabelVisible: true, title: title });
+        activePriceLines.push({ series: baseSeries, line: pLine });
+    };
+
+    drawLine(eorVal, '#ef5350', 2, 0, 'EOR');
+    drawLine(eorPlus1Val, '#ff8a65', 1, 2, 'EOR+1');
+    drawLine(eosVal, '#26a69a', 2, 0, 'EOS');
+    drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'EOS-1');
+}
+
+// 🟢 MODAL STRIKE CHARTS (RESTORED CLICK)
+function showStrikeCharts(strike) {
+    document.getElementById('chart-modal').style.display = 'flex';
+    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
+
+    if(volChartInst) volChartInst.destroy();
+    if(oiChartInst) oiChartInst.destroy();
+    if(oiChgChartInst) oiChgChartInst.destroy();
+
+    const labels = [];
+    const ceVolData = [], peVolData = [];
+    const ceOIData = [], peOIData = [];
+    const ceOIChgData = [], peOIChgData = [];
+
+    liveHistory.forEach(snap => {
+        const row = snap.rows.find(r => r.strike === strike);
+        if (row) {
+            labels.push(snap.time);
+            ceVolData.push(row.ceVol); peVolData.push(row.peVol);
+            ceOIData.push(row.ceOI); peOIData.push(row.peOI);
+            ceOIChgData.push(row.ceOIChg); peOIChgData.push(row.peOIChg);
+        }
+    });
+
+    const ceColor = '#ef4444'; 
+    const peColor = '#10b981'; 
+    
+    const commonOptions = {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false }, 
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {family: "'Inter', sans-serif"} } } },
+        scales: { 
+            y: { beginAtZero: false, grid: {color: '#27272a'} }, 
+            x: { grid: {display: false}, ticks: {maxTicksLimit: 8} } 
+        },
+        elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } 
+    };
+
+    const ctxVol = document.getElementById('volChart').getContext('2d');
+    volChartInst = new Chart(ctxVol, {
+        type: 'line',
+        data: { labels: labels, datasets: [
+            {label: 'CE Vol', data: ceVolData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2}, 
+            {label: 'PE Vol', data: peVolData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2}
+        ]},
+        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'VOLUME TREND', color: '#f4f4f5' } } }
+    });
+
+    const ctxOI = document.getElementById('oiChart').getContext('2d');
+    oiChartInst = new Chart(ctxOI, {
+        type: 'line',
+        data: { labels: labels, datasets: [
+            {label: 'CE OI', data: ceOIData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2}, 
+            {label: 'PE OI', data: peOIData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2}
+        ]},
+        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'OPEN INTEREST TREND', color: '#f4f4f5' } } }
+    });
+
+    const ctxOIChg = document.getElementById('oiChgChart').getContext('2d');
+    oiChgChartInst = new Chart(ctxOIChg, {
+        type: 'line',
+        data: { labels: labels, datasets: [
+            {label: 'CE OI Chg', data: ceOIChgData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2, fill: {target: 'origin', above: 'rgba(239, 68, 68, 0.1)', below: 'rgba(239, 68, 68, 0.1)'}}, 
+            {label: 'PE OI Chg', data: peOIChgData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2, fill: {target: 'origin', above: 'rgba(16, 185, 129, 0.1)', below: 'rgba(16, 185, 129, 0.1)'}}
+        ]},
+        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'INTRADAY OI CHANGE', color: '#f4f4f5' } } }
+    });
+}
+
+function closeCharts() { document.getElementById('chart-modal').style.display = 'none'; }
+
+function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
+
+function updateMarketIntelligence(coa) {
+    if (!coa) return;
+    document.getElementById('coa-scenario').innerText = `Scenario #${coa.scenario_id}`;
+    document.getElementById('coa-desc').innerText = coa.scenario_desc;
+    
+    // 🟢 VISUAL TRANSLATION: WTT -> STT, WTB -> STB
+    function formatState(side) {
+        let stateStr = side.state;
+        if (stateStr === 'WTT') stateStr = 'STT';
+        if (stateStr === 'WTB') stateStr = 'STB';
+        
+        if (stateStr === 'Strong') return `Strong @ ${side.strike}`;
+        return `${side.strike} ${stateStr} @ ${side.target_strike}`;
+    }
+    
+    document.getElementById('coa-sup-state').innerText = formatState(coa.support);
+    document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
+    document.getElementById('coa-range').innerText = `${coa.eos.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${coa.eor.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
+    
+    const logBody = document.getElementById('coa-logs-body');
+    if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
+        const currentSig = coa.logs[0].time + coa.logs[0].eor + coa.logs[0].eos;
+        if (lastLogSignature !== "" && currentSig !== lastLogSignature) {
+            playAlertSound();
+        }
+        lastLogSignature = currentSig;
+
+        logBody.innerHTML = coa.logs.map(log => {
+            if (typeof log === 'object' && log !== null && log.eor && log.eos && log.time) {
+                // 🟢 VISUAL TRANSLATION: Replace WTT/WTB with STT/STB in logs
+                const displayEor = log.eor.toString().replace(/WTT/g, 'STT').replace(/WTB/g, 'STB');
+                const displayEos = log.eos.toString().replace(/WTT/g, 'STT').replace(/WTB/g, 'STB');
+                
+                const eorColor = displayEor.includes('STT') || displayEor.includes('STB') ? 'var(--gold)' : 'var(--red)';
+                const eosColor = displayEos.includes('STT') || displayEos.includes('STB') ? 'var(--gold)' : 'var(--green)';
+                
+                return `<tr><td style="color:var(--text);">${log.time}</td><td style="color: ${eorColor}; font-weight: bold;">${displayEor}</td><td style="color: ${eosColor}; font-weight: bold;">${displayEos}</td></tr>`;
+            }
+            return ''; 
+        }).join('');
+    } else {
+        logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
+    }
+}
+
+let renderTable = function(rows, sym, data, quiet = false) {
+  const spot = parseFloat(document.getElementById('inp-spot').value) || 0;
+  const interval = getStrikeInterval(sym);
+  const atm = Math.round(spot / interval) * interval;
+  
+  if (isFlipped) { rows.sort((a, b) => b.strike - a.strike); } 
+  else { rows.sort((a, b) => a.strike - b.strike); }
+
+  const ceOIs = rows.map(r => r.ce.oi); const peOIs = rows.map(r => r.pe.oi);
+  const ceVols = rows.map(r => r.ce.volume); const peVols = rows.map(r => r.pe.volume);
+  const ceChgs = rows.map(r => Math.abs(r.ce.change_oi || 0)); const peChgs = rows.map(r => Math.abs(r.pe.change_oi || 0));
+
+  const maxCeOI = Math.max(...ceOIs), maxPeOI = Math.max(...peOIs);
+  const maxCeVol = Math.max(...ceVols), maxPeVol = Math.max(...peVols);
+  const maxCeChg = Math.max(...ceChgs), maxPeChg = Math.max(...peChgs);
+
+  const getSecMax = (arr, maxVal) => [...new Set(arr)].sort((a, b) => b - a).find(v => v < maxVal) || -1;
+  const secCeOI = getSecMax(ceOIs, maxCeOI), secPeOI = getSecMax(peOIs, maxPeOI);
+  const secCeVol = getSecMax(ceVols, maxCeVol), secPeVol = getSecMax(peVols, maxPeVol);
+  const secCeChg = getSecMax(ceChgs, maxCeChg), secPeChg = getSecMax(peChgs, maxPeChg);
+
+  const getHeatCls = (val, max, sec, side) => {
+    if (val <= 0 || !max) return '';
+    if (val === max) return side === 'ce' ? 'max-ce-heat' : 'max-pe-heat';
+    if (val === sec) return 'heat-2nd';
+    if (val >= max * 0.75) return 'heat-75'; return '';
+  };
+  
+  const formatCell = (valStr, valNum, max, sec) => {
+      let pctHtml = '';
+      if (valNum > 0 && max) {
+          const pct = Math.round((valNum / max) * 100);
+          if (valNum === sec || pct >= 75) pctHtml = `<span class="pct-tag">${pct}%</span>`;
+      }
+      return `<div class="val-wrapper"><span>${valStr}</span>${pctHtml}</div>`;
+  };
+
+  const activeGreeks = Array.from(document.querySelectorAll('.greek-cb:checked')).map(cb => cb.value);
+  
+  // 🟢 APPLY RED/GREEN HEADER COLORS TO GREEKS IF ACTIVE
+  const extraThCe = activeGreeks.map(g => `<th class="ce-header" style="width:50px;">${g.toUpperCase()}</th>`).join('');
+  const extraThPe = activeGreeks.map(g => `<th class="pe-header" style="width:50px;">${g.toUpperCase()}</th>`).join('');
+
+  // 🟢 APPLY RED/GREEN HEADER COLORS & RENAMED RPL/SPL
+  document.querySelector('thead').innerHTML = `
+    <tr>
+      ${extraThCe}
+      <th class="ce-header" style="width:45px;">IV</th>
+      <th class="ce-header">OI Chg</th>
+      <th class="ce-header">OI</th>
+      <th class="ce-header">Vol</th>
+      <th class="ce-header" style="width:55px;">LTP</th>
+      <th class="ce-header" style="color:var(--red);">RPL</th>
+      <th class="strike-cell" style="width:60px;">STRIKE</th>
+      <th class="pe-header" style="color:var(--green);">SPL</th>
+      <th class="pe-header" style="width:55px;">LTP</th>
+      <th class="pe-header">Vol</th>
+      <th class="pe-header">OI</th>
+      <th class="pe-header">OI Chg</th>
+      <th class="pe-header" style="width:45px;">IV</th>
+      ${extraThPe}
+    </tr>
+  `;
+
+  let html = '';
+  if (rows.length > 0 && spot > 0) {
+      if ((!isFlipped && spot < rows[0].strike) || (isFlipped && spot > rows[0].strike)) {
+          html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span></div></td></tr>`;
+      }
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const isAtm = r.strike === atm, ceBg = r.strike < spot ? 'itm-ce' : '', peBg = r.strike > spot ? 'itm-pe' : '';
+    
+    const eorValue = r.ce_prz > 0 ? r.ce_prz : (r.strike + interval); 
+    const eosValue = r.pe_prz > 0 ? r.pe_prz : (r.strike - interval);
+    
+    function tdHeat(base, heat) { return `class="${base} ${heat}"`; }
+
+    const ceExtraTd = activeGreeks.map(g => `<td class="${ceBg}" style="color:var(--muted);">${r.ce[g]?.toFixed(2)||'-'}</td>`).join('');
+    const peExtraTd = activeGreeks.map(g => `<td class="${peBg}" style="color:var(--muted);">${r.pe[g]?.toFixed(2)||'-'}</td>`).join('');
+
+    const ceChgStr = (r.ce.change_oi >= 0 ? '+' : '') + fmtN(r.ce.change_oi, 0);
+    const peChgStr = (r.pe.change_oi >= 0 ? '+' : '') + fmtN(r.pe.change_oi, 0);
+
+    // 🟢 RESTORED ONCLICK ON STRIKE CELL
+    html += `<tr class="${isAtm ? 'atm-row' : ''}">
+      ${ceExtraTd}
+      <td class="${ceBg}" style="color:var(--muted);">${(parseFloat(r.ce.iv)||0).toFixed(1)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(Math.abs(r.ce.change_oi), maxCeChg, secCeChg, 'ce'))}>${formatCell(ceChgStr, Math.abs(r.ce.change_oi), maxCeChg, secCeChg)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
+      <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
+      <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(1)}</td>
+      
+      <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike.toLocaleString('en-IN')}</td>
+      
+      <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(1)}</td>
+      <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
+      <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
+      <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
+      <td ${tdHeat(peBg, getHeatCls(Math.abs(r.pe.change_oi), maxPeChg, secPeChg, 'pe'))}>${formatCell(peChgStr, Math.abs(r.pe.change_oi), maxPeChg, secPeChg)}</td>
+      <td class="${peBg}" style="color:var(--muted);">${(parseFloat(r.pe.iv)||0).toFixed(1)}</td>
+      ${peExtraTd}
+    </tr>`;
+
+    if (i < rows.length - 1 && spot > 0) {
+        let currentStrike = rows[i].strike, nextStrike = rows[i+1].strike;
+        if (!isFlipped && spot >= currentStrike && spot < nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; } 
+        else if (isFlipped && spot <= currentStrike && spot > nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
+    }
+  }
+
+  if (rows.length > 0 && spot > 0) {
+      let lastStrike = rows[rows.length - 1].strike;
+      if ((!isFlipped && spot >= lastStrike) || (isFlipped && spot <= lastStrike)) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
+  }
+
+  document.getElementById('oc-body').innerHTML = html;
+  
+  const atmRow = rows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
+  document.getElementById('f-ce-greeks').innerText = `Δ ${(atmRow.ce.delta||0).toFixed(2)}  Θ ${(atmRow.ce.theta||0).toFixed(2)}  V ${(atmRow.ce.vega||0).toFixed(2)}`;
+  document.getElementById('f-pe-greeks').innerText = `Δ ${(atmRow.pe.delta||0).toFixed(2)}  Θ ${(atmRow.pe.theta||0).toFixed(2)}  V ${(atmRow.pe.vega||0).toFixed(2)}`;
+  document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
+  document.getElementById('f-pcr').style.color = data.pcr >= 1 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('f-ce-oi').innerText = fmtN(data.total_ce_oi, 0);
+  document.getElementById('f-pe-oi').innerText = fmtN(data.total_pe_oi, 0);
+  document.getElementById('footer-data').style.opacity = '1';
+
+  updateMarketIntelligence(data.coa);
+
+  if (!quiet) {
+    setTimeout(() => { 
+      const container = document.querySelector('.table-wrapper');
+      const line = document.querySelector('tr.spot-line') || document.querySelector('tr.atm-row'); 
+      if (container && line) { container.scrollTo({ top: line.offsetTop - (container.clientHeight / 2) + (line.clientHeight / 2), behavior: 'smooth' }); }
+    }, 150);
+  }
+  setStatus('live', 'Auto-Sync Active (3m)');
+}
+
+loadExpiries(); 
+setInterval(() => {
+    const expiry = document.getElementById('sel-expiry').value;
+    if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline') fetchUpstoxChain(true);
+}, 180000); 
+
+</script>
+</body>
+</html>
