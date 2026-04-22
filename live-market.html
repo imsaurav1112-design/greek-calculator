@@ -1131,7 +1131,7 @@ loadExpiries();
 setInterval(() => {
     const expiry = document.getElementById('sel-expiry').value;
     if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline') fetchUpstoxChain(true);
-}, 180000); 
+}, 60000); 
 
 </script>
 </body>
