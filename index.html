@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IOC Terminal - Institutional Options Analytics</title>
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -72,6 +73,16 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 
 /* --- FOOTER --- */
 footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); margin-top: 50px; color: var(--muted); font-size: 13px; }
+
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 768px) {
+    .hero { padding: 60px 5%; }
+    .hero h1 { font-size: 36px; }
+    .hero p { font-size: 16px; }
+    .nav-links { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    .auth-buttons span { display: none; } /* Hide user email on small screens to save space */
+}
 </style>
 </head>
 <body>
@@ -223,7 +234,6 @@ initBgAnimation();
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-  // 🟢 YOUR ACTUAL KEYS
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
       authDomain: "insideoptionchain.firebaseapp.com",
@@ -237,13 +247,11 @@ initBgAnimation();
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // Monitor Auth State & Swap Buttons if Logged In
   onAuthStateChanged(auth, (user) => {
     const authBox = document.getElementById('auth-buttons');
     const heroBox = document.getElementById('hero-actions');
     
     if (user) {
-        // User IS logged in: Show logout in header, show Launch buttons in Hero
         authBox.innerHTML = `<span style="font-size: 13px; font-weight: 600; color: var(--accent); margin-right: 10px;">${user.email}</span>
                              <button class="btn" id="btn-logout">Log Out</button>`;
         document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
@@ -259,12 +267,10 @@ initBgAnimation();
             </button>
         `;
     } else {
-        // User NOT logged in
-        authBox.innerHTML = ``; // Keep header clean
+        authBox.innerHTML = ``; 
     }
   });
 
-  // 🟢 Google Sign-In Logic
   window.handleGoogleLogin = function() {
       signInWithPopup(auth, googleProvider).then((result) => {
           window.location.href = 'live-market.html';
