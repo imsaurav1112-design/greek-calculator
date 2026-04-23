@@ -35,10 +35,10 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: -1;          /* Keeps it behind all your tables and panels */
-    filter: blur(6px);    /* The blur effect */
-    opacity: 0.15;        /* Keeps it subtle so you can still read the text */
-    pointer-events: none; /* Ensures clicks pass through it to your buttons */
+    z-index: -1;          
+    filter: blur(6px);    
+    opacity: 0.15;        
+    pointer-events: none; 
 }
 /* --- HEADER --- */
 header {
@@ -126,13 +126,11 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 <body>
 <canvas id="bg-canvas"></canvas>
 <header>
-
     <div class="logo" style="position: relative; padding-top: 15px;">
         <img src="optionchain_fevicon.png" alt="Logo" style="position: absolute; top: 20px; left: 68px; height: 22px; width: auto; opacity: 0.9;">
-        
         Inside<span> &#12644;ption</span> Chain
     </div>
-	
+    
     <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#disclaimer">Risk Warning</a>
@@ -173,7 +171,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
             <h3>COA 2.0 Intelligence</h3>
-            <p>Automated scenario detection mapping Support and Resistance states (Strong, WTT, WTB). Features an audio sonar-alert upon critical state shifts.</p>
+            <p>Automated scenario detection mapping Support and Resistance states (Strong, STT, STB). Features an audio sonar-alert upon critical state shifts.</p>
         </div>
         <div class="feature-card">
             <div class="feature-icon">
@@ -209,7 +207,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     <div class="modal-content">
         <button class="modal-close" onclick="closeModal('login-modal')">✖</button>
         <h2 class="modal-title">Welcome Back</h2>
-        <form id="login-form" onsubmit="handleLogin(event)">
+        <form id="login-form" onsubmit="window.handleLogin(event)">
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="login-email" required placeholder="trader@example.com">
@@ -231,11 +229,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     <div class="modal-content">
         <button class="modal-close" onclick="closeModal('signup-modal')">✖</button>
         <h2 class="modal-title">Create Account</h2>
-        <form id="signup-form" onsubmit="handleSignup(event)">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="signup-name" required placeholder="John Doe">
-            </div>
+        <form id="signup-form" onsubmit="window.handleSignup(event)">
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" id="signup-email" required placeholder="trader@example.com">
@@ -248,7 +242,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                 <input type="checkbox" id="signup-terms" required style="width:auto; margin-top:2px;">
                 <label style="font-size:11px; text-transform:none; font-weight:400;">I accept the <a onclick="openModal('terms-modal')" style="color:var(--accent); cursor:pointer;">Terms & Conditions</a> and acknowledge the Risk Disclaimer.</label>
             </div>
-            <div id="signup-error" class="form-error">Email already exists.</div>
+            <div id="signup-error" class="form-error">An error occurred.</div>
             <button type="submit" class="btn btn-primary form-btn">Register & Launch</button>
         </form>
         <div class="switch-form">
@@ -276,97 +270,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function switchModal(closeId, openId) { closeModal(closeId); openModal(openId); }
-
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal-overlay')) {
-        event.target.style.display = "none";
-    }
-}
-
-// --- MOCK AUTHENTICATION LOGIC ---
-// In a real production app, this connects to a database (like Firebase or Postgres).
-// Here, we use LocalStorage to simulate a secure login system.
-
-function updateAuthUI() {
-    const activeUser = JSON.parse(localStorage.getItem('ioc_active_user'));
-    const authBox = document.getElementById('auth-buttons');
-    
-    if (activeUser) {
-        authBox.innerHTML = `
-            <span style="font-size: 13px; font-weight: 600; color: var(--accent); margin-right: 10px;">${activeUser.name}</span>
-            <button class="btn" onclick="handleLogout()">Log Out</button>
-        `;
-    } else {
-        authBox.innerHTML = `
-            <button class="btn" onclick="openModal('login-modal')">Log in</button>
-            <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign up</button>
-        `;
-    }
-}
-
-function handleSignup(e) {
-    e.preventDefault();
-    const name = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
-    const pass = document.getElementById('signup-password').value;
-    const terms = document.getElementById('signup-terms').checked;
-
-    if (!terms) return;
-
-    let users = JSON.parse(localStorage.getItem('ioc_users')) || {};
-    
-    if (users[email]) {
-        document.getElementById('signup-error').style.display = 'block';
-        return;
-    }
-
-    // Save user
-    users[email] = { name: name, password: pass };
-    localStorage.setItem('ioc_users', JSON.stringify(users));
-    
-    // Auto-login
-    localStorage.setItem('ioc_active_user', JSON.stringify({ email: email, name: name }));
-    
-    closeModal('signup-modal');
-    updateAuthUI();
-    window.location.href = 'live-market.html'; // Auto redirect on signup
-}
-
-function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-password').value;
-
-    let users = JSON.parse(localStorage.getItem('ioc_users')) || {};
-
-    if (users[email] && users[email].password === pass) {
-        localStorage.setItem('ioc_active_user', JSON.stringify({ email: email, name: users[email].name }));
-        closeModal('login-modal');
-        updateAuthUI();
-        window.location.href = 'live-market.html'; // Auto redirect on login
-    } else {
-        document.getElementById('login-error').style.display = 'block';
-    }
-}
-
-function handleLogout() {
-    localStorage.removeItem('ioc_active_user');
-    updateAuthUI();
-}
-
-// --- APP LAUNCH LOGIC ---
-function attemptLaunch(appType) {
-    const activeUser = localStorage.getItem('ioc_active_user');
-    if (!activeUser) {
-        openModal('login-modal');
-    } else {
-        if (appType === 'live') window.location.href = 'live-market.html';
-        if (appType === 'backtest') window.location.href = 'backtester.html';
-    }
-}
-
-// Initialize UI on load
-updateAuthUI();
+window.onclick = function(event) { if (event.target.classList.contains('modal-overlay')) event.target.style.display = "none"; }
 
 // 🟢 PROCEDURAL BACKGROUND CANDLESTICK ANIMATION
 function initBgAnimation() {
@@ -383,29 +287,24 @@ function initBgAnimation() {
     resize();
 
     const candles = [];
-    const candleWidth = 12;  // Thickness of the candle body
-    const spacing = 25;      // Space between candles
-    const speed = 0.4;       // How fast the chart scrolls left
+    const candleWidth = 12;  
+    const spacing = 25;      
+    const speed = 0.4;       
     let lastClose = height / 2;
 
-    // Pre-fill the screen with initial candles
     for(let i = 0; i < (width / spacing) + 2; i++) {
         generateCandle(width - (i * spacing));
     }
 
-function generateCandle(x) {
-        // 🟢 BULLISH BIAS: 65% chance of a Green candle
+    function generateCandle(x) {
         const isGreen = Math.random() > 0.35; 
         const bodySize = Math.random() * 30 + 10; 
         let open, close, high, low;
 
-        // Bullish Random Walk
         if (isGreen) {
-            // Stronger upward moves (Subtracting Y moves it UP on the screen)
             close = lastClose - (Math.random() * 25 + 5); 
             open = close + bodySize;
         } else {
-            // Weaker, shallower downward pullbacks
             open = lastClose + (Math.random() * 15);  
             close = open + bodySize;
         }
@@ -416,56 +315,108 @@ function generateCandle(x) {
         lastClose = close;
         candles.push({x, open, close, high, low, isGreen});
         
-        // 🟢 BOUNDARY LOOP: If the trend climbs off the top of the screen, 
-        // reset it near the bottom so it can climb again.
-        if (lastClose < height * 0.15) {
-            lastClose = height * 0.85; 
-        } else if (lastClose > height * 0.95) {
-            lastClose = height * 0.85;
-        }
+        if (lastClose < height * 0.15) { lastClose = height * 0.85; } 
+        else if (lastClose > height * 0.95) { lastClose = height * 0.85; }
     }
 
     function draw() {
         ctx.clearRect(0, 0, width, height);
-        
-        // Update positions and draw
         for (let i = 0; i < candles.length; i++) {
             let c = candles[i];
             c.x -= speed; 
-
-            // Use the CSS variables for perfect theme matching
             ctx.strokeStyle = c.isGreen ? '#10b981' : '#ef4444';
             ctx.fillStyle = c.isGreen ? '#10b981' : '#ef4444';
             ctx.lineWidth = 2;
-
-            // Draw Wick
             ctx.beginPath();
             ctx.moveTo(c.x + candleWidth/2, c.high);
             ctx.lineTo(c.x + candleWidth/2, c.low);
             ctx.stroke();
-
-            // Draw Body
             ctx.fillRect(c.x, Math.min(c.open, c.close), candleWidth, Math.abs(c.open - c.close));
         }
-
-        // Remove candles that scrolled off the left edge
-        if (candles[0].x < -50) {
-            candles.shift();
-        }
-
-        // Generate a new candle on the right edge when space opens up
-        if (candles[candles.length - 1].x < width) {
-            generateCandle(candles[candles.length - 1].x + spacing);
-        }
-
-        requestAnimationFrame(draw); // Loop smoothly
+        if (candles[0].x < -50) { candles.shift(); }
+        if (candles[candles.length - 1].x < width) { generateCandle(candles[candles.length - 1].x + spacing); }
+        requestAnimationFrame(draw);
     }
     draw();
 }
-// Start the background effect
 initBgAnimation();
-
 </script>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  // ⚠️ IMPORTANT: PASTE YOUR FIREBASE CONFIG HERE
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Monitor Auth State & Update Header
+  onAuthStateChanged(auth, (user) => {
+    const authBox = document.getElementById('auth-buttons');
+    if (user) {
+        authBox.innerHTML = `
+            <span style="font-size: 13px; font-weight: 600; color: var(--accent); margin-right: 10px;">${user.email}</span>
+            <button class="btn" id="btn-logout">Log Out</button>
+        `;
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+    } else {
+        authBox.innerHTML = `
+            <button class="btn" onclick="openModal('login-modal')">Log in</button>
+            <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign up</button>
+        `;
+    }
+  });
+
+  // Launch Button Logic
+  window.attemptLaunch = function(appType) {
+      if (!auth.currentUser) {
+          openModal('login-modal');
+      } else {
+          if (appType === 'live') window.location.href = 'live-market.html';
+          if (appType === 'backtest') window.location.href = 'backtester.html';
+      }
+  };
+
+  // Wire up Login Form
+  window.handleLogin = function(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      signInWithEmailAndPassword(auth, email, pass).then(() => {
+          closeModal('login-modal');
+          window.location.href = 'live-market.html';
+      }).catch(err => {
+          const errDiv = document.getElementById('login-error');
+          errDiv.innerText = err.message.replace("Firebase:", "").trim();
+          errDiv.style.display = 'block';
+      });
+  };
+
+  // Wire up Signup Form
+  window.handleSignup = function(e) {
+      e.preventDefault();
+      const terms = document.getElementById('signup-terms').checked;
+      if (!terms) return;
+      const email = document.getElementById('signup-email').value;
+      const pass = document.getElementById('signup-password').value;
+      createUserWithEmailAndPassword(auth, email, pass).then(() => {
+          closeModal('signup-modal');
+          window.location.href = 'live-market.html';
+      }).catch(err => {
+          const errDiv = document.getElementById('signup-error');
+          errDiv.innerText = err.message.replace("Firebase:", "").trim();
+          errDiv.style.display = 'block';
+      });
+  };
+</script>
 </body>
 </html>
