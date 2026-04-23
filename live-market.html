@@ -8,7 +8,6 @@
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-/* 1. Theme Variables */
 :root {
   --bg: #09090b;         
   --card: #141415;       
@@ -25,7 +24,6 @@
   --itm-pe: #161011;       
 }
 
-/* 2. Light Theme Overrides */
 .light-theme {
   --bg: #f8fafc; 
   --card: #ffffff; 
@@ -40,7 +38,6 @@
 
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
 
-/* --- SLEEK HEADER --- */
 header { 
     height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
 }
@@ -56,7 +53,6 @@ header select, header button {
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
-/* 🟢 UNIFIED CUSTOM DROPDOWN MENUS */
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; }
 .custom-menu {
     display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
@@ -68,7 +64,6 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .custom-option:hover { background: var(--section); color: var(--text); }
 .custom-option input { margin: 0; accent-color: var(--accent); }
 
-/* --- MAIN WORKSPACE --- */
 .left-nav {
     width: 52px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 20; position: relative;
 }
@@ -77,7 +72,6 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
-/* 🟢 SETTINGS POPOVER PANEL */
 .settings-panel {
     display: none; position: absolute; left: 60px; top: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; z-index: 1000; overflow: hidden;
 }
@@ -90,14 +84,12 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); transition: background-color 0.3s; }
 .table-wrapper { flex: 1; overflow: auto; position: relative; transition: width 0.3s ease; }
 
-/* 🟢 PURE NATIVE TABLE CSS */
 table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
 th.strike-cell { background: #abc2dd !important; color: #fafafc !important; border-bottom: 1px solid var(--accent); }
 .light-theme th.strike-cell { background: #abc2dd !important; color: var(--text) !important; }
 
-/* CE and PE Header Colors */
 th.ce-header { background-color: var(--red) !important; color: #fff !important; border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important; }
 th.pe-header { background-color: var(--green) !important; color: #fff !important; border-bottom: 1px solid rgba(16, 185, 129, 0.3) !important; }
 .light-theme th.ce-header { background-color: var(--red) !important; color: #fff !important; }
@@ -125,7 +117,6 @@ td:last-child { border-right: none; }
 td.strike-cell { color: var(--text); font-weight: 700; background: rgba(0,0,0,0.3); border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
 td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent); box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
 
-/* --- CHART MODAL STYLING --- */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; }
 .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
@@ -135,7 +126,6 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 .charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
 .chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
 
-/* 🟢 TRADINGVIEW CHART SIDEBAR */
 .chart-sidebar {
     position: relative; 
     width: 0px; 
@@ -151,7 +141,6 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 
 .chart-sidebar.open { width: 340px; }
 
-/* 🟢 THE RESIZER BAR */
 .chart-sidebar .resizer {
     position: absolute;
     left: 0;
@@ -195,7 +184,6 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2e39; }
 #tv-chart { flex-grow: 1; width: 100%; position: relative; }
 
-/* 🟢 RIGHT SIDEBAR (MARKET INTELLIGENCE) */
 .right-sidebar { width: 320px; background: var(--card); border-left: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: background-color 0.3s; }
 .intel-section { padding: 18px; border-bottom: 1px solid var(--border); }
 .intel-header { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
@@ -205,7 +193,6 @@ select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2
 .history-table th { background: transparent; padding: 6px 0; border: none; text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); position: static; font-weight: 600;}
 .history-table td { padding: 8px 0; border: none; border-bottom: 1px solid rgba(150,150,150,0.1); text-align: left; color: var(--text);}
 
-/* --- SLEEK FOOTER --- */
 footer { height: 48px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; flex-shrink: 0; font-size: 11px; transition: background-color 0.3s; }
 .footer-left { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
 .footer-left b { color: var(--text); font-weight: 600; }
@@ -426,22 +413,16 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 </div>
 
 <script>
-// IMPORTANT: Pointing to Live Python Backend
 const UPSTOX_API = 'https://ioc-backend-kq9x.onrender.com';
 
 let globalRows = [];
 let globalSym = '';
 let globalData = {};
 let isFlipped = false; 
-
 let liveHistory = []; 
-
-// Chart Instances
 let volChartInst = null;
 let oiChartInst = null;
 let oiChgChartInst = null;
-
-// 🟢 TRADINGVIEW CHART VARIABLES
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
@@ -452,15 +433,12 @@ let lastChartSymbol = '';
 Chart.defaults.color = '#a1a1aa';
 Chart.defaults.font.family = "'JetBrains Mono', monospace";
 
-// 🟢 NEW SETTINGS LOGIC
 function toggleSettings(event) {
     if(event) event.stopPropagation();
     const panel = document.getElementById('settings-panel');
     const btn = document.getElementById('btn-settings');
     const isVisible = panel.style.display === 'flex';
-    
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    
     if (isVisible) {
         panel.style.display = 'none';
         btn.classList.remove('active');
@@ -476,7 +454,6 @@ function toggleTheme() {
     localStorage.setItem('owl-theme', isLight ? 'light' : 'dark');
 }
 
-// Check saved theme & audio on load
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('owl-theme') === 'light') {
         document.body.classList.add('light-theme');
@@ -495,28 +472,21 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// 🟢 DRAG RESIZER LOGIC
 document.addEventListener("DOMContentLoaded", () => {
     const resizer = document.getElementById('chart-resizer');
     const sidebar = document.getElementById('chart-sidebar');
     let isResizing = false;
-
     if (resizer && sidebar) {
         resizer.addEventListener('mousedown', (e) => {
             e.preventDefault();
             isResizing = true;
             sidebar.style.transition = 'none'; 
         });
-
         window.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
-            const containerRight = document.body.clientWidth; 
-            const newWidth = containerRight - e.clientX;
-            if (newWidth > 200 && newWidth < window.innerWidth * 0.8) {
-                sidebar.style.width = newWidth + 'px';
-            }
+            const newWidth = document.body.clientWidth - e.clientX;
+            if (newWidth > 200 && newWidth < window.innerWidth * 0.8) sidebar.style.width = newWidth + 'px';
         });
-
         window.addEventListener('mouseup', () => {
             if (isResizing) {
                 isResizing = false;
@@ -527,7 +497,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 🟢 UPGRADED AUDIO ALERT SETUP (With Toggle)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let lastLogSignature = "";
 let audioEnabled = false;
@@ -540,7 +509,6 @@ function toggleAudio() {
 
 function playAlertSound() {
     if (!audioEnabled) return; 
-    
     if(audioCtx.state === 'suspended') audioCtx.resume();
     function playNote(freq, startTime, duration) {
         const osc = audioCtx.createOscillator();
@@ -562,16 +530,12 @@ function playAlertSound() {
 }
 document.addEventListener('click', () => { if(audioCtx.state === 'suspended') audioCtx.resume(); }, {once:true});
 
-
-// --- CLOCK ---
 function updateClock() {
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
-  document.getElementById('live-clock').innerText = timeStr;
+  document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
 }
 setInterval(updateClock, 1000); updateClock();
 
-// --- UI TOGGLES ---
 function toggleIntelPanel() {
     const panel = document.getElementById('intel-panel');
     panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
@@ -581,12 +545,8 @@ function toggleMenu(menuId, event) {
     if(event) event.stopPropagation();
     const menu = document.getElementById(menuId);
     const isVisible = menu.style.display === 'flex';
-    
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    
-    if (!isVisible) {
-        menu.style.display = 'flex';
-    }
+    if (!isVisible) menu.style.display = 'flex';
 }
 
 function selectSymbol(val, text) {
@@ -594,10 +554,8 @@ function selectSymbol(val, text) {
     document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
     
-    // 🟢 FIX: Wait for token before loading
-    if (window.currentFirebaseToken) {
-        loadExpiries();
-    }
+    // 🟢 SECURE HANDOFF
+    loadExpiries();
 }
 
 function selectExpiry(val) {
@@ -633,8 +591,8 @@ function toggleTableFlip() {
     if (globalRows.length > 0) reRenderTable(); 
 }
 
-// 🟢 FIX: Expose loadExpiries globally for Firebase to call
-window.loadExpiries = async function() {
+// 🟢 FIX: Moved inside standard script block to avoid ReferenceErrors
+async function loadExpiries() {
   const sym = document.getElementById('sel-symbol').value;
   const menu = document.getElementById('expiry-menu');
   const btn = document.getElementById('btn-expiry');
@@ -644,10 +602,7 @@ window.loadExpiries = async function() {
   document.getElementById('sel-expiry').value = '';
 
   try {
-    // 🟢 FIX: Attach Authorization header so backend allows request
-    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
-    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
-    
+    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`);
     const d = await r.json();
     if (d.error) { 
         menu.innerHTML = `<div class="custom-option">Error</div>`; 
@@ -721,7 +676,6 @@ async function fetchUpstoxChain(quiet = false) {
   }
 }
 
-// 🟢 TRADINGVIEW CHART ENGINE FOR LIVE TERMINAL
 function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
     sidebar.classList.toggle('open');
@@ -732,7 +686,6 @@ function toggleChartSidebar() {
 
 function initTVChart() {
     const container = document.getElementById('tv-chart');
-    
     setTimeout(() => {
         tvChartInst = LightweightCharts.createChart(container, {
             width: container.clientWidth || 340,
@@ -747,7 +700,6 @@ function initTVChart() {
 
         tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
         tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
-        
         tvCandleSeries.applyOptions({ visible: false }); 
 
         const spot = parseFloat(document.getElementById('inp-spot').value) || 24000;
@@ -756,7 +708,6 @@ function initTVChart() {
         if (globalData && globalData.chain && globalData.coa) {
             updateTVChartEOR_EOS(globalData.chain, globalData.coa);
         }
-
         refreshTVChart();
 
         new ResizeObserver(entries => {
@@ -770,14 +721,12 @@ function toggleTVType() {
     tvIsCandle = !tvIsCandle;
     tvCandleSeries.applyOptions({ visible: tvIsCandle });
     tvLineSeries.applyOptions({ visible: !tvIsCandle });
-    
     const btn = document.getElementById('btn-tv-type');
     if (tvIsCandle) {
         btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>`;
     } else {
         btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21V10M15 21V4M9 10H5v6h4M15 4h-4v10h4"></path></svg>`;
     }
-    
     if (globalData && globalData.chain && globalData.coa) {
         updateTVChartEOR_EOS(globalData.chain, globalData.coa);
     }
@@ -805,22 +754,17 @@ function updateLiveDummyCandles(currentSpot) {
         time += 60;
     }
     res[res.length-1].close = currentSpot;
-    
     tvCandleSeries.setData(res);
     tvLineSeries.setData(res.map(d => ({ time: d.time, value: d.close })));
 }
 
 function updateTVChartEOR_EOS(chainData, coaData) {
     if (!tvChartInst || !tvLineSeries) return;
-
-    activePriceLines.forEach(l => {
-        try { l.series.removePriceLine(l.line); } catch(e){}
-    });
+    activePriceLines.forEach(l => { try { l.series.removePriceLine(l.line); } catch(e){} });
     activePriceLines = [];
 
     const resStrike = coaData.resistance.strike;
     const supStrike = coaData.support.strike;
-
     const resRow = chainData.find(r => r.strike === resStrike);
     const supRow = chainData.find(r => r.strike === supStrike);
 
@@ -828,12 +772,10 @@ function updateTVChartEOR_EOS(chainData, coaData) {
 
     const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike;
     const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike;
-
     const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
 
     let eorPlus1Val = eorVal + step; 
     let eosMinus1Val = eosVal - step; 
-
     const nextResRow = chainData.find(r => r.strike === (resStrike + step));
     const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
 
@@ -841,7 +783,6 @@ function updateTVChartEOR_EOS(chainData, coaData) {
     if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
 
     const baseSeries = tvIsCandle ? tvCandleSeries : tvLineSeries;
-
     const drawLine = (price, color, width, style, title) => {
         const pLine = baseSeries.createPriceLine({ price: price, color: color, lineWidth: width, lineStyle: style, axisLabelVisible: true, title: title });
         activePriceLines.push({ series: baseSeries, line: pLine });
@@ -861,10 +802,7 @@ function showStrikeCharts(strike) {
     if(oiChartInst) oiChartInst.destroy();
     if(oiChgChartInst) oiChgChartInst.destroy();
 
-    const labels = [];
-    const ceVolData = [], peVolData = [];
-    const ceOIData = [], peOIData = [];
-    const ceOIChgData = [], peOIChgData = [];
+    const labels = [], ceVolData = [], peVolData = [], ceOIData = [], peOIData = [], ceOIChgData = [], peOIChgData = [];
 
     liveHistory.forEach(snap => {
         const row = snap.rows.find(r => r.strike === strike);
@@ -878,15 +816,11 @@ function showStrikeCharts(strike) {
 
     const ceColor = '#ef4444'; 
     const peColor = '#10b981'; 
-    
     const commonOptions = {
         responsive: true, maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false }, 
         plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {family: "'Inter', sans-serif"} } } },
-        scales: { 
-            y: { beginAtZero: false, grid: {color: '#27272a'} }, 
-            x: { grid: {display: false}, ticks: {maxTicksLimit: 8} } 
-        },
+        scales: { y: { beginAtZero: false, grid: {color: '#27272a'} }, x: { grid: {display: false}, ticks: {maxTicksLimit: 8} } },
         elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } 
     };
 
@@ -1101,8 +1035,9 @@ let renderTable = function(rows, sym, data, quiet = false) {
   setStatus('live', 'Live');
 }
 
-// 🟢 FIX: Moved the timer inside window scope so it can be managed by Firebase
-window.startAutoRefresh = function() {
+// 🟢 FIX: Global Initialization Handoff
+window.initTerminal = function() {
+    loadExpiries();
     setInterval(() => {
         const expiry = document.getElementById('sel-expiry').value;
         if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline') fetchUpstoxChain(true);
@@ -1120,28 +1055,25 @@ window.startAutoRefresh = function() {
     projectId: "insideoptionchain",
     storageBucket: "insideoptionchain.firebasestorage.app",
     messagingSenderId: "112098245685",
-    appId: "1:112098245685:web:e3d15aca5d370a3fc4057c",
+    appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   window.currentFirebaseToken = null; 
 
-  // THE BOUNCER: Checks if user is allowed to be on this page
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       window.currentFirebaseToken = await getIdToken(user);
-      
-      // 🟢 FIX: We strictly WAIT until the token is ready before asking Python for data
-      window.loadExpiries();
-      window.startAutoRefresh();
-      
+      // 🟢 FIX: Safely initialize terminal only AFTER token is ready
+      if (typeof window.initTerminal === 'function') {
+          window.initTerminal();
+      }
     } else {
-      window.location.href = "index.html"; // Kick to login
+      window.location.href = "index.html";
     }
   });
 
-  // Global Logout Function
   window.logoutFirebase = function() {
       signOut(auth);
   };
