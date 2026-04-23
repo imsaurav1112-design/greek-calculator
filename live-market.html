@@ -555,7 +555,7 @@ function selectSymbol(val, text) {
     document.getElementById('symbol-menu').style.display = 'none';
     
     // 🟢 SECURE HANDOFF
-    loadExpiries();
+    window.loadExpiries();
 }
 
 function selectExpiry(val) {
@@ -591,8 +591,24 @@ function toggleTableFlip() {
     if (globalRows.length > 0) reRenderTable(); 
 }
 
-// 🟢 FIX: Moved inside standard script block to avoid ReferenceErrors
-async function loadExpiries() {
+
+// 🟢 2. INJECT IT INTO THE CHART ENGINE
+async function fetchIntradayHistory(sym, expiry) {
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+        const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}`, { headers });
+        const data = await r.json();
+        if (!data.error && Array.isArray(data) && data.length > 0) {
+            liveHistory = data; // This line injects the memory into your charts!
+        } else {
+            liveHistory = [];
+        }
+    } catch (e) {
+        console.error("Could not load intraday history", e);
+    }
+}
+
+window.loadExpiries = async function() {
   const sym = document.getElementById('sel-symbol').value;
   const menu = document.getElementById('expiry-menu');
   const btn = document.getElementById('btn-expiry');
@@ -602,21 +618,45 @@ async function loadExpiries() {
   document.getElementById('sel-expiry').value = '';
 
   try {
-    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`);
+    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
+    
     const d = await r.json();
     if (d.error) { 
         menu.innerHTML = `<div class="custom-option">Error</div>`; 
-        btn.innerHTML = 'Error <span style="font-size: 10px; color: var(--muted);">▾</span>';
+        btn.innerHTML = 'Error ▾';
         showErr(d.error); return; 
     }
+
+    if (!d.expiries || d.expiries.length === 0) {
+        menu.innerHTML = `<div class="custom-option">No Data</div>`; 
+        btn.innerHTML = 'Upstox Login Needed ▾';
+        showErr("Upstox connection lost. Please go to your backend URL and login to Upstox.");
+        return;
+    }
+
     const limitedExpiries = d.expiries.slice(0, 2);
-    
     menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
-    if (limitedExpiries.length > 0) selectExpiry(limitedExpiries[0]);
+    
+    if (limitedExpiries.length > 0) {
+        selectExpiry(limitedExpiries[0]);
+        
+        // 🟢 3. AUTOMATICALLY SLIDE OPEN SCENARIO PANEL & LIVE CHART
+        document.getElementById('intel-panel').style.display = 'flex'; // Opens Scenario Panel
+        const sidebar = document.getElementById('chart-sidebar');
+        if (!sidebar.classList.contains('open')) {
+            sidebar.classList.add('open'); // Opens Chart Sidebar
+            initTVChart();
+        }
+        
+        // 🟢 4. FETCH THE DATA
+        await fetchIntradayHistory(sym, limitedExpiries[0]); // Gets 9:15 data
+        fetchUpstoxChain(false); // Gets live option chain
+    }
     clearErr();
   } catch(e) { 
       menu.innerHTML = `<div class="custom-option">Offline</div>`; 
-      btn.innerHTML = 'Offline <span style="font-size: 10px; color: var(--muted);">▾</span>';
+      btn.innerHTML = 'Offline ▾';
       showErr("Backend Offline"); 
   }
 }
@@ -647,15 +687,21 @@ async function fetchUpstoxChain(quiet = false) {
     globalSym = sym; globalData = data;
     
     const nowStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    liveHistory.push({
-        time: nowStr,
-        rows: globalRows.map(r => ({
-            strike: r.strike,
-            ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
-            ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
-            ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0
-        }))
-    });
+    
+    // Check if we already have this minute logged to avoid duplicates
+    const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
+    
+    if (lastEntry !== nowStr) {
+        liveHistory.push({
+            time: nowStr,
+            rows: globalRows.map(r => ({
+                strike: r.strike,
+                ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
+                ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
+                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0
+            }))
+        });
+    }
 
     renderTable(globalRows, sym, data, quiet); 
     
@@ -1035,13 +1081,15 @@ let renderTable = function(rows, sym, data, quiet = false) {
   setStatus('live', 'Live');
 }
 
-// 🟢 FIX: Global Initialization Handoff
 window.initTerminal = function() {
-    loadExpiries();
+    window.loadExpiries(); 
+    
     setInterval(() => {
         const expiry = document.getElementById('sel-expiry').value;
-        if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline') fetchUpstoxChain(true);
-    }, 60000); 
+        if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
+            fetchUpstoxChain(true);
+        }
+    }, 30000); 
 };
 </script>
 
@@ -1065,7 +1113,6 @@ window.initTerminal = function() {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       window.currentFirebaseToken = await getIdToken(user);
-      // 🟢 FIX: Safely initialize terminal only AFTER token is ready
       if (typeof window.initTerminal === 'function') {
           window.initTerminal();
       }
