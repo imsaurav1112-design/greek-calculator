@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 :root {
   --bg: #09090b;         
@@ -285,8 +284,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
                 <label class="settings-row">Vega (V) <input type="checkbox" class="greek-cb" value="vega" onchange="reRenderTable()"></label>
                 <label class="settings-row">Gamma (Γ) <input type="checkbox" class="greek-cb" value="gamma" onchange="reRenderTable()"></label>
                 <div style="padding: 10px; border-top: 1px solid var(--border); margin-top: 5px;">
-                    <button onclick="window.checkoutRazorpay('1_month')" style="width:100%; padding:8px; background:var(--gold); color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; margin-bottom:5px;">Upgrade PRO (1M)</button>
-                    <button onclick="window.logoutFirebase()" style="width:100%; padding:8px; background:var(--section); color:var(--text); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">Log Out</button>
+                    <button onclick="window.logoutFirebase()" style="width:100%; padding:8px; background:var(--red); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">Secure Log Out</button>
                 </div>
             </div>
         </div>
@@ -628,9 +626,8 @@ async function fetchIntradayHistory(sym, expiry) {
 }
 
 window.loadExpiries = async function() {
-  // 🟢 THE FIX: Wait until the Firebase token is actually loaded
   if (!window.currentFirebaseToken) {
-      setTimeout(window.loadExpiries, 500); // Check again in half a second
+      setTimeout(window.loadExpiries, 500); 
       return;
   }
 
@@ -643,7 +640,6 @@ window.loadExpiries = async function() {
   document.getElementById('sel-expiry').value = '';
 
   try {
-    // We are now guaranteed to have a token here
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
     
@@ -667,7 +663,6 @@ window.loadExpiries = async function() {
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
         
-        // 🟢 Check if on desktop before auto-opening sidebars
         if (window.innerWidth > 768) {
             document.getElementById('intel-panel').style.display = 'flex'; 
             const sidebar = document.getElementById('chart-sidebar');
@@ -697,7 +692,6 @@ async function fetchUpstoxChain(quiet = false) {
   const expiry = document.getElementById('sel-expiry').value;
   if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
   
-  // 🟢 THE FIX: Don't try to fetch data if not logged in yet
   if (!window.currentFirebaseToken) return; 
 
   if (!quiet) setStatus('loading', 'Fetching...');
@@ -706,7 +700,7 @@ async function fetchUpstoxChain(quiet = false) {
   try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
-
+    
     if (!r.ok) throw new Error('Server error or Unauthorized');
     const data = await r.json();
     if (data.error) throw new Error(data.error);
@@ -977,7 +971,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
   const interval = getStrikeInterval(sym);
   const atm = Math.round(spot / interval) * interval;
   
-  // 🟢 NEW: Filter strikes based on the dropdown limit
   let displayRows = [...rows];
   if (strikeLimit !== 'all' && spot > 0) {
       displayRows = displayRows.filter(r => abs(r.strike - atm) <= (strikeLimit * interval));
@@ -1116,7 +1109,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
   setStatus('live', 'Live');
 }
 
-// Helper math function for the strike filter
 function abs(x) { return x < 0 ? -x : x; }
 
 window.initTerminal = function() {
@@ -1129,70 +1121,6 @@ window.initTerminal = function() {
         }
     }, 30000); 
 };
-
-// 🟢 NEW: RAZORPAY CHECKOUT LOGIC
-window.checkoutRazorpay = async function(planId) {
-    if (!window.currentFirebaseToken) {
-        alert("Please log in first!");
-        return;
-    }
-    
-    try {
-        const orderResp = await fetch(`${UPSTOX_API}/api/create-subscription`, {
-            method: "POST",
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${window.currentFirebaseToken}` 
-            },
-            body: JSON.stringify({ plan_id: planId })
-        });
-        const orderData = await orderResp.json();
-        
-        if (orderData.error) throw new Error(orderData.error);
-
-        const options = {
-            "key": "rzp_test_ShJD1Ns5T8Wsr1", // ⚠️ PASTE YOUR PUBLIC RAZORPAY TEST KEY HERE
-            "amount": orderData.amount, 
-            "currency": orderData.currency,
-            "name": "IOC Terminal",
-            "description": "Pro Subscription",
-            "order_id": orderData.id, 
-            "handler": async function (response){
-                const verifyResp = await fetch(`${UPSTOX_API}/api/verify-payment`, {
-                    method: "POST",
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${window.currentFirebaseToken}` 
-                    },
-                    body: JSON.stringify({
-                        plan_id: planId,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_signature: response.razorpay_signature
-                    })
-                });
-                
-                const verifyData = await verifyResp.json();
-                if (verifyData.status === "success") {
-                    alert("Payment Successful! Access granted until: " + verifyData.new_expiry);
-                    window.location.reload(); 
-                } else {
-                    alert("Verification Failed: " + verifyData.error);
-                }
-            },
-            "theme": { "color": "#3b82f6" }
-        };
-        
-        const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function (response){ 
-            alert("Payment Failed: " + response.error.description); 
-        });
-        rzp.open();
-        
-    } catch (err) {
-        alert("Error initiating checkout: " + err.message);
-    }
-}
 </script>
 
 <script type="module">
