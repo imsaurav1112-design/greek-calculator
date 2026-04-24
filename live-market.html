@@ -237,14 +237,6 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <button class="nav-btn" onclick="window.location.href='index.html'" title="Return to Home">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         </button>
-      <button id="draw-btn" onclick="toggleDrawMode()">✏️ Draw: OFF</button>
-
-<div id="table-wrapper" style="position: relative; overflow: auto; height: 600px;">
-    
-    <table id="main-table">...</table>
-
-    <canvas id="draw-layer" style="position: absolute; top: 0; left: 0; z-index: 50; pointer-events: none;"></canvas>
-</div>
         
         <div style="position: relative;" id="settings-wrapper">
             <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
@@ -1147,59 +1139,7 @@ window.initTerminal = function() {
             fetchUpstoxChain(true);
         }
     }, 30000); 
-};
-
-
-  let isDrawMode = false;
-let isDrawing = false;
-const canvas = document.getElementById('draw-layer');
-const ctx = canvas.getContext('2d');
-
-// Make the canvas match the exact size of the table inside
-function resizeCanvas() {
-    const table = document.getElementById('main-table');
-    canvas.width = table.offsetWidth;
-    canvas.height = table.offsetHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-setTimeout(resizeCanvas, 1000); // Call after data loads
-
-function toggleDrawMode() {
-    isDrawMode = !isDrawMode;
-    const btn = document.getElementById('draw-btn');
-    
-    if (isDrawMode) {
-        btn.innerText = "✏️ Draw: ON";
-        btn.style.background = "var(--accent)"; // Turn button blue
-        canvas.style.pointerEvents = "auto";    // Canvas blocks table, ready to draw
-        document.getElementById('table-wrapper').style.overflow = "hidden"; // Lock scrolling while drawing
-    } else {
-        btn.innerText = "✏️ Draw: OFF";
-        btn.style.background = "transparent";
-        canvas.style.pointerEvents = "none";    // Canvas becomes a ghost
-        document.getElementById('table-wrapper').style.overflow = "auto"; // Unlock scrolling
-    }
-}
-
-// Drawing Logic
-canvas.addEventListener('mousedown', (e) => {
-    if (!isDrawMode) return;
-    isDrawing = true;
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    if (!isDrawing || !isDrawMode) return;
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.strokeStyle = '#f59e0b'; // Gold color
-    ctx.lineWidth = 3;
-    ctx.stroke();
-});
-
-canvas.addEventListener('mouseup', () => { isDrawing = false; });
-canvas.addEventListener('mouseout', () => { isDrawing = false; });
-  
+};  
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
