@@ -64,6 +64,26 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .feature-card h3 { margin: 0 0 10px 0; font-size: 18px; }
 .feature-card p { color: var(--muted); font-size: 14px; margin: 0; }
 
+/* --- PRICING SECTION --- */
+.pricing { padding: 50px 5%; max-width: 1200px; margin: 0 auto; margin-top: 20px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
+.price-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 40px 30px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column;}
+.price-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(59,130,246,0.1); }
+.price-card.popular { border-color: var(--accent); background: linear-gradient(180deg, rgba(20,20,21,1) 0%, rgba(59,130,246,0.05) 100%); }
+.popular-badge { position: absolute; top: 12px; right: -30px; background: var(--accent); color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 30px; transform: rotate(45deg); letter-spacing: 1px;}
+.plan-name { font-size: 18px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+.plan-price { font-size: 42px; font-weight: 900; color: var(--text); margin-bottom: 5px; }
+.plan-price span { font-size: 16px; color: var(--muted); font-weight: 500; }
+.plan-desc { font-size: 14px; color: var(--muted); margin-bottom: 30px; min-height: 44px;}
+.plan-features { list-style: none; padding: 0; margin: 0 0 30px 0; flex: 1; }
+.plan-features li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--text); }
+.plan-features li svg { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.plan-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; font-family: 'Inter', sans-serif;}
+.price-card:hover .plan-btn { background: var(--section); }
+.price-card.popular .plan-btn { background: var(--accent); color: white; border: none; }
+.price-card.popular:hover .plan-btn { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
+.bonus-tag { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--gold); font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); font-weight: 700; margin-top: 4px;}
+
 /* --- DISCLAIMER SECTION --- */
 .disclaimer-section { padding: 60px 5%; background: rgba(239, 68, 68, 0.05); border-top: 1px solid rgba(239, 68, 68, 0.2); border-bottom: 1px solid rgba(239, 68, 68, 0.2); margin-top: 50px;}
 .disclaimer-box { max-width: 800px; margin: 0 auto; background: var(--card); border: 1px solid var(--red); border-left: 4px solid var(--red); padding: 30px; border-radius: 8px; }
@@ -72,7 +92,7 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .disclaimer-box strong { color: var(--text); }
 
 /* --- FOOTER --- */
-footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); margin-top: 50px; color: var(--muted); font-size: 13px; }
+footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
 
 /* 📱 MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
@@ -80,8 +100,8 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     .hero h1 { font-size: 36px; }
     .hero p { font-size: 16px; }
     .nav-links { display: none; }
-    .grid { grid-template-columns: 1fr; }
-    .auth-buttons span { display: none; } /* Hide user email on small screens to save space */
+    .grid, .pricing-grid { grid-template-columns: 1fr; }
+    .auth-buttons span { display: none; }
 }
 </style>
 </head>
@@ -95,6 +115,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     
     <div class="nav-links">
         <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
         <a href="#disclaimer">Risk Warning</a>
     </div>
     <div class="auth-buttons" id="auth-buttons">
@@ -139,6 +160,58 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
             </div>
             <h3>Intraday Visuals</h3>
             <p>Click any strike to instantly generate time-series Line Charts tracking Volume, Open Interest, and OI Change history. Features in-cell gradient data bars.</p>
+        </div>
+    </div>
+</section>
+
+<section class="pricing" id="pricing">
+    <div class="section-title">Access Plans</div>
+    <h2 style="text-align: center; margin-bottom: 10px;">Select Your Advantage</h2>
+    <p style="text-align: center; color: var(--muted); margin-bottom: 40px;">Institutional data pipelines scaled for independent traders.</p>
+    
+    <div class="pricing-grid">
+        <div class="price-card">
+            <div class="plan-name">1 Month</div>
+            <div class="plan-price">₹249<span>/mo</span></div>
+            <div class="plan-desc">Perfect for testing the waters and exploring the terminal.</div>
+            <ul class="plan-features">
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Options Chain Access</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Real-time Black-Scholes Greeks</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Live COA Scenarios</li>
+                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
+            </ul>
+            <button class="plan-btn" onclick="window.handleGoogleLogin()">Get Started</button>
+        </div>
+
+        <div class="price-card popular">
+            <div class="popular-badge">Popular</div>
+            <div class="plan-name">3 Months</div>
+            <div class="plan-price">₹599<span>/qtr</span></div>
+            <div class="plan-desc">Maximum value for consistent intraday traders.</div>
+            <ul class="plan-features">
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 1-Month Plan</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Intraday Backtester Access</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Priority Audio Alerts</li>
+                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
+            </ul>
+            <button class="plan-btn" onclick="window.handleGoogleLogin()">Get Started</button>
+        </div>
+
+        <div class="price-card">
+            <div class="plan-name">6 Months</div>
+            <div class="plan-price">₹999<span>/half-yr</span></div>
+            <div class="plan-desc">For the dedicated institutional options trader.</div>
+            <ul class="plan-features">
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 3-Month Plan</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Lifetime Platform Updates</li>
+                <li>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Insider Traders Community</div>
+                        <div class="bonus-tag">₹499 JOINING FEE WAIVED</div>
+                    </div>
+                </li>
+            </ul>
+            <button class="plan-btn" onclick="window.handleGoogleLogin()">Get Started</button>
         </div>
     </div>
 </section>
