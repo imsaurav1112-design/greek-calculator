@@ -630,7 +630,7 @@ async function fetchIntradayHistory(sym, expiry) {
 window.loadExpiries = async function() {
   // 🟢 THE FIX: Wait until the Firebase token is actually loaded
   if (!window.currentFirebaseToken) {
-      setTimeout(window.loadExpiries, 500); 
+      setTimeout(window.loadExpiries, 500); // Check again in half a second
       return;
   }
 
@@ -643,6 +643,7 @@ window.loadExpiries = async function() {
   document.getElementById('sel-expiry').value = '';
 
   try {
+    // We are now guaranteed to have a token here
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
     
@@ -696,7 +697,8 @@ async function fetchUpstoxChain(quiet = false) {
   const expiry = document.getElementById('sel-expiry').value;
   if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
   
-  if (!window.currentFirebaseToken) return; // Fail gracefully if not logged in
+  // 🟢 THE FIX: Don't try to fetch data if not logged in yet
+  if (!window.currentFirebaseToken) return; 
 
   if (!quiet) setStatus('loading', 'Fetching...');
   if (!quiet) clearErr();
