@@ -364,11 +364,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 </div>
 
 <footer>
-    <div class="footer-left" id="footer-data" style="opacity: 0;">
-        <span>CE GREEKS: <b class="highlight" id="f-ce-greeks">--</b></span>
-        <span class="divider" style="height: 12px;"></span>
-        <span>PE GREEKS: <b class="highlight" id="f-pe-greeks">--</b></span>
-        <span class="divider" style="height: 12px;"></span>
+<div class="footer-left" id="footer-data" style="opacity: 0;">
         <span>PCR: <b id="f-pcr">--</b></span>
         <span class="divider" style="height: 12px;"></span>
         <span>CE OI: <b id="f-ce-oi">--</b></span>
@@ -1114,8 +1110,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
   document.getElementById('oc-body').innerHTML = html;
   
   const atmRow = displayRows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
-  document.getElementById('f-ce-greeks').innerText = `Δ ${(atmRow.ce.delta||0).toFixed(2)}  Θ ${(atmRow.ce.theta||0).toFixed(2)}  V ${(atmRow.ce.vega||0).toFixed(2)}`;
-  document.getElementById('f-pe-greeks').innerText = `Δ ${(atmRow.pe.delta||0).toFixed(2)}  Θ ${(atmRow.pe.theta||0).toFixed(2)}  V ${(atmRow.pe.vega||0).toFixed(2)}`;
   document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
   document.getElementById('f-pcr').style.color = data.pcr >= 1 ? 'var(--green)' : 'var(--red)';
   document.getElementById('f-ce-oi').innerText = fmtN(data.total_ce_oi, 0);
