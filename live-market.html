@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>IOC Terminal</title>
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -44,22 +45,22 @@ header {
 
 .logo { font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border); letter-spacing: 0.5px;}
 .logo span { color: var(--accent); }
-.divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+.divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0;}
 
 header select, header button { 
-    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; outline: none; 
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; outline: none; flex-shrink: 0;
 }
 
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
-.custom-dropdown-wrapper { position: relative; display: flex; align-items: center; }
+.custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
     display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
 }
 .light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .custom-option {
-    display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
 }
 .custom-option:hover { background: var(--section); color: var(--text); }
 .custom-option input { margin: 0; accent-color: var(--accent); }
@@ -73,22 +74,23 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
 .settings-panel {
-    display: none; position: absolute; left: 60px; top: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; z-index: 1000; overflow: hidden;
+    display: none; position: absolute; left: 60px; top: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 190px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; z-index: 1000; overflow: hidden;
 }
 .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .settings-header { padding: 10px 16px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--section); }
 .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.15s;}
 .settings-row:hover { background: var(--section); }
 .settings-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+.settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); transition: background-color 0.3s; }
 .table-wrapper { flex: 1; overflow: auto; position: relative; transition: width 0.3s ease; }
 
-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; table-layout: auto; }
+table { width: 100%; border-collapse: collapse; font-family: 'Roboto Mono', monospace; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
-th.strike-cell { background: #abc2dd !important; color: #fafafc !important; border-bottom: 1px solid var(--accent); }
-.light-theme th.strike-cell { background: #abc2dd !important; color: var(--text) !important; }
+th.strike-cell { background: #1e293b !important; color: #f8fafc !important; border-bottom: 1px solid var(--accent); }
+.light-theme th.strike-cell { background: #cbd5e1 !important; color: var(--text) !important; }
 
 th.ce-header { background-color: var(--red) !important; color: #fff !important; border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important; }
 th.pe-header { background-color: var(--green) !important; color: #fff !important; border-bottom: 1px solid rgba(16, 185, 129, 0.3) !important; }
@@ -114,71 +116,28 @@ td:last-child { border-right: none; }
 .heat-75 { background-color: #3f3f46 !important; color: #fff !important; font-weight: 600 !important; }
 .light-theme .heat-75 { background-color: #cbd5e1 !important; color: #000 !important; }
 .pct-tag { font-size: 9px; color: var(--accent); background: rgba(59, 130, 246, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2);}
-td.strike-cell { color: var(--text); font-weight: 700; background: rgba(0,0,0,0.3); border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
-td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent); box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
+
+td.strike-cell { color: var(--text); font-weight: 700; background: #1e293b !important; border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
+.light-theme td.strike-cell { background: #f1f5f9 !important; color: var(--text) !important; }
+td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; }
 .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
 .modal-close:hover { color: var(--red); transform: scale(1.1); }
-.modal-header { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
+.modal-header { text-align: center; font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
 .modal-header span { color: var(--accent); }
 .charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
 .chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
 
-.chart-sidebar {
-    position: relative; 
-    width: 0px; 
-    height: 100%; 
-    background: #131722; 
-    border-left: 1px solid #2a2e39;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
+.chart-sidebar { position: relative; width: 0px; height: 100%; background: #131722; border-left: 1px solid #2a2e39; display: flex; flex-direction: column; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; flex-shrink: 0; }
 .chart-sidebar.open { width: 340px; }
-
-.chart-sidebar .resizer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    cursor: col-resize;
-    background: transparent;
-    z-index: 50;
-    transition: background 0.2s;
-}
+.chart-sidebar .resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; background: transparent; z-index: 50; transition: background 0.2s; }
 .chart-sidebar .resizer:hover { background: var(--accent); }
-
-.chart-toolbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 6px 8px;
-    background: #131722;
-    border-bottom: 1px solid #2a2e39;
-    overflow-x: auto; 
-}
+.chart-toolbar { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; padding: 6px 8px; background: #131722; border-bottom: 1px solid #2a2e39; overflow-x: auto; }
 .chart-toolbar::-webkit-scrollbar { height: 0px; }
 
-.chart-btn {
-    background: transparent;
-    color: #b2b5be;
-    border: 1px solid transparent;
-    padding: 4px 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 4px;
-    font-family: 'Inter', sans-serif;
-    transition: 0.15s;
-    white-space: nowrap;
-}
+.chart-btn { background: transparent; color: #b2b5be; border: 1px solid transparent; padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Inter', sans-serif; transition: 0.15s; white-space: nowrap; }
 .chart-btn:hover { background: #2a2e39; color: #d1d4dc; }
 .chart-btn.active { color: #2962FF; background: rgba(41, 98, 255, 0.1); }
 select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2e39; }
@@ -187,20 +146,52 @@ select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2
 .right-sidebar { width: 320px; background: var(--card); border-left: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: background-color 0.3s; }
 .intel-section { padding: 18px; border-bottom: 1px solid var(--border); }
 .intel-header { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.intel-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+.intel-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'Roboto Mono', monospace; }
 .intel-sub { font-size: 12px; color: var(--accent); font-weight: 500; }
-.history-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'JetBrains Mono', monospace;}
+.history-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Roboto Mono', monospace;}
 .history-table th { background: transparent; padding: 6px 0; border: none; text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); position: static; font-weight: 600;}
 .history-table td { padding: 8px 0; border: none; border-bottom: 1px solid rgba(150,150,150,0.1); text-align: left; color: var(--text);}
 
 footer { height: 48px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; flex-shrink: 0; font-size: 11px; transition: background-color 0.3s; }
-.footer-left { display: flex; align-items: center; gap: 15px; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
+.footer-left { display: flex; align-items: center; gap: 15px; font-family: 'Roboto Mono', monospace; color: var(--muted); }
 .footer-left b { color: var(--text); font-weight: 600; }
 .footer-left .highlight { color: var(--accent); }
 .footer-right { display: flex; align-items: center; gap: 15px; }
-.live-clock { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text); }
+.live-clock { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text); }
 .status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 768px) {
+    .workspace { flex-direction: column; }
+    
+    /* Make Header horizontally scrollable for small screens */
+    header { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0 10px; }
+    header::-webkit-scrollbar { display: none; }
+    
+    /* Convert left-nav to a bottom Tab Bar */
+    .left-nav { order: 3; width: 100%; height: 60px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); justify-content: space-evenly; padding: 0; }
+    
+    /* Settings panel pops UP from bottom navigation */
+    .settings-panel { left: 10px; top: auto; bottom: 70px; width: 220px; }
+    
+    /* Force table to scroll instead of squishing columns */
+    table { min-width: 900px; }
+    
+    /* Sidebars become full-width overlays */
+    .chart-sidebar.open { position: absolute; left: 0; width: 100% !important; z-index: 50; background: var(--bg); }
+    .right-sidebar { position: absolute; right: 0; width: 100% !important; z-index: 50; background: var(--bg); }
+    .chart-sidebar .resizer { display: none; } 
+    
+    /* Modals stack vertically */
+    .charts-container { flex-direction: column; height: auto; gap: 10px; }
+    .chart-box { height: 250px; }
+    .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
+    
+    /* Footer wrap */
+    footer { height: auto; padding: 10px; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .footer-left { flex-wrap: wrap; gap: 10px; }
+}
 </style>
 </head>
 <body>
@@ -276,6 +267,17 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
                     Flip Strikes
                     <input type="checkbox" id="flip-cb" onchange="toggleTableFlip()">
                 </label>
+                <label class="settings-row" style="cursor: default;">
+                    Strikes (±)
+                    <select id="strike-count" class="settings-select" onchange="updateStrikeCount()">
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20" selected>20</option>
+                        <option value="30">30</option>
+                        <option value="all">All</option>
+                    </select>
+                </label>
+                
                 <div class="settings-header">Show Greeks</div>
                 <label class="settings-row">Delta (Δ) <input type="checkbox" class="greek-cb" value="delta" onchange="reRenderTable()"></label>
                 <label class="settings-row">Theta (Θ) <input type="checkbox" class="greek-cb" value="theta" onchange="reRenderTable()"></label>
@@ -325,19 +327,25 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
             <button class="chart-btn" onclick="refreshTVChart()" title="Reset Scale">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
             </button>
+            <button class="chart-btn" onclick="toggleChartSidebar()" style="margin-left:auto; color:var(--red);" title="Close Chart">✖</button>
         </div>
         <div id="tv-chart"></div>
     </div>
 
     <div class="right-sidebar" id="intel-panel">
-        <div class="intel-section" style="background: var(--bg);">
-            <div class="intel-header">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                Live Scenario
+        <div class="intel-section" style="background: var(--bg); display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <div class="intel-header">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    Live Scenario
+                </div>
+                <div class="intel-value" id="coa-scenario">Waiting...</div>
+                <div class="intel-sub" id="coa-desc">Fetch data to analyze market.</div>
             </div>
-            <div class="intel-value" id="coa-scenario">Waiting...</div>
-            <div class="intel-sub" id="coa-desc">Fetch data to analyze market.</div>
-            <div style="margin-top: 12px; font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; font-family: 'JetBrains Mono', monospace;">
+            <button onclick="toggleIntelPanel()" style="background:transparent; border:none; color:var(--red); cursor:pointer; font-weight:bold;">✖</button>
+        </div>
+        <div class="intel-section" style="background: var(--bg); padding-top: 0;">
+            <div style="font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px; font-family: 'Roboto Mono', monospace;">
                 <span style="color: var(--muted);">SUP: <b id="coa-sup-state" style="color:var(--green);">--</b></span>
                 <span style="color: var(--muted);">RES: <b id="coa-res-state" style="color:var(--red);">--</b></span>
             </div>
@@ -419,6 +427,7 @@ let globalRows = [];
 let globalSym = '';
 let globalData = {};
 let isFlipped = false; 
+let strikeLimit = 20; // Default limit
 let liveHistory = []; 
 let volChartInst = null;
 let oiChartInst = null;
@@ -431,7 +440,7 @@ let activePriceLines = [];
 let lastChartSymbol = ''; 
 
 Chart.defaults.color = '#a1a1aa';
-Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.family = "'Roboto Mono', monospace";
 
 function toggleSettings(event) {
     if(event) event.stopPropagation();
@@ -454,6 +463,13 @@ function toggleTheme() {
     localStorage.setItem('owl-theme', isLight ? 'light' : 'dark');
 }
 
+function updateStrikeCount() {
+    const val = document.getElementById('strike-count').value;
+    strikeLimit = val === 'all' ? 'all' : parseInt(val, 10);
+    localStorage.setItem('owl-strikes', val);
+    reRenderTable();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('owl-theme') === 'light') {
         document.body.classList.add('light-theme');
@@ -462,6 +478,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('owl-audio') === 'on') {
         audioEnabled = true;
         document.getElementById('audio-cb').checked = true;
+    }
+    if (localStorage.getItem('owl-strikes')) {
+        const savedStrikes = localStorage.getItem('owl-strikes');
+        document.getElementById('strike-count').value = savedStrikes;
+        strikeLimit = savedStrikes === 'all' ? 'all' : parseInt(savedStrikes, 10);
     }
 });
 
@@ -553,8 +574,6 @@ function selectSymbol(val, text) {
     document.getElementById('sel-symbol').value = val;
     document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
-    
-    // 🟢 SECURE HANDOFF
     window.loadExpiries();
 }
 
@@ -591,15 +610,13 @@ function toggleTableFlip() {
     if (globalRows.length > 0) reRenderTable(); 
 }
 
-
-// 🟢 2. INJECT IT INTO THE CHART ENGINE
 async function fetchIntradayHistory(sym, expiry) {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
         const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}`, { headers });
         const data = await r.json();
         if (!data.error && Array.isArray(data) && data.length > 0) {
-            liveHistory = data; // This line injects the memory into your charts!
+            liveHistory = data; 
         } else {
             liveHistory = [];
         }
@@ -641,17 +658,18 @@ window.loadExpiries = async function() {
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
         
-        // 🟢 3. AUTOMATICALLY SLIDE OPEN SCENARIO PANEL & LIVE CHART
-        document.getElementById('intel-panel').style.display = 'flex'; // Opens Scenario Panel
-        const sidebar = document.getElementById('chart-sidebar');
-        if (!sidebar.classList.contains('open')) {
-            sidebar.classList.add('open'); // Opens Chart Sidebar
-            initTVChart();
+        // 🟢 Check if on desktop before auto-opening sidebars
+        if (window.innerWidth > 768) {
+            document.getElementById('intel-panel').style.display = 'flex'; 
+            const sidebar = document.getElementById('chart-sidebar');
+            if (!sidebar.classList.contains('open')) {
+                sidebar.classList.add('open'); 
+                initTVChart();
+            }
         }
         
-        // 🟢 4. FETCH THE DATA
-        await fetchIntradayHistory(sym, limitedExpiries[0]); // Gets 9:15 data
-        fetchUpstoxChain(false); // Gets live option chain
+        await fetchIntradayHistory(sym, limitedExpiries[0]); 
+        fetchUpstoxChain(false); 
     }
     clearErr();
   } catch(e) { 
@@ -687,8 +705,6 @@ async function fetchUpstoxChain(quiet = false) {
     globalSym = sym; globalData = data;
     
     const nowStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    
-    // Check if we already have this minute logged to avoid duplicates
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
     if (lastEntry !== nowStr) {
@@ -733,6 +749,7 @@ function toggleChartSidebar() {
 function initTVChart() {
     const container = document.getElementById('tv-chart');
     setTimeout(() => {
+        if(tvChartInst) { tvChartInst.remove(); tvChartInst = null; }
         tvChartInst = LightweightCharts.createChart(container, {
             width: container.clientWidth || 340,
             height: container.clientHeight || 500,
@@ -948,12 +965,18 @@ let renderTable = function(rows, sym, data, quiet = false) {
   const interval = getStrikeInterval(sym);
   const atm = Math.round(spot / interval) * interval;
   
-  if (isFlipped) { rows.sort((a, b) => b.strike - a.strike); } 
-  else { rows.sort((a, b) => a.strike - b.strike); }
+  // 🟢 NEW: Filter strikes based on the dropdown limit
+  let displayRows = [...rows];
+  if (strikeLimit !== 'all' && spot > 0) {
+      displayRows = displayRows.filter(r => abs(r.strike - atm) <= (strikeLimit * interval));
+  }
 
-  const ceOIs = rows.map(r => r.ce.oi); const peOIs = rows.map(r => r.pe.oi);
-  const ceVols = rows.map(r => r.ce.volume); const peVols = rows.map(r => r.pe.volume);
-  const ceChgs = rows.map(r => Math.abs(r.ce.change_oi || 0)); const peChgs = rows.map(r => Math.abs(r.pe.change_oi || 0));
+  if (isFlipped) { displayRows.sort((a, b) => b.strike - a.strike); } 
+  else { displayRows.sort((a, b) => a.strike - b.strike); }
+
+  const ceOIs = displayRows.map(r => r.ce.oi); const peOIs = displayRows.map(r => r.pe.oi);
+  const ceVols = displayRows.map(r => r.ce.volume); const peVols = displayRows.map(r => r.pe.volume);
+  const ceChgs = displayRows.map(r => Math.abs(r.ce.change_oi || 0)); const peChgs = displayRows.map(r => Math.abs(r.pe.change_oi || 0));
 
   const maxCeOI = Math.max(...ceOIs), maxPeOI = Math.max(...peOIs);
   const maxCeVol = Math.max(...ceVols), maxPeVol = Math.max(...peVols);
@@ -1005,14 +1028,14 @@ let renderTable = function(rows, sym, data, quiet = false) {
   `;
 
   let html = '';
-  if (rows.length > 0 && spot > 0) {
-      if ((!isFlipped && spot < rows[0].strike) || (isFlipped && spot > rows[0].strike)) {
+  if (displayRows.length > 0 && spot > 0) {
+      if ((!isFlipped && spot < displayRows[0].strike) || (isFlipped && spot > displayRows[0].strike)) {
           html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span></div></td></tr>`;
       }
   }
 
-  for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
+  for (let i = 0; i < displayRows.length; i++) {
+    const r = displayRows[i];
     const isAtm = r.strike === atm, ceBg = r.strike < spot ? 'itm-ce' : '', peBg = r.strike > spot ? 'itm-pe' : '';
     
     const eorValue = r.ce_prz > 0 ? r.ce_prz : (r.strike + interval); 
@@ -1046,21 +1069,21 @@ let renderTable = function(rows, sym, data, quiet = false) {
       ${peExtraTd}
     </tr>`;
 
-    if (i < rows.length - 1 && spot > 0) {
-        let currentStrike = rows[i].strike, nextStrike = rows[i+1].strike;
+    if (i < displayRows.length - 1 && spot > 0) {
+        let currentStrike = displayRows[i].strike, nextStrike = displayRows[i+1].strike;
         if (!isFlipped && spot >= currentStrike && spot < nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; } 
         else if (isFlipped && spot <= currentStrike && spot > nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
     }
   }
 
-  if (rows.length > 0 && spot > 0) {
-      let lastStrike = rows[rows.length - 1].strike;
+  if (displayRows.length > 0 && spot > 0) {
+      let lastStrike = displayRows[displayRows.length - 1].strike;
       if ((!isFlipped && spot >= lastStrike) || (isFlipped && spot <= lastStrike)) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
   }
 
   document.getElementById('oc-body').innerHTML = html;
   
-  const atmRow = rows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
+  const atmRow = displayRows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
   document.getElementById('f-ce-greeks').innerText = `Δ ${(atmRow.ce.delta||0).toFixed(2)}  Θ ${(atmRow.ce.theta||0).toFixed(2)}  V ${(atmRow.ce.vega||0).toFixed(2)}`;
   document.getElementById('f-pe-greeks').innerText = `Δ ${(atmRow.pe.delta||0).toFixed(2)}  Θ ${(atmRow.pe.theta||0).toFixed(2)}  V ${(atmRow.pe.vega||0).toFixed(2)}`;
   document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
@@ -1081,6 +1104,9 @@ let renderTable = function(rows, sym, data, quiet = false) {
   setStatus('live', 'Live');
 }
 
+// Helper math function for the strike filter
+function abs(x) { return x < 0 ? -x : x; }
+
 window.initTerminal = function() {
     window.loadExpiries(); 
     
@@ -1089,7 +1115,7 @@ window.initTerminal = function() {
         if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
             fetchUpstoxChain(true);
         }
-    }, 60000); 
+    }, 30000); 
 };
 </script>
 
