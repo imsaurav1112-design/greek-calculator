@@ -626,6 +626,11 @@ async function fetchIntradayHistory(sym, expiry) {
 }
 
 window.loadExpiries = async function() {
+  if (!window.currentFirebaseToken) {
+      setTimeout(window.loadExpiries, 500); 
+      return;
+  }
+
   const sym = document.getElementById('sel-symbol').value;
   const menu = document.getElementById('expiry-menu');
   const btn = document.getElementById('btn-expiry');
@@ -635,7 +640,7 @@ window.loadExpiries = async function() {
   document.getElementById('sel-expiry').value = '';
 
   try {
-    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
     
     const d = await r.json();
@@ -658,7 +663,6 @@ window.loadExpiries = async function() {
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
         
-        // 🟢 Check if on desktop before auto-opening sidebars
         if (window.innerWidth > 768) {
             document.getElementById('intel-panel').style.display = 'flex'; 
             const sidebar = document.getElementById('chart-sidebar');
@@ -688,11 +692,13 @@ async function fetchUpstoxChain(quiet = false) {
   const expiry = document.getElementById('sel-expiry').value;
   if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
   
+  if (!window.currentFirebaseToken) return; 
+
   if (!quiet) setStatus('loading', 'Fetching...');
   if (!quiet) clearErr();
 
   try {
-    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
     
     if (!r.ok) throw new Error('Server error or Unauthorized');
@@ -965,7 +971,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
   const interval = getStrikeInterval(sym);
   const atm = Math.round(spot / interval) * interval;
   
-  // 🟢 NEW: Filter strikes based on the dropdown limit
   let displayRows = [...rows];
   if (strikeLimit !== 'all' && spot > 0) {
       displayRows = displayRows.filter(r => abs(r.strike - atm) <= (strikeLimit * interval));
@@ -1104,7 +1109,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
   setStatus('live', 'Live');
 }
 
-// Helper math function for the strike filter
 function abs(x) { return x < 0 ? -x : x; }
 
 window.initTerminal = function() {
