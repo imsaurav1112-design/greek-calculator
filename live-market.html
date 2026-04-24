@@ -1148,7 +1148,7 @@ window.initTerminal = function() {
         }
     }, 30000); 
 };
-</script>
+
 
   let isDrawMode = false;
 let isDrawing = false;
@@ -1199,7 +1199,8 @@ canvas.addEventListener('mousemove', (e) => {
 
 canvas.addEventListener('mouseup', () => { isDrawing = false; });
 canvas.addEventListener('mouseout', () => { isDrawing = false; });
-
+  
+</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, getIdToken, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
