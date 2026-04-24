@@ -630,11 +630,9 @@ window.loadExpiries = async function() {
   btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
   document.getElementById('sel-expiry').value = '';
 
-try {
+  try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
-    
-    // 🟢 FIX: Read the actual error from Python if it fails
     if (!r.ok) {
         const errData = await r.json().catch(() => ({}));
         throw new Error(errData.details || errData.error || `HTTP Error ${r.status}`);
@@ -669,6 +667,7 @@ try {
             }
         }
         
+        // 🟢 FIX: Race condition. Wait for history before fetching live chain.
         await fetchIntradayHistory(sym, limitedExpiries[0]); 
         await fetchUpstoxChain(false); 
     }
@@ -676,7 +675,7 @@ try {
   } catch(e) { 
       menu.innerHTML = `<div class="custom-option">Failed</div>`; 
       btn.innerHTML = 'Auth Failed ▾';
-      showErr("Server says: " + e.message);  // 🟢 Prints the exact reason!
+      showErr("Server says: " + e.message); 
   }
 }
 
@@ -694,7 +693,7 @@ async function fetchUpstoxChain(quiet = false) {
   if (!quiet) setStatus('loading', 'Fetching...');
   if (!quiet) clearErr();
 
-try {
+  try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
     
@@ -702,16 +701,8 @@ try {
         const errData = await r.json().catch(() => ({}));
         throw new Error(errData.details || errData.error || `HTTP Error ${r.status}`);
     }
-    
     const data = await r.json();
     if (data.error) throw new Error(data.details || data.error);
-    
-    // ... (leave the rest of your data processing logic here exactly as it is) ...
-
-  } catch (e) {
-    if(!quiet) showErr("Server says: " + e.message); // 🟢 Prints the exact reason!
-    setStatus('error', 'Auth Failed');
-  }
     
     document.getElementById('inp-spot').value = data.spot || 0;
     
@@ -748,8 +739,8 @@ try {
     }
 
   } catch (e) {
-    if(!quiet) showErr(e.message);
-    setStatus('error', 'Offline / Unauthorized');
+    if(!quiet) showErr("Server says: " + e.message);
+    setStatus('error', 'Auth Failed');
   }
 }
 
