@@ -658,15 +658,6 @@ window.loadExpiries = async function() {
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
         
-        if (window.innerWidth > 768) {
-            document.getElementById('intel-panel').style.display = 'flex'; 
-            const sidebar = document.getElementById('chart-sidebar');
-            if (!sidebar.classList.contains('open')) {
-                sidebar.classList.add('open'); 
-                initTVChart();
-            }
-        }
-        
         // 🟢 FIX: Race condition. Wait for history before fetching live chain.
         await fetchIntradayHistory(sym, limitedExpiries[0]); 
         await fetchUpstoxChain(false); 
