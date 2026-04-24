@@ -421,10 +421,11 @@ let oiChgChartInst = null;
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
+let tvVolumeSeries = null; // 🟢 Added Volume Series
 let tvIsCandle = false; 
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
-let tvResizeObserver = null; // 🟢 FIX: Memory leak observer tracking
+let tvResizeObserver = null; 
 
 Chart.defaults.color = '#a1a1aa';
 Chart.defaults.font.family = "'Roboto Mono', monospace";
@@ -601,7 +602,7 @@ async function fetchIntradayHistory(sym, expiry) {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
         const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}`, { headers });
-        if (!r.ok) throw new Error(`HTTP Error: ${r.status}`); // 🟢 FIX: HTTP Check
+        if (!r.ok) throw new Error(`HTTP Error: ${r.status}`);
         const data = await r.json();
         if (!data.error && Array.isArray(data) && data.length > 0) {
             liveHistory = data; 
@@ -655,8 +656,6 @@ window.loadExpiries = async function() {
     
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
-        
-        // 🟢 FIX: Race condition. Wait for history before fetching live chain.
         await fetchIntradayHistory(sym, limitedExpiries[0]); 
         await fetchUpstoxChain(false); 
     }
@@ -698,7 +697,6 @@ async function fetchUpstoxChain(quiet = false) {
     globalRows = data.chain || [];
     globalSym = sym; globalData = data;
     
-    // 🟢 FIX: Timezone consistency
     const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
@@ -709,7 +707,8 @@ async function fetchUpstoxChain(quiet = false) {
                 strike: r.strike,
                 ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
                 ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
-                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0
+                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0 // 🟢 Added LTP Extractor
             }))
         });
     }
@@ -744,7 +743,6 @@ function toggleChartSidebar() {
 function initTVChart() {
     const container = document.getElementById('tv-chart');
     
-    // 🟢 FIX: Clean up old ResizeObserver to prevent memory leak
     if (tvResizeObserver) { tvResizeObserver.disconnect(); }
     
     setTimeout(() => {
@@ -763,6 +761,14 @@ function initTVChart() {
         tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
         tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
         tvCandleSeries.applyOptions({ visible: false }); 
+        
+        // 🟢 Added Volume Histogram Series
+        tvVolumeSeries = tvChartInst.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '', 
+            scaleMargins: { top: 0.8, bottom: 0 },
+        });
 
         const spot = parseFloat(document.getElementById('inp-spot').value) || 24000;
         updateLiveDummyCandles(spot);
@@ -805,6 +811,7 @@ function refreshTVChart() {
 function updateLiveDummyCandles(currentSpot) {
     if(!tvLineSeries) return;
     let res = [];
+    let volRes = []; // 🟢 Array for volume
     let time = Math.floor(Date.now() / 1000) - (100 * 60);
     let price = currentSpot;
     for (let i = 0; i < 100; i++) {
@@ -812,13 +819,17 @@ function updateLiveDummyCandles(currentSpot) {
         let close = open + (Math.random() - 0.5) * 15;
         let high = Math.max(open, close) + Math.random() * 5;
         let low = Math.min(open, close) - Math.random() * 5;
+        let vol = Math.floor(Math.random() * 5000) + 1000;
+        let isUp = close > open;
         res.push({ time: time, open, high, low, close });
+        volRes.push({ time: time, value: vol, color: isUp ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)' });
         price = close;
         time += 60;
     }
     res[res.length-1].close = currentSpot;
     tvCandleSeries.setData(res);
     tvLineSeries.setData(res.map(d => ({ time: d.time, value: d.close })));
+    if(tvVolumeSeries) tvVolumeSeries.setData(volRes); // 🟢 Set Volume Data
 }
 
 function updateTVChartEOR_EOS(chainData, coaData) {
@@ -861,12 +872,11 @@ function showStrikeCharts(strike) {
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    // 🟢 FIX: Explicitly null instances after destroy to prevent memory leaks
     if(volChartInst) { volChartInst.destroy(); volChartInst = null; }
     if(oiChartInst) { oiChartInst.destroy(); oiChartInst = null; }
     if(oiChgChartInst) { oiChgChartInst.destroy(); oiChgChartInst = null; }
 
-    const labels = [], ceVolData = [], peVolData = [], ceOIData = [], peOIData = [], ceOIChgData = [], peOIChgData = [];
+    const labels = [], ceVolData = [], peVolData = [], ceOIData = [], peOIData = [], ceOIChgData = [], peOIChgData = [], ceLTPData = [], peLTPData = [];
 
     liveHistory.forEach(snap => {
         const row = snap.rows.find(r => r.strike === strike);
@@ -875,6 +885,7 @@ function showStrikeCharts(strike) {
             ceVolData.push(row.ceVol); peVolData.push(row.peVol);
             ceOIData.push(row.ceOI); peOIData.push(row.peOI);
             ceOIChgData.push(row.ceOIChg); peOIChgData.push(row.peOIChg);
+            ceLTPData.push(row.ceLTP || 0); peLTPData.push(row.peLTP || 0);
         }
     });
 
@@ -888,24 +899,43 @@ function showStrikeCharts(strike) {
         elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } 
     };
 
+    // 🟢 1. VOLUME CHART (BARS)
     const ctxVol = document.getElementById('volChart').getContext('2d');
     volChartInst = new Chart(ctxVol, {
-        type: 'line',
+        type: 'bar',
         data: { labels: labels, datasets: [
-            {label: 'CE Vol', data: ceVolData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2}, 
-            {label: 'PE Vol', data: peVolData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2}
+            {label: 'CE Vol', data: ceVolData, backgroundColor: ceColor, borderRadius: 4}, 
+            {label: 'PE Vol', data: peVolData, backgroundColor: peColor, borderRadius: 4}
         ]},
-        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'VOLUME TREND', color: '#f4f4f5' } } }
+        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'TRADED VOLUME', color: '#f4f4f5' } } }
     });
 
+    // 🟢 2. DUAL-AXIS OI & PRICE CHART (Glassmorphism)
     const ctxOI = document.getElementById('oiChart').getContext('2d');
+    let gradCE = ctxOI.createLinearGradient(0, 0, 0, 300);
+    gradCE.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+    gradCE.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+    
+    let gradPE = ctxOI.createLinearGradient(0, 0, 0, 300);
+    gradPE.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+    gradPE.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
     oiChartInst = new Chart(ctxOI, {
         type: 'line',
         data: { labels: labels, datasets: [
-            {label: 'CE OI', data: ceOIData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2}, 
-            {label: 'PE OI', data: peOIData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2}
+            {label: 'CE OI', data: ceOIData, borderColor: ceColor, backgroundColor: gradCE, fill: true, tension: 0.4, borderWidth: 2, yAxisID: 'y'}, 
+            {label: 'PE OI', data: peOIData, borderColor: peColor, backgroundColor: gradPE, fill: true, tension: 0.4, borderWidth: 2, yAxisID: 'y'},
+            {label: 'CE Price', data: ceLTPData, borderColor: '#f59e0b', borderDash: [5, 5], tension: 0.4, fill: false, borderWidth: 2, yAxisID: 'y1'},
+            {label: 'PE Price', data: peLTPData, borderColor: '#3b82f6', borderDash: [5, 5], tension: 0.4, fill: false, borderWidth: 2, yAxisID: 'y1'}
         ]},
-        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'OPEN INTEREST TREND', color: '#f4f4f5' } } }
+        options: { ...commonOptions, 
+            plugins: { ...commonOptions.plugins, title: { display: true, text: 'OPEN INTEREST VS PREMIUM PRICE', color: '#f4f4f5' } },
+            scales: { 
+                x: { grid: {display: false}, ticks: {maxTicksLimit: 8} },
+                y: { type: 'linear', display: true, position: 'left', grid: {color: '#27272a'}, title: {display: true, text: 'Open Interest'} },
+                y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'LTP (Price)'} }
+            } 
+        }
     });
 
     const ctxOIChg = document.getElementById('oiChgChart').getContext('2d');
