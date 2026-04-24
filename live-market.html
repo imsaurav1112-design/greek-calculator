@@ -628,6 +628,12 @@ async function fetchIntradayHistory(sym, expiry) {
 }
 
 window.loadExpiries = async function() {
+  // 🟢 THE FIX: Wait until the Firebase token is actually loaded
+  if (!window.currentFirebaseToken) {
+      setTimeout(window.loadExpiries, 500); 
+      return;
+  }
+
   const sym = document.getElementById('sel-symbol').value;
   const menu = document.getElementById('expiry-menu');
   const btn = document.getElementById('btn-expiry');
@@ -637,7 +643,7 @@ window.loadExpiries = async function() {
   document.getElementById('sel-expiry').value = '';
 
   try {
-    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
     
     const d = await r.json();
@@ -690,13 +696,15 @@ async function fetchUpstoxChain(quiet = false) {
   const expiry = document.getElementById('sel-expiry').value;
   if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
   
+  if (!window.currentFirebaseToken) return; // Fail gracefully if not logged in
+
   if (!quiet) setStatus('loading', 'Fetching...');
   if (!quiet) clearErr();
 
   try {
-    const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
-    
+
     if (!r.ok) throw new Error('Server error or Unauthorized');
     const data = await r.json();
     if (data.error) throw new Error(data.error);
