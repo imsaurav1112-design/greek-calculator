@@ -411,16 +411,12 @@ const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-orde
           
           const orderData = await orderResp.json();
 
-          // 🟢 ADDED SAFETY CHECK: Stops the code if the backend failed
+          // 🟢 ADDED SAFETY CHECK: Stops execution if the backend fails
           if (!orderResp.ok) {
-              console.error("Backend Error:", orderData.error);
-              alert("Server failed to create order. Did you add your Razorpay keys?");
-              return; 
+              console.error("Backend Error Details:", orderData);
+              alert("Server failed to create order: " + (orderData.error || "Unknown Error"));
+              return; // Stop here, do not open Razorpay
           }
-
-          const options = {
-              "key": orderData.key, 
-              // ... (rest of your options object remains exactly the same)
 
           const options = {
               "key": orderData.key, 
