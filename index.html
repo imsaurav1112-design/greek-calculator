@@ -372,9 +372,12 @@ onAuthStateChanged(auth, async (user) => {
     }
   });
 
-  window.handleGoogleLogin = function() {
+window.handleGoogleLogin = function() {
       signInWithPopup(auth, googleProvider).then((result) => {
-          window.location.href = 'live-market.html';
+          // Success! We removed the redirect.
+          // The page will stay exactly where it is, and your other 
+          // Firebase code will smoothly change the UI buttons to "Launch".
+          console.log("Login successful");
       }).catch((err) => {
           const errDiv = document.getElementById('global-error'); 
           errDiv.innerText = err.message.replace("Firebase:", "").trim();
