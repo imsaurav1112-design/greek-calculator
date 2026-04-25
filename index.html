@@ -306,8 +306,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, getIdToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
       authDomain: "insideoptionchain.firebaseapp.com",
@@ -372,13 +371,10 @@ onAuthStateChanged(auth, async (user) => {
     }
   });
 
-window.handleGoogleLogin = function() {
-      signInWithPopup(auth, googleProvider).then((result) => {
-          // Success! We removed the redirect.
-          // The page will stay exactly where it is, and your other 
-          // Firebase code will smoothly change the UI buttons to "Launch".
-          console.log("Login successful");
-      }).catch((err) => {
+import { signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"; // Make sure this is in your imports!
+
+  window.handleGoogleLogin = function() {
+      signInWithRedirect(auth, googleProvider).catch((err) => {
           const errDiv = document.getElementById('global-error'); 
           errDiv.innerText = err.message.replace("Firebase:", "").trim();
           errDiv.style.display = 'block';
