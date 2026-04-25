@@ -305,7 +305,6 @@ initBgAnimation();
 </script>
 
 <script type="module">
-  // 🟢 1. Switched back to signInWithPopup for reliable re-logins
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
@@ -379,13 +378,16 @@ initBgAnimation();
       }
   });
 
-  // 🟢 2. Using Popup. Ignore the yellow COOP warning in Chrome, it does not break functionality.
-  window.handleGoogleLogin = function() {
-      signInWithPopup(auth, googleProvider).catch((err) => {
+  // 🟢 SWITCHED TO POPUP FOR RELIABILITY
+  window.handleGoogleLogin = async function() {
+      try {
+          await signInWithPopup(auth, googleProvider);
+          // Once the popup closes successfully, the onAuthStateChanged listener above fires automatically!
+      } catch(err) {
           const errDiv = document.getElementById('global-error'); 
           errDiv.innerText = err.message.replace("Firebase:", "").trim();
           errDiv.style.display = 'block';
-      });
+      }
   };
 
   window.startCheckout = async function(planId) {
