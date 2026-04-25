@@ -1130,7 +1130,23 @@ let renderTable = function(rows, sym, data, quiet = false) {
 
 function abs(x) { return x < 0 ? -x : x; }
 
-window.initTerminal = function() {
+window.initTerminal = async function() {
+    // 🟢 1. SECURITY GATE: Check if user is Pro
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+        const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
+        const profile = await r.json();
+        
+        if (profile.tier !== "pro") {
+            alert("The Live Terminal requires a Pro subscription.");
+            window.location.href = "index.html#pricing";
+            return; // Stop execution, don't load the terminal
+        }
+    } catch(e) {
+        console.error("Failed to verify Pro status", e);
+        // Optional: You could kick them out here too if the server fails, 
+        // but usually it's better to let them try to load if the check fails.
+    }
     window.loadExpiries(); 
     
     setInterval(() => {
