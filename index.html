@@ -400,7 +400,7 @@ initBgAnimation();
       }
 
       try {
-          const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
+const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
               method: 'POST',
               headers: { 
                   'Authorization': `Bearer ${window.currentFirebaseToken}`,
@@ -408,7 +408,19 @@ initBgAnimation();
               },
               body: JSON.stringify({ plan: planId })
           });
+          
           const orderData = await orderResp.json();
+
+          // 🟢 ADDED SAFETY CHECK: Stops the code if the backend failed
+          if (!orderResp.ok) {
+              console.error("Backend Error:", orderData.error);
+              alert("Server failed to create order. Did you add your Razorpay keys?");
+              return; 
+          }
+
+          const options = {
+              "key": orderData.key, 
+              // ... (rest of your options object remains exactly the same)
 
           const options = {
               "key": orderData.key, 
