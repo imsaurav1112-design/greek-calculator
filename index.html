@@ -305,9 +305,9 @@ initBgAnimation();
 </script>
 
 <script type="module">
-  // 🟢 1. ALL IMPORTS MUST BE AT THE VERY TOP
+  // 🟢 1. Switched back to signInWithPopup for reliable re-logins
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -327,14 +327,12 @@ initBgAnimation();
       const heroBox = document.getElementById('hero-actions');
       
       if (user) {
-          // 🟢 2. FOOLPROOF TOKEN FETCH (Called directly on the user object)
           window.currentFirebaseToken = await user.getIdToken();
           
           authBox.innerHTML = `<span style="font-size: 13px; font-weight: 600; color: var(--accent); margin-right: 10px;">${user.email}</span>
                                <button class="btn" id="btn-logout">Log Out</button>`;
           document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
           
-          // 1. Check user tier from backend
           let userTier = "free";
           try {
               const r = await fetch('https://ioc-backend-kq9x.onrender.com/user-profile', {
@@ -344,7 +342,6 @@ initBgAnimation();
               userTier = data.tier || "free";
           } catch(e) { console.error("Failed to fetch profile", e); }
 
-          // 2. Render UI based on tier
           if (userTier === "pro") {
               heroBox.innerHTML = `
                   <button class="btn btn-primary launch-btn" onclick="window.location.href='live-market.html'">
@@ -372,7 +369,6 @@ initBgAnimation();
           window.currentFirebaseToken = null;
           authBox.innerHTML = ``; 
           
-          // Ensure default buttons show when logged out
           heroBox.innerHTML = `
             <button class="btn-google" onclick="window.handleGoogleLogin()">
                 <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
@@ -383,9 +379,9 @@ initBgAnimation();
       }
   });
 
-  // 🟢 3. NO POPUPS. USING REDIRECT FOR COOP COMPLIANCE.
+  // 🟢 2. Using Popup. Ignore the yellow COOP warning in Chrome, it does not break functionality.
   window.handleGoogleLogin = function() {
-      signInWithRedirect(auth, googleProvider).catch((err) => {
+      signInWithPopup(auth, googleProvider).catch((err) => {
           const errDiv = document.getElementById('global-error'); 
           errDiv.innerText = err.message.replace("Firebase:", "").trim();
           errDiv.style.display = 'block';
@@ -400,7 +396,7 @@ initBgAnimation();
       }
 
       try {
-const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
+          const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
               method: 'POST',
               headers: { 
                   'Authorization': `Bearer ${window.currentFirebaseToken}`,
@@ -408,14 +404,12 @@ const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-orde
               },
               body: JSON.stringify({ plan: planId })
           });
-          
           const orderData = await orderResp.json();
-
-          // 🟢 ADDED SAFETY CHECK: Stops execution if the backend fails
+          
           if (!orderResp.ok) {
               console.error("Backend Error Details:", orderData);
               alert("Server failed to create order: " + (orderData.error || "Unknown Error"));
-              return; // Stop here, do not open Razorpay
+              return; 
           }
 
           const options = {
