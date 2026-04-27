@@ -448,7 +448,7 @@ initBgAnimation();
             // 🟢 Populate the Panel with Name
             document.getElementById('prof-name').innerText = profile.name || "Trader";
             document.getElementById('prof-email').innerText = profile.email;
-            const referralUrl = window.location.origin + "/?ref=" + profile.referral_code;
+            const referralUrl = window.location.origin + window.location.pathname + "?ref=" + profile.referral_code;
             document.getElementById('prof-ref-code').value = referralUrl;
             document.getElementById('prof-wallet').innerText = `₹${profile.wallet_balance.toFixed(2)}`;
             
