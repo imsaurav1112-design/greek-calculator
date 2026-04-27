@@ -227,7 +227,15 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     
     <div class="divider"></div>
 
-    <input type="date" id="sel-date" title="Select Backtest Date">
+    <div class="custom-dropdown-wrapper" id="date-dropdown-wrapper">
+        <button id="btn-date" onclick="toggleMenu('date-menu', event)" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+        <div class="custom-menu" id="date-menu">
+            <div class="custom-option">Loading...</div>
+        </div>
+    </div>
+    <input type="hidden" id="sel-date" value="">
 
     <div class="divider"></div>
 
@@ -472,6 +480,7 @@ document.addEventListener('click', function(event) {
     }
     if (!document.getElementById('symbol-dropdown-wrapper').contains(event.target)) document.getElementById('symbol-menu').style.display = 'none';
     if (!document.getElementById('expiry-dropdown-wrapper').contains(event.target)) document.getElementById('expiry-menu').style.display = 'none';
+    if (!document.getElementById('date-dropdown-wrapper').contains(event.target)) document.getElementById('date-menu').style.display = 'none'; // 👈 ADD THIS LINE
 });
 
 // DROPDOWN LOGIC
@@ -494,6 +503,86 @@ function selectExpiry(val) {
     document.getElementById('sel-expiry').value = val;
     document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('expiry-menu').style.display = 'none';
+    
+    // 🟢 Cascade: When Expiry changes, fetch the valid Dates for it
+    window.loadAvailableDates(); 
+}
+
+function selectDate(val) {
+    document.getElementById('sel-date').value = val;
+    document.getElementById('btn-date').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('date-menu').style.display = 'none';
+}
+
+// 🟢 MODIFIED: Fetches Expiries, then automatically triggers Date fetch
+window.loadExpiries = async function() {
+  if (!window.currentFirebaseToken) { setTimeout(window.loadExpiries, 500); return; }
+
+  const sym = document.getElementById('sel-symbol').value;
+  const menu = document.getElementById('expiry-menu');
+  const btn = document.getElementById('btn-expiry');
+  
+  menu.innerHTML = '<div class="custom-option">Loading...</div>';
+  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+  document.getElementById('sel-expiry').value = '';
+
+  try {
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+    const r = await fetch(`${BACKTEST_API}/expiry-dates?symbol=${sym}`, { headers });
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+    
+    const d = await r.json();
+    if (d.error) { showErr(d.error); return; }
+
+    const limitedExpiries = d.expiries.slice(0, 3); 
+    menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
+    
+    if (limitedExpiries.length > 0) {
+        selectExpiry(limitedExpiries[0]); // This automatically calls loadAvailableDates()
+    }
+    clearErr();
+  } catch(e) { 
+      menu.innerHTML = `<div class="custom-option">Failed</div>`; btn.innerHTML = 'Auth Failed ▾'; showErr(e.message); 
+  }
+}
+
+// 🟢 NEW: Fetches only the dates that exist in MongoDB for this Expiry
+window.loadAvailableDates = async function() {
+  const sym = document.getElementById('sel-symbol').value;
+  const expiry = document.getElementById('sel-expiry').value;
+  const menu = document.getElementById('date-menu');
+  const btn = document.getElementById('btn-date');
+
+  menu.innerHTML = '<div class="custom-option">Loading...</div>';
+  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+  document.getElementById('sel-date').value = '';
+
+  if (!expiry) return;
+
+  try {
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+    const r = await fetch(`${BACKTEST_API}/api/available-dates?symbol=${sym}&expiry=${expiry}`, { headers });
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+    
+    const d = await r.json();
+    if (d.error) { showErr(d.error); return; }
+
+    if (!d.dates || d.dates.length === 0) {
+        menu.innerHTML = `<div class="custom-option">No DB Records</div>`; 
+        btn.innerHTML = 'No Data ▾';
+        return;
+    }
+
+    menu.innerHTML = d.dates.map((date) => `<div class="custom-option" onclick="selectDate('${date}')">${date}</div>`).join('');
+    
+    // Auto-select the most recent valid date
+    if (d.dates.length > 0) {
+        selectDate(d.dates[0]);
+    }
+    clearErr();
+  } catch(e) { 
+      menu.innerHTML = `<div class="custom-option">Failed</div>`; btn.innerHTML = 'Failed ▾'; showErr(e.message); 
+  }
 }
 
 
