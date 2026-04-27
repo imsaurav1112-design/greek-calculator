@@ -177,7 +177,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                     <span class="wallet-amount" id="prof-wallet">₹0.00</span>
                 </div>
                 <div class="ref-box">
-                    <span class="ref-label">Your Referral Code (Earn 20%)</span>
+                    <span class="ref-label">Your Referral Link (Earn 20%)</span>
                     <div class="ref-input-group">
                         <input type="text" id="prof-ref-code" class="ref-input" readonly value="Loading...">
                         <button class="ref-copy-btn" onclick="copyRefCode()" id="copy-btn">Copy</button>
@@ -448,7 +448,8 @@ initBgAnimation();
             // 🟢 Populate the Panel with Name
             document.getElementById('prof-name').innerText = profile.name || "Trader";
             document.getElementById('prof-email').innerText = profile.email;
-            document.getElementById('prof-ref-code').value = profile.referral_code;
+            const referralUrl = window.location.origin + "/?ref=" + profile.referral_code;
+            document.getElementById('prof-ref-code').value = referralUrl;
             document.getElementById('prof-wallet').innerText = `₹${profile.wallet_balance.toFixed(2)}`;
             
             const badge = document.getElementById('prof-tier-badge');
