@@ -163,9 +163,11 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         
         <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
         
-        <div id="profile-panel" class="profile-panel">
+       <div id="profile-panel" class="profile-panel">
             <div class="profile-header">
-                <div class="profile-email" id="prof-email">user@example.com</div>
+                <div id="prof-name" style="font-size: 16px; font-weight: 800; color: var(--text);">User Name</div>
+                
+                <div class="profile-email" id="prof-email" style="margin-bottom: 10px;">user@example.com</div>
                 <div class="profile-tier" id="prof-tier-badge">FREE PLAN</div>
                 <div id="prof-expiry" style="font-size: 10px; color: var(--muted); margin-top: 4px; display: none;">Expires: --</div>
             </div>
@@ -434,18 +436,17 @@ initBgAnimation();
         
         window.currentFirebaseToken = await user.getIdToken();
         
-        try {
-            // Check for a referral code in the URL (e.g., website.com/?ref=IOC-1234)
+    try {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || "";
             
-            // Fetch Full Profile Data from Backend
             const r = await fetch(`https://ioc-backend-kq9x.onrender.com/user-profile?ref=${refCode}`, { 
                 headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
             });
             const profile = await r.json();
             
-            // Populate the Panel
+            // 🟢 Populate the Panel with Name
+            document.getElementById('prof-name').innerText = profile.name || "Trader";
             document.getElementById('prof-email').innerText = profile.email;
             document.getElementById('prof-ref-code').value = profile.referral_code;
             document.getElementById('prof-wallet').innerText = `₹${profile.wallet_balance.toFixed(2)}`;
