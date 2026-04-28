@@ -480,7 +480,7 @@ document.addEventListener('click', function(event) {
     }
     if (!document.getElementById('symbol-dropdown-wrapper').contains(event.target)) document.getElementById('symbol-menu').style.display = 'none';
     if (!document.getElementById('expiry-dropdown-wrapper').contains(event.target)) document.getElementById('expiry-menu').style.display = 'none';
-    if (!document.getElementById('date-dropdown-wrapper').contains(event.target)) document.getElementById('date-menu').style.display = 'none'; // 👈 ADD THIS LINE
+    if (!document.getElementById('date-dropdown-wrapper').contains(event.target)) document.getElementById('date-menu').style.display = 'none'; 
 });
 
 // DROPDOWN LOGIC
@@ -504,7 +504,6 @@ function selectExpiry(val) {
     document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('expiry-menu').style.display = 'none';
     
-    // 🟢 Cascade: When Expiry changes, fetch the valid Dates for it
     window.loadAvailableDates(); 
 }
 
@@ -514,7 +513,6 @@ function selectDate(val) {
     document.getElementById('date-menu').style.display = 'none';
 }
 
-// 🟢 MODIFIED: Fetches Expiries, then automatically triggers Date fetch
 window.loadExpiries = async function() {
   if (!window.currentFirebaseToken) { setTimeout(window.loadExpiries, 500); return; }
 
@@ -534,11 +532,11 @@ window.loadExpiries = async function() {
     const d = await r.json();
     if (d.error) { showErr(d.error); return; }
 
-    const limitedExpiries = d.expiries.slice(0, 3); 
+    const limitedExpiries = d.expiries.slice(0, 5); 
     menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
     
     if (limitedExpiries.length > 0) {
-        selectExpiry(limitedExpiries[0]); // This automatically calls loadAvailableDates()
+        selectExpiry(limitedExpiries[0]);
     }
     clearErr();
   } catch(e) { 
@@ -546,7 +544,6 @@ window.loadExpiries = async function() {
   }
 }
 
-// 🟢 NEW: Fetches only the dates that exist in MongoDB for this Expiry
 window.loadAvailableDates = async function() {
   const sym = document.getElementById('sel-symbol').value;
   const expiry = document.getElementById('sel-expiry').value;
@@ -575,7 +572,6 @@ window.loadAvailableDates = async function() {
 
     menu.innerHTML = d.dates.map((date) => `<div class="custom-option" onclick="selectDate('${date}')">${date}</div>`).join('');
     
-    // Auto-select the most recent valid date
     if (d.dates.length > 0) {
         selectDate(d.dates[0]);
     }
@@ -584,7 +580,6 @@ window.loadAvailableDates = async function() {
       menu.innerHTML = `<div class="custom-option">Failed</div>`; btn.innerHTML = 'Failed ▾'; showErr(e.message); 
   }
 }
-
 
 // CLOCK
 function updateClock() {
@@ -644,56 +639,6 @@ function showErr(msg) { const e = document.getElementById('error-bar'); e.textCo
 function clearErr() { document.getElementById('error-bar').style.display = 'none'; }
 
 
-// 🟢 MONGODB CLOUD DATA FETCHING
-window.loadExpiries = async function() {
-  if (!window.currentFirebaseToken) {
-      setTimeout(window.loadExpiries, 500); 
-      return;
-  }
-
-  const sym = document.getElementById('sel-symbol').value;
-  const menu = document.getElementById('expiry-menu');
-  const btn = document.getElementById('btn-expiry');
-  
-  menu.innerHTML = '<div class="custom-option">Loading...</div>';
-  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
-  document.getElementById('sel-expiry').value = '';
-
-  try {
-    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-    const r = await fetch(`${BACKTEST_API}/expiry-dates?symbol=${sym}`, { headers });
-    if (!r.ok) {
-        const errData = await r.json().catch(() => ({}));
-        throw new Error(errData.details || errData.error || `HTTP Error ${r.status}`);
-    }
-    
-    const d = await r.json();
-    if (d.error) { 
-        menu.innerHTML = `<div class="custom-option">Error</div>`; 
-        btn.innerHTML = 'Error ▾';
-        showErr(d.details || d.error); return; 
-    }
-
-    if (!d.expiries || d.expiries.length === 0) {
-        menu.innerHTML = `<div class="custom-option">No Data</div>`; 
-        btn.innerHTML = 'Upstox Login Needed ▾';
-        return;
-    }
-
-    const limitedExpiries = d.expiries.slice(0, 5); // Allow looking a bit further ahead for backtesting
-    menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
-    
-    if (limitedExpiries.length > 0) {
-        selectExpiry(limitedExpiries[0]);
-    }
-    clearErr();
-  } catch(e) { 
-      menu.innerHTML = `<div class="custom-option">Failed</div>`; 
-      btn.innerHTML = 'Auth Failed ▾';
-      showErr("Server says: " + e.message); 
-  }
-}
-
 async function fetchBacktestData() {
     const sym = document.getElementById('sel-symbol').value;
     const expiry = document.getElementById('sel-expiry').value;
@@ -709,12 +654,13 @@ async function fetchBacktestData() {
     setStatus('loading', 'Fetching from MongoDB...');
     clearErr();
     
-    // Stop playback if running
     if (backtestPlayInterval) toggleBacktestPlay();
 
     try {
         const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-        // We reuse the new API endpoint built for the charts
+        
+        // Ensure backend sends the COA data too. Assuming it does, or calculating it client-side.
+        // For accurate PRZ and S2/R2, ideally backend sends it. 
         const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
         
         if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
@@ -729,18 +675,21 @@ async function fetchBacktestData() {
             return;
         }
 
-        // Reformat the highly compressed arrays back into objects for the table
+        // We will assume the backend does NOT run calculate_coa on historical arrays to save compute.
+        // We will simulate the COA if it's missing, but if you updated the backend to return 'coa', use that.
+        // Assuming your backend DOES NOT yet attach 'coa' to intraday-history items. We will handle missing coa gracefully below.
+        
         backtestSnapshots = data.map(snap => {
             return {
                 timestamp: snap.time,
                 symbol: sym,
-                // Attempt to grab spot from ATM if available, otherwise just grab any LTP
                 spot: snap.rows.length > 0 ? (snap.rows.find(r => r.ceLTP > 100 && r.peLTP > 100)?.strike || snap.rows[0].strike) : 0, 
                 chain: snap.rows.map(r => ({
                     strike: r.strike,
                     ce: { ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, iv: 0 },
                     pe: { ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, iv: 0 }
-                }))
+                })),
+                coa: snap.coa // Optional: If backend sends it
             };
         });
 
@@ -766,9 +715,22 @@ function renderBacktestSnapshot() {
     try { document.getElementById('play-time-display').innerText = snap.timestamp.split(' ')[1] || snap.timestamp; } catch(e){}
     setStatus('backtest', `Playing (${backtestCurrentIndex + 1}/${backtestSnapshots.length})`);
     
-    renderTable(globalRows, globalSym, snap, true);
+    // Simulate calculate_coa if the backend didn't attach it to the snapshot
+    let coaData = snap.coa;
+    if(!coaData) {
+         // Fallback basic COA calculation so the UI doesn't crash if the backend history route doesn't generate the complex COA object yet.
+         coaData = {
+             scenario_id: "?",
+             scenario_desc: "Data playback in progress.",
+             support: { strike: 0, state: "N/A", target_strike: 0 },
+             resistance: { strike: 0, state: "N/A", target_strike: 0 },
+             s2: 0, r2: 0, logs: []
+         };
+    }
     
-    // Sync chart instantly if open
+    renderTable(globalRows, globalSym, snap, true);
+    updateMarketIntelligence(coaData);
+    
     if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
         syncBacktestChartData();
     }
@@ -800,13 +762,64 @@ function toggleBacktestPlay() {
     }
 }
 
+// 🟢 MARKET INTELLIGENCE LOGIC (S2/R2 + Readable Logs)
+function updateMarketIntelligence(coa) {
+    if (!coa) return;
+    
+    // Safety check in case the backend didn't run the full COA logic on the history array
+    const scId = coa.scenario_id || "?";
+    document.getElementById('coa-scenario').innerText = `Scenario #${scId}`;
+    document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing historical data...";
+    
+    function formatState(side) {
+        if(!side) return '--';
+        let stateStr = side.state || 'N/A';
+        if (stateStr === 'Strong') return `Strong @ ${side.strike}`;
+        return `${side.strike} ${stateStr} @ ${side.target_strike}`;
+    }
+    
+    document.getElementById('coa-sup-state').innerText = formatState(coa.support);
+    document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
+    
+    // Safely format the new Probable Intraday Range (S2 to R2)
+    const s2_val = coa.s2 !== undefined ? coa.s2 : 0;
+    const r2_val = coa.r2 !== undefined ? coa.r2 : 0;
+    
+    document.getElementById('coa-range').innerText = `${s2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${r2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
+    
+    const logBody = document.getElementById('coa-logs-body');
+    if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
+        logBody.innerHTML = coa.logs.map(log => {
+            // The logs are now strings (sentences), not objects with .eor/.eos
+            if (typeof log === 'string') {
+                const parts = log.split(' - ');
+                if (parts.length >= 2) {
+                    const time = parts[0];
+                    const msg = parts.slice(1).join(' - ');
+                    
+                    let msgColor = 'var(--text)';
+                    if (msg.includes('Bullish') || msg.includes('Top')) msgColor = 'var(--green)';
+                    if (msg.includes('Bearish') || msg.includes('Bottom')) msgColor = 'var(--red)';
+                    if (msg.includes('Active Challenger')) msgColor = 'var(--gold)';
+                    
+                    return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
+                }
+            }
+            return ''; 
+        }).join('');
+    } else {
+        logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
+    }
+}
+
+
 // 🟢 CHART LOGIC
 function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
     sidebar.classList.toggle('open');
     if (sidebar.classList.contains('open')) {
         if (!tvChartInst) initTVChart();
-        else syncBacktestChartData(); // Instantly sync if opened later
+        else syncBacktestChartData(); 
     }
 }
 
@@ -864,7 +877,6 @@ function toggleTVType() {
 
 function refreshTVChart() { if(tvChartInst) tvChartInst.timeScale().fitContent(); }
 
-// 🟢 BULLETPROOF DATA SYNC
 function syncBacktestChartData() {
     if (!tvLineSeries || backtestSnapshots.length === 0) return;
     
@@ -876,7 +888,6 @@ function syncBacktestChartData() {
         let snap = backtestSnapshots[i];
         let spot = parseFloat(snap.spot);
         if (isNaN(spot) || spot === 0) {
-             // In historical view without exact spot, we calculate a pseudo-spot from ATM options
              if (snap.chain && snap.chain.length > 0) {
                  const bestRow = snap.chain.find(r => r.ce.ltp > 50 && r.pe.ltp > 50) || snap.chain[0];
                  spot = bestRow.strike;
@@ -885,7 +896,6 @@ function syncBacktestChartData() {
              }
         }
 
-        // SAFE TIMESTAMP PARSER
         let tsStr = snap.timestamp || "";
         let t = Math.floor(new Date(tsStr.replace(' ', 'T')).getTime() / 1000);
         
@@ -1004,7 +1014,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
     const r = displayRows[i];
     const isAtm = r.strike === atm, ceBg = r.strike < spot ? 'itm-ce' : '', peBg = r.strike > spot ? 'itm-pe' : '';
     
-    // In historical view, we might not have PRZ calculated natively, fallback to strike +/- interval
     const eorValue = r.ce_prz > 0 ? r.ce_prz : (r.strike + interval); 
     const eosValue = r.pe_prz > 0 ? r.pe_prz : (r.strike - interval);
     
@@ -1050,7 +1059,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
 
   document.getElementById('oc-body').innerHTML = html;
   
-  // Calculate Totals for Footer
   let tCeOI = 0, tPeOI = 0;
   displayRows.forEach(r => { tCeOI += r.ce.oi; tPeOI += r.pe.oi; });
   const f_pcr = tCeOI > 0 ? (tPeOI / tCeOI).toFixed(2) : 0;
