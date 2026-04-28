@@ -353,7 +353,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
             </div>
             <div style="flex: 1; overflow-y: auto;">
                 <table class="history-table">
-                    <thead><tr><th>TIME</th><th>EOR</th><th>EOS</th></tr></thead>
+                    <thead><tr><th style="width: 70px;">TIME</th><th colspan="2">SCENARIO EVENT</th></tr></thead>
                     <tbody id="coa-logs-body">
                         <tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">No logs yet.</td></tr>
                     </tbody>
@@ -962,7 +962,10 @@ function updateMarketIntelligence(coa) {
     
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
-    document.getElementById('coa-range').innerText = `${coa.eos.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${coa.eor.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
+    // Safely format the new Probable Intraday Range (S2 to R2)
+    const s2_val = coa.s2 !== undefined ? coa.s2 : 0;
+    const r2_val = coa.r2 !== undefined ? coa.r2 : 0;
+    document.getElementById('coa-range').innerText = `${s2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${r2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
     
     const logBody = document.getElementById('coa-logs-body');
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
@@ -972,13 +975,23 @@ function updateMarketIntelligence(coa) {
         }
         lastLogSignature = currentSig;
 
-        logBody.innerHTML = coa.logs.map(log => {
-            if (typeof log === 'object' && log !== null && log.eor && log.eos && log.time) {
-                const displayEor = log.eor.toString();
-                const displayEos = log.eos.toString();
-                const eorColor = displayEor.includes('STT') || displayEor.includes('STB') ? 'var(--gold)' : 'var(--red)';
-                const eosColor = displayEos.includes('STT') || displayEos.includes('STB') ? 'var(--gold)' : 'var(--green)';
-                return `<tr><td style="color:var(--text);">${log.time}</td><td style="color: ${eorColor}; font-weight: bold;">${displayEor}</td><td style="color: ${eosColor}; font-weight: bold;">${displayEos}</td></tr>`;
+logBody.innerHTML = coa.logs.map(log => {
+            // The logs are now strings (sentences), not objects with .eor/.eos
+            if (typeof log === 'string') {
+                // Split the string into "TIME - MESSAGE"
+                const parts = log.split(' - ');
+                if (parts.length >= 2) {
+                    const time = parts[0];
+                    const msg = parts.slice(1).join(' - ');
+                    
+                    // Style the message based on its content
+                    let msgColor = 'var(--text)';
+                    if (msg.includes('Bullish') || msg.includes('Top')) msgColor = 'var(--green)';
+                    if (msg.includes('Bearish') || msg.includes('Bottom')) msgColor = 'var(--red)';
+                    if (msg.includes('Active Challenger')) msgColor = 'var(--gold)';
+                    
+                    return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
+                }
             }
             return ''; 
         }).join('');
