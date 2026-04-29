@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root {
   --bg: #09090b;         
@@ -490,15 +490,14 @@ th, td {
         <button class="modal-close" onclick="closeCharts()">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
-        <div class="charts-container">
-            <div class="chart-box">
-                <canvas id="volChart"></canvas>
+        <div class="charts-container" style="flex-direction: column; height: auto;">
+            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">TRADED VOLUME (CE vs PE)</div>
+                <div id="tv-modal-vol" style="flex: 1; width: 100%;"></div>
             </div>
-            <div class="chart-box">
-                <canvas id="oiChart"></canvas>
-            </div>
-            <div class="chart-box">
-                <canvas id="oiChgChart"></canvas>
+            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">OPEN INTEREST BUILDUP</div>
+                <div id="tv-modal-oi" style="flex: 1; width: 100%;"></div>
             </div>
         </div>
     </div>
@@ -513,9 +512,8 @@ let globalData = {};
 let isFlipped = false; 
 let strikeLimit = 20; 
 let liveHistory = []; 
-let volChartInst = null;
-let oiChartInst = null;
-let oiChgChartInst = null;
+let tvModalVolChart = null;
+let tvModalOiChart = null;
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
@@ -524,9 +522,6 @@ let tvIsCandle = false;
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
 let tvResizeObserver = null; 
-
-Chart.defaults.color = '#a1a1aa';
-Chart.defaults.font.family = "'Ubuntu Mono', monospace";
 
 function toggleSettings(event) {
     if(event) event.stopPropagation();
@@ -966,107 +961,94 @@ function updateTVChartEOR_EOS(chainData, coaData) {
     drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'EOS-1');
 }
 
+// 🟢 Helper to convert "09:15 AM" to TradingView UNIX timestamp
+function parseTimeToUnix(timeStr) {
+    const [time, period] = timeStr.split(' ');
+    let [hrs, mins] = time.split(':');
+    hrs = parseInt(hrs);
+    if (period === 'PM' && hrs !== 12) hrs += 12;
+    if (period === 'AM' && hrs === 12) hrs = 0;
+    
+    const baseDate = new Date().toISOString().split('T')[0];
+    const d = new Date(`${baseDate}T${hrs.toString().padStart(2, '0')}:${mins}:00+05:30`);
+    return Math.floor(d.getTime() / 1000); 
+}
+
+// 🟢 Helper to create an Institutional TradingView Chart
+function createInstChart(containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; // Clear old chart
+
+    const chart = LightweightCharts.createChart(container, {
+        layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
+        grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
+        timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
+        rightPriceScale: { borderColor: '#27272a', scaleMargins: { top: 0.1, bottom: 0.1 } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+    });
+
+    // Make it mobile responsive
+    new ResizeObserver(entries => {
+        if (entries.length === 0 || entries[0].target !== container) return;
+        chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height });
+    }).observe(container);
+
+    return chart;
+}
+
 function showStrikeCharts(strike) {
+    if (!liveHistory || liveHistory.length === 0) {
+        alert("No historical data available yet. Please wait for the next fetch.");
+        return;
+    }
+
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    if(volChartInst) { volChartInst.destroy(); volChartInst = null; }
-    if(oiChartInst) { oiChartInst.destroy(); oiChartInst = null; }
-    if(oiChgChartInst) { oiChgChartInst.destroy(); oiChgChartInst = null; }
-
-    const labels = [], ceVolData = [], peVolData = [], ceOIData = [], peOIData = [], ceOIChgData = [], peOIChgData = [], ceLTPData = [], peLTPData = [];
+    const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+    const seenTimes = new Set();
 
     liveHistory.forEach(snap => {
+        const timestamp = parseTimeToUnix(snap.time);
+        if (seenTimes.has(timestamp)) return; // Prevent duplicate time crashes
+        seenTimes.add(timestamp);
+
         const row = snap.rows.find(r => r.strike === strike);
         if (row) {
-            labels.push(snap.time);
-            ceVolData.push(row.ceVol); peVolData.push(row.peVol);
-            ceOIData.push(row.ceOI); peOIData.push(row.peOI);
-            ceOIChgData.push(row.ceOIChg); peOIChgData.push(row.peOIChg);
-            ceLTPData.push(row.ceLTP || 0); peLTPData.push(row.peLTP || 0);
+            ceVolData.push({ time: timestamp, value: row.ceVol });
+            peVolData.push({ time: timestamp, value: row.peVol });
+            ceOiData.push({ time: timestamp, value: row.ceOI });
+            peOiData.push({ time: timestamp, value: row.peOI });
         }
     });
 
-    const ceColor = '#ef4444'; 
-    const peColor = '#10b981'; 
-    const commonOptions = {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false }, 
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {family: "'Poppins', sans-serif"} } } },
-        scales: { y: { beginAtZero: false, grid: {color: '#27272a'} }, x: { grid: {display: false}, ticks: {maxTicksLimit: 8} } },
-        elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } 
-    };
+    // Sort strictly by time (Mandatory for TV)
+    ceVolData.sort((a, b) => a.time - b.time);
+    peVolData.sort((a, b) => a.time - b.time);
+    ceOiData.sort((a, b) => a.time - b.time);
+    peOiData.sort((a, b) => a.time - b.time);
 
-// 🟢 1. VOLUME CHART (LINES)
-    const ctxVol = document.getElementById('volChart').getContext('2d');
-    volChartInst = new Chart(ctxVol, {
-        type: 'line', // Changed from 'bar' to 'line'
-        data: { labels: labels, datasets: [
-            {
-                label: 'CE Vol', 
-                data: ceVolData, 
-                borderColor: ceColor, 
-                backgroundColor: 'rgba(239, 68, 68, 0.1)', // Light red fill
-                fill: true, 
-                tension: 0.3, // Adds a slight curve to the line
-                borderWidth: 2
-            }, 
-            {
-                label: 'PE Vol', 
-                data: peVolData, 
-                borderColor: peColor, 
-                backgroundColor: 'rgba(16, 185, 129, 0.1)', // Light green fill
-                fill: true, 
-                tension: 0.3, 
-                borderWidth: 2
-            }
-        ]},
-        options: { 
-            ...commonOptions, 
-            plugins: { 
-                ...commonOptions.plugins, 
-                title: { display: true, text: 'TRADED VOLUME', color: '#f4f4f5' } 
-            } 
-        }
-    });
-
-    // 🟢 2. DUAL-AXIS OI & PRICE CHART (Glassmorphism)
-    const ctxOI = document.getElementById('oiChart').getContext('2d');
-    let gradCE = ctxOI.createLinearGradient(0, 0, 0, 300);
-    gradCE.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
-    gradCE.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+    // 1. Render Volume Chart
+    if (tvModalVolChart) tvModalVolChart.remove();
+    tvModalVolChart = createInstChart('tv-modal-vol');
     
-    let gradPE = ctxOI.createLinearGradient(0, 0, 0, 300);
-    gradPE.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-    gradPE.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+    const ceVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
+    const peVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    
+    ceVolSeries.setData(ceVolData);
+    peVolSeries.setData(peVolData);
+    tvModalVolChart.timeScale().fitContent();
 
-    oiChartInst = new Chart(ctxOI, {
-        type: 'line',
-        data: { labels: labels, datasets: [
-            {label: 'CE OI', data: ceOIData, borderColor: ceColor, backgroundColor: gradCE, fill: true, tension: 0.4, borderWidth: 2, yAxisID: 'y'}, 
-            {label: 'PE OI', data: peOIData, borderColor: peColor, backgroundColor: gradPE, fill: true, tension: 0.4, borderWidth: 2, yAxisID: 'y'},
-            {label: 'CE Price', data: ceLTPData, borderColor: '#f59e0b', borderDash: [5, 5], tension: 0.4, fill: false, borderWidth: 2, yAxisID: 'y1'},
-            {label: 'PE Price', data: peLTPData, borderColor: '#3b82f6', borderDash: [5, 5], tension: 0.4, fill: false, borderWidth: 2, yAxisID: 'y1'}
-        ]},
-        options: { ...commonOptions, 
-            plugins: { ...commonOptions.plugins, title: { display: true, text: 'OPEN INTEREST VS PREMIUM PRICE', color: '#f4f4f5' } },
-            scales: { 
-                x: { grid: {display: false}, ticks: {maxTicksLimit: 8} },
-                y: { type: 'linear', display: true, position: 'left', grid: {color: '#27272a'}, title: {display: true, text: 'Open Interest'} },
-                y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'LTP (Price)'} }
-            } 
-        }
-    });
+    // 2. Render OI Chart
+    if (tvModalOiChart) tvModalOiChart.remove();
+    tvModalOiChart = createInstChart('tv-modal-oi');
 
-    const ctxOIChg = document.getElementById('oiChgChart').getContext('2d');
-    oiChgChartInst = new Chart(ctxOIChg, {
-        type: 'line',
-        data: { labels: labels, datasets: [
-            {label: 'CE OI Chg', data: ceOIChgData, borderColor: ceColor, backgroundColor: ceColor, tension: 0.3, borderWidth: 2, fill: {target: 'origin', above: 'rgba(239, 68, 68, 0.1)', below: 'rgba(239, 68, 68, 0.1)'}}, 
-            {label: 'PE OI Chg', data: peOIChgData, borderColor: peColor, backgroundColor: peColor, tension: 0.3, borderWidth: 2, fill: {target: 'origin', above: 'rgba(16, 185, 129, 0.1)', below: 'rgba(16, 185, 129, 0.1)'}}
-        ]},
-        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'INTRADAY OI CHANGE', color: '#f4f4f5' } } }
-    });
+    const ceOiSeries = tvModalOiChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
+    const peOiSeries = tvModalOiChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+
+    ceOiSeries.setData(ceOiData);
+    peOiSeries.setData(peOiData);
+    tvModalOiChart.timeScale().fitContent();
 }
 
 function closeCharts() { document.getElementById('chart-modal').style.display = 'none'; }
