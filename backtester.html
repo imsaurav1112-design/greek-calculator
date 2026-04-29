@@ -7,7 +7,6 @@
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 /* 1. Theme Variables */
 :root {
@@ -70,7 +69,7 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); curso
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
-/* Custom Dropdown Styling matches Live Terminal */
+/* Custom Dropdown Styling */
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
     display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
@@ -91,7 +90,7 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
-/* Settings Panel logic matches Live Terminal */
+/* Settings Panel logic */
 .settings-panel {
     display: none; position: absolute; left: 60px; top: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 190px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; z-index: 1000; overflow: hidden;
 }
@@ -103,22 +102,21 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { 
-    flex: 1; /* Fills the exact space between header and footer */
+    flex: 1; 
     display: flex; 
     overflow: hidden; 
     position: relative; 
     background: var(--bg); 
-    min-height: 0; /* Magic fix: Allows children to scroll */
+    min-height: 0; 
 }
 
 .table-wrapper { 
-    flex: 1; /* Takes up all available space inside workspace */
+    flex: 1; 
     overflow: auto; 
     position: relative; 
     -webkit-overflow-scrolling: touch; 
-    min-height: 0; /* Magic fix: Stops the table from overflowing the screen */
+    min-height: 0; 
 }
-/* 🟢 PURE NATIVE TABLE CSS */
 table { width: 100%; border-collapse: collapse; font-family: "Ubuntu Mono", monospace; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
@@ -195,106 +193,46 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .play-btn.active { color: var(--accent); }
 .play-time-display { font-family: "Ubuntu Mono", monospace; font-size: 13px; font-weight: 700; color: var(--accent); min-width: 100px; text-align: center;}
 
+/* Modal Overlay Styling */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+.modal-content { 
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
+    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+}
+.modal-content::-webkit-scrollbar { width: 6px; }
+.modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.modal-close:hover { color: var(--red); transform: scale(1.1); }
+.modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
+.modal-header span { color: var(--accent); }
+.charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
+.chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
+
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-.workspace { 
-        flex-direction: column; 
-    }
-  .table-wrapper {
-        order: 1; /* Keeps the table at the top of the workspace */
-    }
-    
-    /* 1. Header: Smooth horizontal scroll, smaller buttons */
+.workspace { flex-direction: column; }
+  .table-wrapper { order: 1; }
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
     header::-webkit-scrollbar { display: none; }
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
-    
-/* Bottom App Navigation Bar */
-    .left-nav { 
-        order: 2; /* Forces the nav bar to sit UNDER the table */
-        width: 100%; 
-        height: 55px; 
-        flex-direction: row; 
-        border-right: none; 
-        border-top: 1px solid var(--border); 
-        justify-content: space-evenly; 
-        align-items: center;
-        padding: 0; 
-        background: rgba(20, 20, 21, 0.95);
-        backdrop-filter: blur(10px);
-        z-index: 90;
-        flex-shrink: 0; /* Stops the table from crushing the nav bar */
-    }
-    
-.settings-panel { 
-        position: fixed; 
-        left: 10px; 
-        top: auto; 
-        /* Drops it slightly closer to the bottom nav for easier thumb reach */
-        bottom: 70px; 
-        width: 220px; 
-        
-        /* 🟢 FIX: Forces the menu to stop growing and start scrolling */
-        max-height: 60vh; /* Limits height to 60% of the screen */
-        overflow-y: auto; /* Enables vertical scrolling inside the menu */
-        -webkit-overflow-scrolling: touch; /* Buttery smooth iOS scrolling */
-        z-index: 105; /* Ensures it stays above the chart sidebars */
-    }
-    
-    /* Optional: Hide the ugly scrollbar on modern phones for a cleaner look */
-    .settings-panel::-webkit-scrollbar {
-        width: 4px;
-    }
-    .settings-panel::-webkit-scrollbar-thumb {
-        background-color: var(--border);
-        border-radius: 4px;
-    }  
-    /* 4. Table Strict Constraints */
+    .left-nav { order: 2; width: 100%; height: 55px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); justify-content: space-evenly; align-items: center; padding: 0; background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); z-index: 90; flex-shrink: 0; }
+.settings-panel { position: fixed; left: 10px; top: auto; bottom: 70px; width: 220px; max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 105; }
+    .settings-panel::-webkit-scrollbar { width: 4px; }
+    .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }  
     table { min-width: 850px; } 
-th, td {
-    font-size: 11px;
-    /* 🟢 1. Ultra-tight padding: 4px top/bottom, 4px left/right */
-    padding: 4px 4px; 
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace; 
-    text-align: center; 
-    /* 🟢 2. REMOVED min-width: 14ch so smaller columns can shrink tightly */
-}
-    
-/* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
-    .chart-sidebar, .right-sidebar { 
-        position: fixed !important; /* 🟢 FIX: Removes them from the vertical column completely */
-        top: 52px; /* Snaps right under header */
-        left: 0; 
-        width: 100% !important; 
-        height: calc(100dvh - 52px - 55px) !important; /* Fits perfectly between header and nav */
-        z-index: 100; 
-        background: var(--bg); 
-        border: none;
-    }
-
-    /* 🟢 Smooth slide-in animation for mobile charts */
+th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; }
+    .chart-sidebar, .right-sidebar { position: fixed !important; top: 52px; left: 0; width: 100% !important; height: calc(100dvh - 52px - 55px) !important; z-index: 100; background: var(--bg); border: none; }
     .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .chart-sidebar.open { transform: translateX(0); }
-    
     .chart-sidebar .resizer { display: none; } 
     .charts-container { flex-direction: column; height: auto; gap: 10px; }
     .chart-box { height: 250px; }
     .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
-    
-    /* 6. Ultra-Compact Footer */
-    footer { 
-        height: auto; 
-        padding: 8px 10px; 
-        flex-direction: column; 
-        gap: 6px; 
-        font-size: 10px;
-        z-index: 95;
-    }
+    footer { height: auto; padding: 8px 10px; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
     .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
     .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: none; } /* Hide dividers to save space */
+    .footer-left .divider { display: none; } 
     .footer-right { width: 100%; justify-content: space-between; }
 }
 </style>
@@ -422,14 +360,14 @@ th, td {
         <div class="chart-toolbar">
             <select class="chart-btn" title="Timeframe">
                 <option value="1">1m</option>
-                <option value="3">3m</option>
+                <option value="3" selected>3m</option>
                 <option value="5">5m</option>
                 <option value="15">15m</option>
             </select>
             <div style="width: 1px; height: 20px; background: #2a2e39; margin: 0 4px;"></div>
             
             <button class="chart-btn" id="btn-tv-type" onclick="toggleTVType()" title="Candle / Line">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21V10M15 21V4M9 10H5v6h4M15 4h-4v10h4"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>
             </button>
             <button class="chart-btn" onclick="refreshTVChart()" title="Reset Scale">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
@@ -520,6 +458,36 @@ th, td {
     <input type="number" id="inp-spot" style="display:none;">
 </footer>
 
+<div class="modal-overlay" id="chart-modal" onclick="closeCharts(event)">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeCharts(event)">✖</button>
+        <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
+        
+        <div class="charts-container" style="flex-direction: column; height: auto;">
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    TRADED VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+                </div>
+                <div id="tv-modal-vol" style="flex: 1; width: 100%;"></div>
+            </div>
+            
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 190px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    OI (<span style="color:#ef4444">CE</span>/<span style="color:#10b981">PE</span>) VS PRICE (<span style="color:#f59e0b">CE</span>/<span style="color:#3b82f6">PE</span>)
+                </div>
+                <div id="tv-modal-oi" style="flex: 1; width: 100%;"></div>
+            </div>
+
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    INTRADAY OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+                </div>
+                <div id="tv-modal-oi-chg" style="flex: 1; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // 🟢 CLOUD URL
 const BACKTEST_API = 'https://ioc-backend-kq9x.onrender.com';
@@ -536,8 +504,11 @@ let backtestCurrentIndex = 0;
 let backtestPlayInterval = null;
 
 // 🟢 CHART VARIABLES
-let tvChartInst, tvCandleSeries, tvLineSeries, tvVolumeSeries;
-let tvIsCandle = false; 
+let tvModalVolChart = null;
+let tvModalOiChart = null;
+let tvModalOiChgChart = null;
+let tvChartInst, tvCandleSeries, tvLineSeries;
+let tvIsCandle = true; // Default to candles
 let activePriceLines = []; 
 
 // 🟢 SETTINGS MENU LOGIC
@@ -734,7 +705,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isResizing) {
                 isResizing = false;
                 sidebar.style.transition = 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                if(tvChartInst) tvChartInst.timeScale().fitContent();
+                if(tvChartInst) tvChartInst.timeScale().scrollToRealTime();
             }
         });
     }
@@ -779,8 +750,6 @@ async function fetchBacktestData() {
     try {
         const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
         
-        // Ensure backend sends the COA data too. Assuming it does, or calculating it client-side.
-        // For accurate PRZ and S2/R2, ideally backend sends it. 
         const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
         
         if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
@@ -795,10 +764,6 @@ async function fetchBacktestData() {
             return;
         }
 
-        // We will assume the backend does NOT run calculate_coa on historical arrays to save compute.
-        // We will simulate the COA if it's missing, but if you updated the backend to return 'coa', use that.
-        // Assuming your backend DOES NOT yet attach 'coa' to intraday-history items. We will handle missing coa gracefully below.
-        
         backtestSnapshots = data.map(snap => {
             return {
                 timestamp: snap.time,
@@ -835,10 +800,8 @@ function renderBacktestSnapshot() {
     try { document.getElementById('play-time-display').innerText = snap.timestamp.split(' ')[1] || snap.timestamp; } catch(e){}
     setStatus('backtest', `Playing (${backtestCurrentIndex + 1}/${backtestSnapshots.length})`);
     
-    // Simulate calculate_coa if the backend didn't attach it to the snapshot
     let coaData = snap.coa;
     if(!coaData) {
-         // Fallback basic COA calculation so the UI doesn't crash if the backend history route doesn't generate the complex COA object yet.
          coaData = {
              scenario_id: "?",
              scenario_desc: "Data playback in progress.",
@@ -882,11 +845,10 @@ function toggleBacktestPlay() {
     }
 }
 
-// 🟢 MARKET INTELLIGENCE LOGIC (S2/R2 + Readable Logs)
+// 🟢 MARKET INTELLIGENCE LOGIC
 function updateMarketIntelligence(coa) {
     if (!coa) return;
     
-    // Safety check in case the backend didn't run the full COA logic on the history array
     const scId = coa.scenario_id || "?";
     document.getElementById('coa-scenario').innerText = `Scenario #${scId}`;
     document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing historical data...";
@@ -901,7 +863,6 @@ function updateMarketIntelligence(coa) {
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
     
-    // Safely format the new Probable Intraday Range (S2 to R2)
     const s2_val = coa.s2 !== undefined ? coa.s2 : 0;
     const r2_val = coa.r2 !== undefined ? coa.r2 : 0;
     
@@ -910,7 +871,6 @@ function updateMarketIntelligence(coa) {
     const logBody = document.getElementById('coa-logs-body');
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
         logBody.innerHTML = coa.logs.map(log => {
-            // The logs are now strings (sentences), not objects with .eor/.eos
             if (typeof log === 'string') {
                 const parts = log.split(' - ');
                 if (parts.length >= 2) {
@@ -932,7 +892,6 @@ function updateMarketIntelligence(coa) {
     }
 }
 
-
 // 🟢 CHART LOGIC
 function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
@@ -953,26 +912,22 @@ function initTVChart() {
             layout: { background: { type: 'solid', color: '#131722' }, textColor: '#b2b5be', fontFamily: "'Poppins', sans-serif" },
             grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
             crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            rightPriceScale: { borderColor: '#2a2e39' },
-            timeScale: { borderColor: '#2a2e39', timeVisible: true },
-            watermark: { color: 'rgba(255, 255, 255, 0.03)', visible: true, text: 'AOC', fontSize: 100, fontFamily: "'Poppins', sans-serif", fontStyle: 'bold', horzAlign: 'center', vertAlign: 'center' },
+            rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, // 🟢 Auto-zoom vertically
+            timeScale: { borderColor: '#2a2e39', timeVisible: true }
         });
 
         tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
+        tvLineSeries.applyOptions({ visible: false }); // 🟢 Hidden by default
         
-        tvVolumeSeries = tvChartInst.addHistogramSeries({
-            color: '#26a69a',
-            priceFormat: { type: 'volume' },
-            priceScaleId: '', 
-            scaleMargins: { top: 0.8, bottom: 0 },
+        // 🟢 Colored Borders ON so flat candles are visible
+        tvCandleSeries = tvChartInst.addCandlestickSeries({ 
+            upColor: '#26a69a', downColor: '#ef5350', 
+            borderVisible: true, borderColor: '#26a69a',
+            borderUpColor: '#26a69a', borderDownColor: '#ef5350',
+            wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
         });
 
-        tvCandleSeries.applyOptions({ visible: false }); 
-
-        if (backtestSnapshots.length > 0) {
-            syncBacktestChartData();
-        }
+        if (backtestSnapshots.length > 0) syncBacktestChartData();
 
         new ResizeObserver(entries => {
             if (entries.length === 0 || entries[0].target !== container) return;
@@ -995,25 +950,24 @@ function toggleTVType() {
     syncBacktestChartData(); 
 }
 
-function refreshTVChart() { if(tvChartInst) tvChartInst.timeScale().fitContent(); }
+function refreshTVChart() { if(tvChartInst) tvChartInst.timeScale().scrollToRealTime(); }
 
+// 🟢 NEW ENGINE: 3-Minute Candles for Backtester
 function syncBacktestChartData() {
-    if (!tvLineSeries || backtestSnapshots.length === 0) return;
+    if (!tvLineSeries || !tvCandleSeries || backtestSnapshots.length === 0) return;
     
-    let lineData = [];
-    let candleData = [];
+    let spotData = [];
+    let candleMap = new Map();
     let lastValidTime = 0;
 
+    // 🟢 ONLY aggregate data up to the current playback frame
     for (let i = 0; i <= backtestCurrentIndex; i++) {
         let snap = backtestSnapshots[i];
         let spot = parseFloat(snap.spot);
         if (isNaN(spot) || spot === 0) {
              if (snap.chain && snap.chain.length > 0) {
-                 const bestRow = snap.chain.find(r => r.ce.ltp > 50 && r.pe.ltp > 50) || snap.chain[0];
-                 spot = bestRow.strike;
-             } else {
-                 continue;
-             }
+                 spot = snap.chain.find(r => r.ce.ltp > 50 && r.pe.ltp > 50)?.strike || snap.chain[0].strike;
+             } else continue;
         }
 
         let tsStr = snap.timestamp || "";
@@ -1026,21 +980,30 @@ function syncBacktestChartData() {
                 t = Math.floor(new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`).getTime() / 1000);
             }
         }
-
         if (isNaN(t)) t = lastValidTime + 60;
         if (t <= lastValidTime) t = lastValidTime + 60; 
         lastValidTime = t;
 
-        lineData.push({ time: t, value: spot });
+        spotData.push({ time: t, value: spot });
 
-        let open = (i === 0) ? spot : lineData[i-1].value;
-        candleData.push({ time: t, open: open, high: Math.max(open, spot) + 0.5, low: Math.min(open, spot) - 0.5, close: spot });
+        // 3-Minute Aggregation Math
+        const bucketTime = Math.floor(t / 180) * 180;
+        if (!candleMap.has(bucketTime)) {
+            candleMap.set(bucketTime, { time: bucketTime, open: spot, high: spot, low: spot, close: spot });
+        } else {
+            const candle = candleMap.get(bucketTime);
+            candle.high = Math.max(candle.high, spot);
+            candle.low = Math.min(candle.low, spot);
+            candle.close = spot;
+        }
     }
 
+    const candleData = Array.from(candleMap.values()).sort((a, b) => a.time - b.time);
+
     try {
-        tvLineSeries.setData(lineData);
+        tvLineSeries.setData(spotData);
         tvCandleSeries.setData(candleData);
-        tvChartInst.timeScale().fitContent(); 
+        tvChartInst.timeScale().scrollToRealTime(); 
     } catch(err) { console.error("Chart Render Skip:", err); }
 }
 
@@ -1154,7 +1117,7 @@ let renderTable = function(rows, sym, data, quiet = false) {
       <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
       <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(1)}</td>
       
-      <td class="strike-cell">${r.strike.toLocaleString('en-IN')}</td>
+      <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike.toLocaleString('en-IN')}</td>
       
       <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(1)}</td>
       <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
@@ -1197,6 +1160,119 @@ let renderTable = function(rows, sym, data, quiet = false) {
     }, 150);
   }
 }
+
+// 🟢 MODAL UI HELPERS
+function parseTimeToUnix(tsStr) {
+    let t = Math.floor(new Date(tsStr.replace(' ', 'T')).getTime() / 1000);
+    if (isNaN(t) && tsStr.includes('-')) {
+        let parts = tsStr.split(' ');
+        let dParts = parts[0].split('-');
+        if (dParts.length === 3 && dParts[0].length === 2) {
+            t = Math.floor(new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`).getTime() / 1000);
+        }
+    }
+    return t;
+}
+
+function createInstChart(containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; 
+    const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 160,
+        layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
+        grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
+        timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
+        rightPriceScale: { borderColor: '#27272a', scaleMargins: { top: 0.1, bottom: 0.1 } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        handleScroll: false,
+        handleScale: false
+    });
+
+    let isDisposed = false;
+    const observer = new ResizeObserver(entries => {
+        if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
+        try { chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); } catch(e) {}
+    });
+    observer.observe(container);
+
+    const originalRemove = chart.remove.bind(chart);
+    chart.remove = function() {
+        isDisposed = true; observer.disconnect(); originalRemove(); 
+    };
+    return chart;
+}
+
+function showStrikeCharts(strike) {
+    if (backtestSnapshots.length === 0) return;
+    document.getElementById('chart-modal').style.display = 'flex';
+    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
+
+    const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+    const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];
+    const seenTimes = new Set();
+    let lastValidTime = 0;
+
+    // 🟢 ONLY read data up to current backtest frame
+    for (let i = 0; i <= backtestCurrentIndex; i++) {
+        let snap = backtestSnapshots[i];
+        let t = parseTimeToUnix(snap.timestamp);
+        if (isNaN(t)) t = lastValidTime + 60;
+        if (t <= lastValidTime) t = lastValidTime + 60;
+        lastValidTime = t;
+
+        if (seenTimes.has(t)) continue;
+        seenTimes.add(t);
+
+        const row = snap.chain.find(r => r.strike === strike);
+        if (row) {
+            ceVolData.push({ time: t, value: row.ce.volume || 0 });
+            peVolData.push({ time: t, value: row.pe.volume || 0 });
+            ceOiData.push({ time: t, value: row.ce.oi || 0 });
+            peOiData.push({ time: t, value: row.pe.oi || 0 });
+            ceLtpData.push({ time: t, value: row.ce.ltp || 0 });
+            peLtpData.push({ time: t, value: row.pe.ltp || 0 });
+            ceOiChgData.push({ time: t, value: row.ce.change_oi || 0 });
+            peOiChgData.push({ time: t, value: row.pe.change_oi || 0 });
+        }
+    }
+
+    const sorter = (a, b) => a.time - b.time;
+    ceVolData.sort(sorter); peVolData.sort(sorter);
+    ceOiData.sort(sorter); peOiData.sort(sorter);
+    ceLtpData.sort(sorter); peLtpData.sort(sorter);
+    ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+
+    if (tvModalVolChart) tvModalVolChart.remove();
+    tvModalVolChart = createInstChart('tv-modal-vol');
+    const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+    const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+    ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
+    tvModalVolChart.timeScale().fitContent();
+
+    if (tvModalOiChart) tvModalOiChart.remove();
+    tvModalOiChart = createInstChart('tv-modal-oi');
+    tvModalOiChart.applyOptions({ leftPriceScale: { visible: true, borderColor: '#27272a' }, rightPriceScale: { visible: true, borderColor: '#27272a' } });
+    const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
+    const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
+    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+    ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+    ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
+    tvModalOiChart.timeScale().fitContent();
+
+    if (tvModalOiChgChart) tvModalOiChgChart.remove();
+    tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
+    const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+    const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+    ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+    tvModalOiChgChart.timeScale().fitContent();
+}
+
+function closeCharts(event) { 
+    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return; 
+    document.getElementById('chart-modal').style.display = 'none'; 
+}
 </script>
 
 <script type="module">
@@ -1223,7 +1299,6 @@ onAuthStateChanged(auth, async (user) => {
       window.loadExpiries(); 
       
     } else {
-      // Still kicks out people who aren't logged in at all
       window.location.href = "index.html";
     }
   });
