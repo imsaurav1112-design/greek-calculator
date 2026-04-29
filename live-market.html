@@ -93,15 +93,25 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
-.workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); transition: background-color 0.3s; }
+.workspace { 
+    flex: 1; 
+    display: flex; 
+    overflow: hidden; 
+    position: relative; 
+    background: var(--bg); 
+    transition: background-color 0.3s; 
+    min-height: 0; /* 🟢 FIX: Stops flexbox from collapsing */
+    width: 100%;
+}
+
 .table-wrapper { 
     flex: 1; 
-    overflow-x: auto; 
-    overflow-y: auto; 
+    overflow: auto; 
     position: relative; 
     transition: width 0.3s ease; 
-    /* 🟢 FIX 2: Hardware acceleration for buttery-smooth horizontal scrolling on phones */
     -webkit-overflow-scrolling: touch; 
+    min-height: 0; /* 🟢 FIX: Forces the table to stay inside the screen */
+    width: 100%;
 }
 table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
@@ -188,7 +198,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
     
-    /* 2. Bottom App Navigation Bar (Replaces Left Nav) */
+/* 2. Bottom App Navigation Bar (Replaces Left Nav) */
     .left-nav { 
         order: 3; 
         width: 100%; 
@@ -201,6 +211,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         background: rgba(20, 20, 21, 0.95);
         backdrop-filter: blur(10px);
         z-index: 90;
+        flex-shrink: 0; /* 🟢 FIX: Prevents the nav bar from being crushed */
     }
     
     /* 3. Settings Menu Anchor (Moves up so bottom nav doesn't cover it) */
