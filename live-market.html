@@ -554,7 +554,7 @@ let tvModalOiChgChart = null;
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
-let tvIsCandle = false; 
+let tvIsCandle = true; 
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
 let tvResizeObserver = null; 
@@ -888,9 +888,15 @@ function initTVChart() {
             watermark: { color: 'rgba(255, 255, 255, 0.03)', visible: true, text: 'AOC', fontSize: 100, fontFamily: "'Poppins', sans-serif", fontStyle: 'bold', horzAlign: 'center', vertAlign: 'center' },
         });
 
-        tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
-        tvCandleSeries.applyOptions({ visible: false }); 
+tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
+        tvLineSeries.applyOptions({ visible: false }); // 🟢 Hide line by default
+        
+        tvCandleSeries = tvChartInst.addCandlestickSeries({ 
+            upColor: '#26a69a', downColor: '#ef5350', 
+            borderVisible: false, 
+            wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
+        });
+        // 🟢 Candles are visible by default 
         
 
 updateRealSpotChart();
@@ -925,46 +931,56 @@ function toggleTVType() {
 
 function refreshTVChart() { 
     if(tvChartInst) {
-        tvChartInst.timeScale().fitContent(); 
+        // 🟢 Removed fitContent() so candles remain a readable size
+        tvChartInst.timeScale().scrollToRealTime(); // 🟢 Instantly locks focus on the newest candle
         tvChartInst.priceScale('right').applyOptions({ autoScale: true }); 
     }
 }
 
-// 🟢 NEW ENGINE: Fetches real spot price history from memory
+// 🟢 NEW ENGINE: Fetches spot history and aggregates into 3-Minute Japanese Candlesticks
 function updateRealSpotChart() {
-    if (!tvLineSeries || !liveHistory || liveHistory.length === 0) return;
+    if (!tvLineSeries || !tvCandleSeries || !liveHistory || liveHistory.length === 0) return;
 
     const spotData = [];
-    const candleData = [];
+    const candleMap = new Map(); // 🟢 Uses a Map to group snapshots into 3-minute buckets
     const seenTimes = new Set();
 
     liveHistory.forEach(snap => {
-        // Fallback in case older backend snapshots don't have spot attached yet
         const spotVal = snap.spot || snap.underlying_value || parseFloat(document.getElementById('inp-spot').value);
         if (!spotVal) return; 
 
         const timestamp = parseTimeToUnix(snap.time);
         
-        // Prevent TradingView crash from duplicate timestamps
         if (seenTimes.has(timestamp)) return;
         seenTimes.add(timestamp);
 
-        // Plot the exact spot price
+        // Standard 1-minute data for the Line chart (if user toggles back)
         spotData.push({ time: timestamp, value: spotVal });
 
-        // Build a basic candle (Since we only get 1 snapshot a minute, O=H=L=C)
-        candleData.push({ time: timestamp, open: spotVal, high: spotVal, low: spotVal, close: spotVal });
+        // --- 3-MINUTE CANDLE MATH ---
+        // 180 seconds = 3 minutes. 09:15 IST perfectly aligns with this division limit.
+        const bucketTime = Math.floor(timestamp / 180) * 180;
+
+        if (!candleMap.has(bucketTime)) {
+            // First tick of the 3-minute window (Sets the Open)
+            candleMap.set(bucketTime, { time: bucketTime, open: spotVal, high: spotVal, low: spotVal, close: spotVal });
+        } else {
+            // Updating the active candle
+            const candle = candleMap.get(bucketTime);
+            candle.high = Math.max(candle.high, spotVal); // Push High up if price spikes
+            candle.low = Math.min(candle.low, spotVal);   // Push Low down if price drops
+            candle.close = spotVal;                       // Constantly update the Close
+        }
     });
 
-    // TradingView requires data to be strictly sorted by time
     spotData.sort((a, b) => a.time - b.time);
-    candleData.sort((a, b) => a.time - b.time);
+    
+    // Convert the buckets back into an array for TradingView
+    const candleData = Array.from(candleMap.values()).sort((a, b) => a.time - b.time);
 
-    // Feed the real data to the chart
     tvLineSeries.setData(spotData);
     tvCandleSeries.setData(candleData);
 }
-
 function updateTVChartEOR_EOS(chainData, coaData) {
     if (!tvChartInst || !tvLineSeries) return;
     activePriceLines.forEach(l => { try { l.series.removePriceLine(l.line); } catch(e){} });
