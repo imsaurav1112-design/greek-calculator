@@ -985,10 +985,10 @@ function parseTimeToUnix(timeStr) {
     return Math.floor(d.getTime() / 1000); 
 }
 
-// 🟢 Helper to create an Institutional TradingView Chart
+// 🟢 Helper to create an Institutional TradingView Chart (Now with Self-Cleaning Memory)
 function createInstChart(containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = ''; // Clear old chart
+    container.innerHTML = ''; // Clear old chart HTML
 
     const chart = LightweightCharts.createChart(container, {
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
@@ -998,11 +998,26 @@ function createInstChart(containerId) {
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
     });
 
-    // Make it mobile responsive
-    new ResizeObserver(entries => {
-        if (entries.length === 0 || entries[0].target !== container) return;
-        chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height });
-    }).observe(container);
+    let isDisposed = false;
+
+    // Make it mobile responsive safely
+    const observer = new ResizeObserver(entries => {
+        if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
+        try { 
+            chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
+        } catch(e) { 
+            // Failsafe in case a rogue resize sneaks through
+        }
+    });
+    observer.observe(container);
+
+    // 🟢 FIX: Intercept the remove command to kill the observer so it doesn't crash the next chart
+    const originalRemove = chart.remove.bind(chart);
+    chart.remove = function() {
+        isDisposed = true;
+        observer.disconnect(); // Kill the ghost watcher
+        originalRemove();      // Safely destroy the TradingView instance
+    };
 
     return chart;
 }
