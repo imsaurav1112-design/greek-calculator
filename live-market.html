@@ -992,6 +992,10 @@ function createInstChart(containerId) {
     container.innerHTML = ''; // Clear old chart HTML
 
     const chart = LightweightCharts.createChart(container, {
+        // 🟢 FIX: Force TradingView to use the container's exact dimensions, with a fallback
+        width: container.clientWidth || 800,
+        height: container.clientHeight || 220,
+        
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
         timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
@@ -1012,7 +1016,7 @@ function createInstChart(containerId) {
     });
     observer.observe(container);
 
-    // 🟢 FIX: Intercept the remove command to kill the observer so it doesn't crash the next chart
+    // Intercept the remove command to kill the observer so it doesn't crash the next chart
     const originalRemove = chart.remove.bind(chart);
     chart.remove = function() {
         isDisposed = true;
@@ -1022,7 +1026,6 @@ function createInstChart(containerId) {
 
     return chart;
 }
-
 function showStrikeCharts(strike) {
     if (!liveHistory || liveHistory.length === 0) {
         alert("No historical data available yet. Please wait for the next fetch.");
