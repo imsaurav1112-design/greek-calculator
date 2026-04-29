@@ -490,14 +490,18 @@ th, td {
         <button class="modal-close" onclick="closeCharts()">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
-        <div class="charts-container" style="flex-direction: column; height: auto;">
+<div class="charts-container" style="flex-direction: column; height: auto;">
             <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">TRADED VOLUME (CE vs PE)</div>
                 <div id="tv-modal-vol" style="flex: 1; width: 100%;"></div>
             </div>
-            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">OPEN INTEREST BUILDUP</div>
+            <div class="chart-box" style="height: 300px; display: flex; flex-direction: column;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">OPEN INTEREST BUILDUP VS PREMIUM PRICE</div>
                 <div id="tv-modal-oi" style="flex: 1; width: 100%;"></div>
+            </div>
+            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">INTRADAY OI CHANGE</div>
+                <div id="tv-modal-oi-chg" style="flex: 1; width: 100%;"></div>
             </div>
         </div>
     </div>
@@ -514,6 +518,7 @@ let strikeLimit = 20;
 let liveHistory = []; 
 let tvModalVolChart = null;
 let tvModalOiChart = null;
+let tvModalOiChgChart = null;
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
@@ -1011,12 +1016,15 @@ function showStrikeCharts(strike) {
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+    const ceVolData = [], peVolData = [];
+    const ceOiData = [], peOiData = [];
+    const ceLtpData = [], peLtpData = [];       // For the Price lines
+    const ceOiChgData = [], peOiChgData = [];   // For the missing OI Chg chart
     const seenTimes = new Set();
 
     liveHistory.forEach(snap => {
         const timestamp = parseTimeToUnix(snap.time);
-        if (seenTimes.has(timestamp)) return; // Prevent duplicate time crashes
+        if (seenTimes.has(timestamp)) return;
         seenTimes.add(timestamp);
 
         const row = snap.rows.find(r => r.strike === strike);
@@ -1025,36 +1033,61 @@ function showStrikeCharts(strike) {
             peVolData.push({ time: timestamp, value: row.peVol });
             ceOiData.push({ time: timestamp, value: row.ceOI });
             peOiData.push({ time: timestamp, value: row.peOI });
+            
+            // 🟢 Extract the missing data
+            ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 });
+            peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
+            ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 });
+            peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
         }
     });
 
-    // Sort strictly by time (Mandatory for TV)
-    ceVolData.sort((a, b) => a.time - b.time);
-    peVolData.sort((a, b) => a.time - b.time);
-    ceOiData.sort((a, b) => a.time - b.time);
-    peOiData.sort((a, b) => a.time - b.time);
+    // TradingView mandatory chronological sorting
+    const sorter = (a, b) => a.time - b.time;
+    ceVolData.sort(sorter); peVolData.sort(sorter);
+    ceOiData.sort(sorter); peOiData.sort(sorter);
+    ceLtpData.sort(sorter); peLtpData.sort(sorter);
+    ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-    // 1. Render Volume Chart
+    // --- 1. VOLUME CHART ---
     if (tvModalVolChart) tvModalVolChart.remove();
     tvModalVolChart = createInstChart('tv-modal-vol');
-    
     const ceVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
     const peVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
-    
-    ceVolSeries.setData(ceVolData);
-    peVolSeries.setData(peVolData);
+    ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
     tvModalVolChart.timeScale().fitContent();
 
-    // 2. Render OI Chart
+    // --- 2. DUAL-AXIS OI BUILDUP VS PRICE ---
     if (tvModalOiChart) tvModalOiChart.remove();
     tvModalOiChart = createInstChart('tv-modal-oi');
+    
+    // 🟢 Activate the Left Axis for massive OI numbers
+    tvModalOiChart.applyOptions({
+        leftPriceScale: { visible: true, borderColor: '#27272a' },
+        rightPriceScale: { visible: true, borderColor: '#27272a' }
+    });
 
-    const ceOiSeries = tvModalOiChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
-    const peOiSeries = tvModalOiChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    // OI areas go on the Left Axis
+    const ceOiSeries = tvModalOiChart.addAreaSeries({ priceScaleId: 'left', lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
+    const peOiSeries = tvModalOiChart.addAreaSeries({ priceScaleId: 'left', lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    
+    // LTP lines go on the Right Axis (Notice the distinct colors!)
+    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); // Orange Dashed
+    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); // Blue Dashed
 
-    ceOiSeries.setData(ceOiData);
-    peOiSeries.setData(peOiData);
+    ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+    ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
     tvModalOiChart.timeScale().fitContent();
+
+    // --- 3. INTRADAY OI CHANGE CHART ---
+    if (tvModalOiChgChart) tvModalOiChgChart.remove();
+    tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
+    
+    const ceOiChgSeries = tvModalOiChgChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
+    const peOiChgSeries = tvModalOiChgChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    
+    ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+    tvModalOiChgChart.timeScale().fitContent();
 }
 
 function closeCharts() { document.getElementById('chart-modal').style.display = 'none'; }
