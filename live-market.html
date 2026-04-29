@@ -944,10 +944,13 @@ function updateTVChartEOR_EOS(chainData, coaData) {
         activePriceLines.push({ series: baseSeries, line: pLine });
     };
 
-    drawLine(eorVal, '#ef5350', 2, 0, 'EOR');
-    drawLine(eorPlus1Val, '#ff8a65', 1, 2, 'EOR+1');
-    drawLine(eosVal, '#26a69a', 2, 0, 'EOS');
-    drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'EOS-1');
+// Resistance Levels (On chart line)
+    drawLine(eorVal, '#ef5350', 2, 0, 'R1');
+    drawLine(eorPlus1Val, '#ff8a65', 1, 2, 'R2');
+    
+    // Support Levels (on chart line)
+    drawLine(eosVal, '#26a69a', 2, 0, 'S1');
+    drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'S2');
 }
 
 // 🟢 Helper to convert "09:15 AM" to TradingView UNIX timestamp
