@@ -44,7 +44,7 @@ body {
     color: var(--text); 
     display: flex; 
     flex-direction: column; 
-    height: 100dvh; /* Dynamic viewport height */
+    height: 100dvh; 
     width: 100vw;
     overflow: hidden; 
 }
@@ -93,22 +93,20 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { 
-    flex: 1 1 auto; /* 🟢 FIX: Forces it to grow and fill available space securely */
+    flex: 1; /* Fills the exact space between header and footer */
     display: flex; 
     overflow: hidden; 
     position: relative; 
     background: var(--bg); 
-    width: 100%;
-    z-index: 10;
+    min-height: 0; /* Magic fix: Allows children to scroll */
 }
 
 .table-wrapper { 
-    flex: 1 1 auto; 
+    flex: 1; /* Takes up all available space inside workspace */
     overflow: auto; 
     position: relative; 
     -webkit-overflow-scrolling: touch; 
-    width: 100%;
-    height: 100%; /* 🟢 FIX: Stops mobile browsers from crushing the table height to 0 */
+    min-height: 0; /* Magic fix: Stops the table from overflowing the screen */
 }
   table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
@@ -187,9 +185,11 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-    .workspace { 
+.workspace { 
         flex-direction: column; 
-        height: 100%; /* 🟢 FIX: Forces the vertical column to stay open */
+    }
+  .table-wrapper {
+        order: 1; /* Keeps the table at the top of the workspace */
     }
     
     /* 1. Header: Smooth horizontal scroll, smaller buttons */
@@ -198,25 +198,30 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
     
-/* 2. Bottom App Navigation Bar (Replaces Left Nav) */
+/* Bottom App Navigation Bar */
     .left-nav { 
-        order: 3; 
+        order: 2; /* Forces the nav bar to sit UNDER the table */
         width: 100%; 
-        height: 50px; 
+        height: 55px; 
         flex-direction: row; 
         border-right: none; 
         border-top: 1px solid var(--border); 
-        justify-content: space-around; 
+        justify-content: space-evenly; 
+        align-items: center;
         padding: 0; 
         background: rgba(20, 20, 21, 0.95);
         backdrop-filter: blur(10px);
         z-index: 90;
-        flex-shrink: 0; /* 🟢 FIX: Prevents the nav bar from being crushed */
+        flex-shrink: 0; /* Stops the table from crushing the nav bar */
     }
     
-    /* 3. Settings Menu Anchor (Moves up so bottom nav doesn't cover it) */
-    .settings-panel { left: 10px; top: auto; bottom: 60px; width: 220px; position: fixed; }
-    
+    .settings-panel { 
+        position: fixed; /* Pops the settings menu over everything */
+        left: 10px; 
+        top: auto; 
+        bottom: 120px; /* Safely clears the bottom nav and footer */
+        width: 220px; 
+    }    
     /* 4. Table Strict Constraints */
     table { min-width: 850px; } 
     th, td { font-size: 11px; padding: 4px 2px; } 
