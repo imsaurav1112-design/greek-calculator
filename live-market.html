@@ -215,12 +215,28 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         flex-shrink: 0; /* Stops the table from crushing the nav bar */
     }
     
-    .settings-panel { 
-        position: fixed; /* Pops the settings menu over everything */
+.settings-panel { 
+        position: fixed; 
         left: 10px; 
         top: auto; 
-        bottom: 120px; /* Safely clears the bottom nav and footer */
+        /* Drops it slightly closer to the bottom nav for easier thumb reach */
+        bottom: 70px; 
         width: 220px; 
+        
+        /* 🟢 FIX: Forces the menu to stop growing and start scrolling */
+        max-height: 60vh; /* Limits height to 60% of the screen */
+        overflow-y: auto; /* Enables vertical scrolling inside the menu */
+        -webkit-overflow-scrolling: touch; /* Buttery smooth iOS scrolling */
+        z-index: 105; /* Ensures it stays above the chart sidebars */
+    }
+    
+    /* Optional: Hide the ugly scrollbar on modern phones for a cleaner look */
+    .settings-panel::-webkit-scrollbar {
+        width: 4px;
+    }
+    .settings-panel::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 4px;
     }    
     /* 4. Table Strict Constraints */
     table { min-width: 850px; } 
