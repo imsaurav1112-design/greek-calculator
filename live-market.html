@@ -489,18 +489,20 @@ th, td {
         <button class="modal-close" onclick="closeCharts()">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
-<div class="charts-container" style="flex-direction: column; height: auto;">
-            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
+        <div class="charts-container" style="flex-direction: column; height: auto;">
+            <div class="chart-box" style="display: flex; flex-direction: column;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">TRADED VOLUME (CE vs PE)</div>
-                <div id="tv-modal-vol" style="flex: 1; width: 100%;"></div>
+                <div id="tv-modal-vol" style="width: 100%; height: 220px;"></div>
             </div>
-            <div class="chart-box" style="height: 300px; display: flex; flex-direction: column;">
+            
+            <div class="chart-box" style="display: flex; flex-direction: column;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">OPEN INTEREST BUILDUP VS PREMIUM PRICE</div>
-                <div id="tv-modal-oi" style="flex: 1; width: 100%;"></div>
+                <div id="tv-modal-oi" style="width: 100%; height: 250px;"></div>
             </div>
-            <div class="chart-box" style="height: 250px; display: flex; flex-direction: column;">
+
+            <div class="chart-box" style="display: flex; flex-direction: column;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">INTRADAY OI CHANGE</div>
-                <div id="tv-modal-oi-chg" style="flex: 1; width: 100%;"></div>
+                <div id="tv-modal-oi-chg" style="width: 100%; height: 220px;"></div>
             </div>
         </div>
     </div>
