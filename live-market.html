@@ -44,10 +44,9 @@ body {
     color: var(--text); 
     display: flex; 
     flex-direction: column; 
-    /* 🟢 FIX 1: Dynamic Viewport prevents the footer from hiding behind mobile URL bars */
-    height: 100dvh; 
+    height: 100dvh; /* Dynamic viewport height */
+    width: 100vw;
     overflow: hidden; 
-    transition: background-color 0.3s, color 0.3s; 
 }
 header { 
     height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
@@ -94,26 +93,24 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { 
-    flex: 1; 
+    flex: 1 1 auto; /* 🟢 FIX: Forces it to grow and fill available space securely */
     display: flex; 
     overflow: hidden; 
     position: relative; 
     background: var(--bg); 
-    transition: background-color 0.3s; 
-    min-height: 0; /* 🟢 FIX: Stops flexbox from collapsing */
     width: 100%;
+    z-index: 10;
 }
 
 .table-wrapper { 
-    flex: 1; 
+    flex: 1 1 auto; 
     overflow: auto; 
     position: relative; 
-    transition: width 0.3s ease; 
     -webkit-overflow-scrolling: touch; 
-    min-height: 0; /* 🟢 FIX: Forces the table to stay inside the screen */
     width: 100%;
+    height: 100%; /* 🟢 FIX: Stops mobile browsers from crushing the table height to 0 */
 }
-table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
 th.strike-cell { background: #1e293b !important; color: #f8fafc !important; border-bottom: 1px solid var(--accent); }
@@ -190,7 +187,10 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-    .workspace { flex-direction: column; }
+    .workspace { 
+        flex-direction: column; 
+        height: 100%; /* 🟢 FIX: Forces the vertical column to stay open */
+    }
     
     /* 1. Header: Smooth horizontal scroll, smaller buttons */
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
