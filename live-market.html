@@ -792,15 +792,16 @@ async function fetchUpstoxChain(quiet = false) {
     const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
-    if (lastEntry !== nowStr) {
+if (lastEntry !== nowStr) {
         liveHistory.push({
             time: nowStr,
+            spot: data.spot, // 🟢 ADD THIS: Saves the spot price to memory
             rows: globalRows.map(r => ({
                 strike: r.strike,
                 ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
                 ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
                 ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
-                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0 // 🟢 Added LTP Extractor
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0 
             }))
         });
     }
@@ -808,7 +809,7 @@ async function fetchUpstoxChain(quiet = false) {
     renderTable(globalRows, sym, data, quiet); 
     
     if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
-        updateLiveDummyCandles(data.spot);
+        updateRealSpotChart();
         updateTVChartEOR_EOS(data.chain, data.coa);
         if (lastChartSymbol !== sym) {
             refreshTVChart();
@@ -855,8 +856,7 @@ function initTVChart() {
         tvCandleSeries.applyOptions({ visible: false }); 
         
 
-        const spot = parseFloat(document.getElementById('inp-spot').value) || 24000;
-        updateLiveDummyCandles(spot);
+updateRealSpotChart();
 
         if (globalData && globalData.chain && globalData.coa) {
             updateTVChartEOR_EOS(globalData.chain, globalData.coa);
@@ -893,25 +893,39 @@ function refreshTVChart() {
     }
 }
 
-function updateLiveDummyCandles(currentSpot) {
-    if(!tvLineSeries) return;
-    let res = [];
-    let time = Math.floor(Date.now() / 1000) - (100 * 60);
-    let price = currentSpot;
-    for (let i = 0; i < 100; i++) {
-        let open = price;
-        let close = open + (Math.random() - 0.5) * 15;
-        let high = Math.max(open, close) + Math.random() * 5;
-        let low = Math.min(open, close) - Math.random() * 5;
-        let vol = Math.floor(Math.random() * 5000) + 1000;
-        let isUp = close > open;
-        res.push({ time: time, open, high, low, close });
-        price = close;
-        time += 60;
-    }
-    res[res.length-1].close = currentSpot;
-    tvCandleSeries.setData(res);
-    tvLineSeries.setData(res.map(d => ({ time: d.time, value: d.close })));
+// 🟢 NEW ENGINE: Fetches real spot price history from memory
+function updateRealSpotChart() {
+    if (!tvLineSeries || !liveHistory || liveHistory.length === 0) return;
+
+    const spotData = [];
+    const candleData = [];
+    const seenTimes = new Set();
+
+    liveHistory.forEach(snap => {
+        // Fallback in case older backend snapshots don't have spot attached yet
+        const spotVal = snap.spot || snap.underlying_value || parseFloat(document.getElementById('inp-spot').value);
+        if (!spotVal) return; 
+
+        const timestamp = parseTimeToUnix(snap.time);
+        
+        // Prevent TradingView crash from duplicate timestamps
+        if (seenTimes.has(timestamp)) return;
+        seenTimes.add(timestamp);
+
+        // Plot the exact spot price
+        spotData.push({ time: timestamp, value: spotVal });
+
+        // Build a basic candle (Since we only get 1 snapshot a minute, O=H=L=C)
+        candleData.push({ time: timestamp, open: spotVal, high: spotVal, low: spotVal, close: spotVal });
+    });
+
+    // TradingView requires data to be strictly sorted by time
+    spotData.sort((a, b) => a.time - b.time);
+    candleData.sort((a, b) => a.time - b.time);
+
+    // Feed the real data to the chart
+    tvLineSeries.setData(spotData);
+    tvCandleSeries.setData(candleData);
 }
 
 function updateTVChartEOR_EOS(chainData, coaData) {
