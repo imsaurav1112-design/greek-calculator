@@ -895,15 +895,37 @@ function showStrikeCharts(strike) {
         elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } 
     };
 
-    // 🟢 1. VOLUME CHART (BARS)
+// 🟢 1. VOLUME CHART (LINES)
     const ctxVol = document.getElementById('volChart').getContext('2d');
     volChartInst = new Chart(ctxVol, {
-        type: 'bar',
+        type: 'line', // Changed from 'bar' to 'line'
         data: { labels: labels, datasets: [
-            {label: 'CE Vol', data: ceVolData, backgroundColor: ceColor, borderRadius: 4}, 
-            {label: 'PE Vol', data: peVolData, backgroundColor: peColor, borderRadius: 4}
+            {
+                label: 'CE Vol', 
+                data: ceVolData, 
+                borderColor: ceColor, 
+                backgroundColor: 'rgba(239, 68, 68, 0.1)', // Light red fill
+                fill: true, 
+                tension: 0.3, // Adds a slight curve to the line
+                borderWidth: 2
+            }, 
+            {
+                label: 'PE Vol', 
+                data: peVolData, 
+                borderColor: peColor, 
+                backgroundColor: 'rgba(16, 185, 129, 0.1)', // Light green fill
+                fill: true, 
+                tension: 0.3, 
+                borderWidth: 2
+            }
         ]},
-        options: { ...commonOptions, plugins: { ...commonOptions.plugins, title: { display: true, text: 'TRADED VOLUME', color: '#f4f4f5' } } }
+        options: { 
+            ...commonOptions, 
+            plugins: { 
+                ...commonOptions.plugins, 
+                title: { display: true, text: 'TRADED VOLUME', color: '#f4f4f5' } 
+            } 
+        }
     });
 
     // 🟢 2. DUAL-AXIS OI & PRICE CHART (Glassmorphism)
