@@ -509,25 +509,31 @@ th, td {
     <input type="number" id="inp-spot" style="display:none;">
 </footer>
 
-<div class="modal-overlay" id="chart-modal">
+<div class="modal-overlay" id="chart-modal" onclick="closeCharts(event)">
     <div class="modal-content">
-        <button class="modal-close" onclick="closeCharts()">✖</button>
+        <button class="modal-close" onclick="closeCharts(event)">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
         <div class="charts-container" style="flex-direction: column; height: auto;">
-            <div class="chart-box" style="display: flex; flex-direction: column;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">TRADED VOLUME (CE vs PE)</div>
-                <div id="tv-modal-vol" style="width: 100%; height: 220px;"></div>
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    TRADED VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+                </div>
+                <div id="tv-modal-vol" style="flex: 1; width: 100%;"></div>
             </div>
             
-            <div class="chart-box" style="display: flex; flex-direction: column;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">OPEN INTEREST BUILDUP VS PREMIUM PRICE</div>
-                <div id="tv-modal-oi" style="width: 100%; height: 250px;"></div>
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 190px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    OI (<span style="color:#ef4444">CE</span>/<span style="color:#10b981">PE</span>) VS PRICE (<span style="color:#f59e0b">CE</span>/<span style="color:#3b82f6">PE</span>)
+                </div>
+                <div id="tv-modal-oi" style="flex: 1; width: 100%;"></div>
             </div>
 
-            <div class="chart-box" style="display: flex; flex-direction: column;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">INTRADAY OI CHANGE</div>
-                <div id="tv-modal-oi-chg" style="width: 100%; height: 220px;"></div>
+            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+                    INTRADAY OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+                </div>
+                <div id="tv-modal-oi-chg" style="flex: 1; width: 100%;"></div>
             </div>
         </div>
     </div>
@@ -1016,16 +1022,18 @@ function createInstChart(containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = ''; // Clear old chart HTML
 
-    const chart = LightweightCharts.createChart(container, {
-        // 🟢 FIX: Force TradingView to use the container's exact dimensions, with a fallback
+const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 800,
-        height: container.clientHeight || 220,
-        
+        height: container.clientHeight || 160,
         layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
         grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
         timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
         rightPriceScale: { borderColor: '#27272a', scaleMargins: { top: 0.1, bottom: 0.1 } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        
+        // 🟢 THE FIX: Disable all drag-to-pan and scroll-to-zoom behaviors
+        handleScroll: false,
+        handleScale: false
     });
 
     let isDisposed = false;
@@ -1093,11 +1101,12 @@ function showStrikeCharts(strike) {
     ceLtpData.sort(sorter); peLtpData.sort(sorter);
     ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-    // --- 1. VOLUME CHART ---
+// --- 1. VOLUME CHART ---
     if (tvModalVolChart) tvModalVolChart.remove();
     tvModalVolChart = createInstChart('tv-modal-vol');
-    const ceVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
-    const peVolSeries = tvModalVolChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    // 🟢 Changed from Area to Line
+    const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+    const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
     ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
     tvModalVolChart.timeScale().fitContent();
 
@@ -1105,19 +1114,17 @@ function showStrikeCharts(strike) {
     if (tvModalOiChart) tvModalOiChart.remove();
     tvModalOiChart = createInstChart('tv-modal-oi');
     
-    // 🟢 Activate the Left Axis for massive OI numbers
     tvModalOiChart.applyOptions({
         leftPriceScale: { visible: true, borderColor: '#27272a' },
         rightPriceScale: { visible: true, borderColor: '#27272a' }
     });
 
-    // OI areas go on the Left Axis
-    const ceOiSeries = tvModalOiChart.addAreaSeries({ priceScaleId: 'left', lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
-    const peOiSeries = tvModalOiChart.addAreaSeries({ priceScaleId: 'left', lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    // 🟢 Changed from Area to Line
+    const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
+    const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
     
-    // LTP lines go on the Right Axis (Notice the distinct colors!)
-    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); // Orange Dashed
-    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); // Blue Dashed
+    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
 
     ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
     ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
@@ -1127,14 +1134,22 @@ function showStrikeCharts(strike) {
     if (tvModalOiChgChart) tvModalOiChgChart.remove();
     tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
     
-    const ceOiChgSeries = tvModalOiChgChart.addAreaSeries({ lineColor: '#ef4444', topColor: 'rgba(239, 68, 68, 0.3)', bottomColor: 'rgba(239, 68, 68, 0.0)', lineWidth: 2 });
-    const peOiChgSeries = tvModalOiChgChart.addAreaSeries({ lineColor: '#10b981', topColor: 'rgba(16, 185, 129, 0.3)', bottomColor: 'rgba(16, 185, 129, 0.0)', lineWidth: 2 });
+    // 🟢 Changed from Area to Line
+    const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+    const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
     
     ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
     tvModalOiChgChart.timeScale().fitContent();
 }
 
-function closeCharts() { document.getElementById('chart-modal').style.display = 'none'; }
+function closeCharts(event) { 
+    // 🟢 If an event exists, make sure they clicked the dark overlay OR the X button.
+    // If they clicked the white modal content, do nothing.
+    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) {
+        return; 
+    }
+    document.getElementById('chart-modal').style.display = 'none'; 
+}
 
 function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
