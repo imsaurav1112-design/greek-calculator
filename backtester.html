@@ -46,10 +46,9 @@ body {
     color: var(--text); 
     display: flex; 
     flex-direction: column; 
-    /* 🟢 FIX 1: Dynamic Viewport prevents the footer from hiding behind mobile URL bars */
     height: 100dvh; 
+    width: 100vw;
     overflow: hidden; 
-    transition: background-color 0.3s, color 0.3s; 
 }
 /* --- SLEEK HEADER --- */
 header { 
@@ -104,23 +103,20 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { 
-    flex: 1; 
+    flex: 1; /* Fills the exact space between header and footer */
     display: flex; 
     overflow: hidden; 
     position: relative; 
     background: var(--bg); 
-    transition: background-color 0.3s; 
-    min-height: 0; /* 🟢 FIX: Stops flexbox from collapsing */
-    width: 100%;
+    min-height: 0; /* Magic fix: Allows children to scroll */
 }
+
 .table-wrapper { 
-    flex: 1; 
+    flex: 1; /* Takes up all available space inside workspace */
     overflow: auto; 
     position: relative; 
-    transition: width 0.3s ease; 
     -webkit-overflow-scrolling: touch; 
-    min-height: 0; /* 🟢 FIX: Forces the table to stay inside the screen */
-    width: 100%;
+    min-height: 0; /* Magic fix: Stops the table from overflowing the screen */
 }
 /* 🟢 PURE NATIVE TABLE CSS */
 table { width: 100%; border-collapse: collapse; font-family: "Ubuntu Mono", monospace; table-layout: auto; }
@@ -201,7 +197,12 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-    .workspace { flex-direction: column; }
+.workspace { 
+        flex-direction: column; 
+    }
+  .table-wrapper {
+        order: 1; /* Keeps the table at the top of the workspace */
+    }
     
     /* 1. Header: Smooth horizontal scroll, smaller buttons */
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
@@ -209,41 +210,50 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
     
-    /* 2. Bottom App Navigation Bar (Replaces Left Nav) */
-.left-nav { 
-        order: 3; 
+/* Bottom App Navigation Bar */
+    .left-nav { 
+        order: 2; /* Forces the nav bar to sit UNDER the table */
         width: 100%; 
-        height: 50px; 
+        height: 55px; 
         flex-direction: row; 
         border-right: none; 
         border-top: 1px solid var(--border); 
-        justify-content: space-around; 
+        justify-content: space-evenly; 
+        align-items: center;
         padding: 0; 
         background: rgba(20, 20, 21, 0.95);
         backdrop-filter: blur(10px);
         z-index: 90;
-        flex-shrink: 0; /* 🟢 FIX: Prevents the nav bar from being crushed */
+        flex-shrink: 0; /* Stops the table from crushing the nav bar */
     }
     
-    /* 3. Settings Menu Anchor (Moves up so bottom nav doesn't cover it) */
-    .settings-panel { left: 10px; top: auto; bottom: 60px; width: 220px; position: fixed; }
-    
+    .settings-panel { 
+        position: fixed; /* Pops the settings menu over everything */
+        left: 10px; 
+        top: auto; 
+        bottom: 120px; /* Safely clears the bottom nav and footer */
+        width: 220px; 
+    }    
     /* 4. Table Strict Constraints */
     table { min-width: 850px; } 
     th, td { font-size: 11px; padding: 4px 2px; } 
     
-    /* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
-    .right-sidebar, .chart-sidebar.open { 
-        position: fixed; 
+/* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
+    .chart-sidebar, .right-sidebar { 
+        position: fixed !important; /* 🟢 FIX: Removes them from the vertical column completely */
         top: 52px; /* Snaps right under header */
         left: 0; 
         width: 100% !important; 
-        /* Fits exactly between header and bottom nav */
-        height: calc(100dvh - 52px - 50px); 
+        height: calc(100dvh - 52px - 55px) !important; /* Fits perfectly between header and nav */
         z-index: 100; 
         background: var(--bg); 
         border: none;
     }
+
+    /* 🟢 Smooth slide-in animation for mobile charts */
+    .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .chart-sidebar.open { transform: translateX(0); }
+    
     .chart-sidebar .resizer { display: none; } 
     .charts-container { flex-direction: column; height: auto; gap: 10px; }
     .chart-box { height: 250px; }
@@ -263,7 +273,6 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .footer-left .divider { display: none; } /* Hide dividers to save space */
     .footer-right { width: 100%; justify-content: space-between; }
 }
-
 </style>
 </head>
 <body>
