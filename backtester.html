@@ -236,13 +236,14 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     }    
     /* 4. Table Strict Constraints */
     table { min-width: 850px; } 
-    th, td {
+th, td {
     font-size: 11px;
-    padding: 6px 8px;
+    /* 🟢 1. Ultra-tight padding: 4px top/bottom, 4px left/right */
+    padding: 4px 4px; 
     white-space: nowrap;
     font-family: 'JetBrains Mono', monospace; 
-    text-align: right; 
-    min-width: 14ch; 
+    text-align: center; 
+    /* 🟢 2. REMOVED min-width: 14ch so smaller columns can shrink tightly */
 }
     
 /* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
