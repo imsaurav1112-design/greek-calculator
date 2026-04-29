@@ -406,7 +406,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <div id="tv-chart"></div>
     </div>
 
-    <div class="right-sidebar" id="intel-panel">
+<div class="right-sidebar" id="intel-panel">
         <div class="intel-section" style="background: var(--bg); display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
                 <div class="intel-header">
@@ -428,10 +428,25 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <div class="intel-section">
             <div class="intel-header">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                Probable Intraday Range
+                Intraday Range
             </div>
             <div class="intel-value" id="coa-range">0.00 - 0.00</div>
-            <div style="font-size: 11px; color: var(--muted);">Support to Resistance</div>
+            <div style="font-size: 11px; color: var(--muted);">S2 to R2 Boundaries</div>
+        </div>
+        
+        <div class="intel-section" style="flex: 1; display: flex; flex-direction: column; border-bottom: none;">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Change History
+            </div>
+            <div style="flex: 1; overflow-y: auto;">
+                <table class="history-table">
+                    <thead><tr><th style="width: 70px;">TIME</th><th colspan="2">SCENARIO EVENT</th></tr></thead>
+                    <tbody id="coa-logs-body">
+                        <tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">No logs yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
