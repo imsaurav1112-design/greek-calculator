@@ -517,7 +517,6 @@ let tvModalOiChart = null;
 let tvChartInst = null;
 let tvCandleSeries = null;
 let tvLineSeries = null;
-let tvVolumeSeries = null; // 🟢 Added Volume Series
 let tvIsCandle = false; 
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
@@ -855,13 +854,6 @@ function initTVChart() {
         tvCandleSeries = tvChartInst.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
         tvCandleSeries.applyOptions({ visible: false }); 
         
-        // 🟢 Added Volume Histogram Series
-        tvVolumeSeries = tvChartInst.addHistogramSeries({
-            color: '#26a69a',
-            priceFormat: { type: 'volume' },
-            priceScaleId: '', 
-            scaleMargins: { top: 0.8, bottom: 0 },
-        });
 
         const spot = parseFloat(document.getElementById('inp-spot').value) || 24000;
         updateLiveDummyCandles(spot);
@@ -904,7 +896,6 @@ function refreshTVChart() {
 function updateLiveDummyCandles(currentSpot) {
     if(!tvLineSeries) return;
     let res = [];
-    let volRes = []; // 🟢 Array for volume
     let time = Math.floor(Date.now() / 1000) - (100 * 60);
     let price = currentSpot;
     for (let i = 0; i < 100; i++) {
@@ -915,14 +906,12 @@ function updateLiveDummyCandles(currentSpot) {
         let vol = Math.floor(Math.random() * 5000) + 1000;
         let isUp = close > open;
         res.push({ time: time, open, high, low, close });
-        volRes.push({ time: time, value: vol, color: isUp ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)' });
         price = close;
         time += 60;
     }
     res[res.length-1].close = currentSpot;
     tvCandleSeries.setData(res);
     tvLineSeries.setData(res.map(d => ({ time: d.time, value: d.close })));
-    if(tvVolumeSeries) tvVolumeSeries.setData(volRes); // 🟢 Set Volume Data
 }
 
 function updateTVChartEOR_EOS(chainData, coaData) {
