@@ -226,18 +226,22 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     table { min-width: 850px; } 
     th, td { font-size: 11px; padding: 4px 2px; } 
     
-    /* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
-    .right-sidebar, .chart-sidebar.open { 
-        position: fixed; 
+/* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
+    .chart-sidebar, .right-sidebar { 
+        position: fixed !important; /* 🟢 FIX: Removes them from the vertical column completely */
         top: 52px; /* Snaps right under header */
         left: 0; 
         width: 100% !important; 
-        /* Fits exactly between header and bottom nav */
-        height: calc(100dvh - 52px - 50px); 
+        height: calc(100dvh - 52px - 55px) !important; /* Fits perfectly between header and nav */
         z-index: 100; 
         background: var(--bg); 
         border: none;
     }
+
+    /* 🟢 Smooth slide-in animation for mobile charts */
+    .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .chart-sidebar.open { transform: translateX(0); }
+    
     .chart-sidebar .resizer { display: none; } 
     .charts-container { flex-direction: column; height: auto; gap: 10px; }
     .chart-box { height: 250px; }
