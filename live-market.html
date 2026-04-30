@@ -924,8 +924,16 @@ if (lastEntry !== nowStr) {
 function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
     sidebar.classList.toggle('open');
-    if (sidebar.classList.contains('open') && !tvChartInst) {
-        initTVChart();
+    
+    // 🟢 Add this to force TradingView to redraw for the phone screen
+    if (tvChartInst && sidebar.classList.contains('open')) {
+        setTimeout(() => {
+            const container = document.getElementById('tv-chart');
+            tvChartInst.applyOptions({
+                width: container.clientWidth,
+                height: container.clientHeight
+            });
+        }, 300); // Wait for the transition to finish
     }
 }
 
