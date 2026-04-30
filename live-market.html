@@ -226,19 +226,19 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     td:nth-child(6), th:nth-child(6), td:nth-last-child(6), th:nth-last-child(6) { width: 35px; max-width: 35px; } /* RPL/SPL */
     th.strike-cell, td.strike-cell { width: 45px; min-width: 45px; font-size: 11px; }
 
-   /* 4. FULL SCREEN CHARTS (Fixed Scaling & Gaps) */
+/* 4. FULL SCREEN CHARTS (Fixed Scaling & Gaps) */
     .chart-sidebar, .right-sidebar { 
         position: fixed !important; 
         top: 52px; 
         left: 0; 
         width: 100vw !important; 
-        /* Using dynamic viewport height to account for mobile browser address bars */
         height: calc(100dvh - 52px - 55px) !important; 
         z-index: 100; 
         background: var(--bg); 
         border: none;
         display: flex;
         flex-direction: column;
+        overflow: hidden; /* Prevent body scrolling while chart is open */
     }
 
     .chart-sidebar { 
@@ -249,21 +249,31 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .chart-sidebar.open { transform: translateX(0); }
     .chart-sidebar .resizer { display: none; } 
 
-    /* Force the internal chart containers to expand */
+    /* Use flex to force the box to take up remaining height */
     .charts-container {
-        height: 100% !important;
-        width: 100% !important;
-        display: block !important; /* Stack them vertically if there are multiple */
+        flex: 1 !important; /* Take up all available vertical space */
+        width: 100vw !important;
+        display: flex !important; 
+        flex-direction: column !important;
         padding: 0 !important;
+        margin: 0 !important;
     }
 
     .chart-box {
-        height: 100% !important; /* Forces the single active chart to fill the view */
-        width: 100% !important;
+        flex: 1 !important; /* Force to fill container */
+        width: 100vw !important;
         border: none !important;
+        border-radius: 0 !important; /* Remove desktop rounded corners on mobile */
+        padding: 0 !important;
+        margin: 0 !important;
+        position: relative; /* Essential for TradingView internal absolute positioning */
     }
 
+    /* Target the actual div you pass to TradingView */
     #tv-chart { 
+        position: absolute; /* Lock it to the boundaries of .chart-box */
+        top: 0;
+        left: 0;
         width: 100% !important; 
         height: 100% !important; 
     }
