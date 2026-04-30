@@ -1469,6 +1469,23 @@ window.initTerminal = async function() {
         }
     }, 30000); 
 };  
+  // 🟢 adjust strike + - 🟢
+window.adjustStrike = function(direction) {
+    // 1. Get the current symbol (Default to NIFTY if it fails)
+    const symInput = document.getElementById('order-sym');
+    const sym = symInput ? symInput.value : 'NIFTY';
+    
+    // 2. Determine the interval (50, 100, etc.)
+    const interval = window.getStrikeInterval ? window.getStrikeInterval(sym) : 50;
+    
+    // 3. Update the input field
+    const strikeInput = document.getElementById('order-strike');
+    if (strikeInput) {
+        let currentVal = parseInt(strikeInput.value, 10) || 0;
+        strikeInput.value = currentVal + (direction * interval);
+    }
+};
+
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
