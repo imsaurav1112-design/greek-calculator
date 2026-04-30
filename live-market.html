@@ -535,8 +535,8 @@ th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'J
     <div class="modal-content" style="max-width: 800px;">
         <button class="modal-close" onclick="closeHistoryModal(event)">✖</button>
         <h2 class="modal-header">Paper Trade <span>History</span></h2>
-        <div style="overflow-x: auto; margin-top: 10px;">
-            <table class="history-table" style="width: 100%;">
+        <div style="overflow-x: auto; margin-top: 10px; width: 100%; -webkit-overflow-scrolling: touch;">
+            <table class="history-table" style="width: 100%; min-width: 500px;">
                 <thead>
                     <tr>
                         <th style="padding: 10px;">Time</th>
