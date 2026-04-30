@@ -152,6 +152,15 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 /* Custom Inputs for Paper Trading */
 .order-input { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; font-size: 14px;}
 .order-input:focus { border-color: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
+  /* 🟢 NEW: Completely hide the default browser up/down arrows on number inputs */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+input[type=number] {
+    -moz-appearance: textfield; /* Firefox */
+}
 
 .charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
 .chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
@@ -284,13 +293,13 @@ th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'J
     <div class="divider"></div>
     <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        Scenario Panel
+        Quick View
     </button>
 
     <div class="divider"></div>
     <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Live Chart
+        Chart
     </button>
 
     <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
