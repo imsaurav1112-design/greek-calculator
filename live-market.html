@@ -1064,16 +1064,53 @@ function createInstChart(containerId) {
     container.innerHTML = '';
 
 const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth || 800,
-        height: container.clientHeight || 160,
-        layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#a1a1aa', fontFamily: "'Poppins', sans-serif" },
-        grid: { vertLines: { color: 'rgba(39, 39, 42, 0.5)' }, horzLines: { color: 'rgba(39, 39, 42, 0.5)' } },
-        timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
-        rightPriceScale: { borderColor: '#27272a', scaleMargins: { top: 0.1, bottom: 0.1 } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        handleScroll: false,
-        handleScale: false
-    });
+    layout: { 
+        background: { type: 'solid', color: '#131722' }, // Authentic TV Dark Background
+        textColor: '#d1d4dc', // Authentic TV Text Color
+        fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" // TV's preferred font stack
+    },
+    grid: { 
+        vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, // Subtle grid lines
+        horzLines: { color: 'rgba(42, 46, 57, 0.5)' } 
+    },
+    crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: {
+            color: '#758696',
+            width: 1,
+            style: LightweightCharts.LineStyle.Dashed,
+            labelBackgroundColor: '#2b2b43',
+        },
+        horzLine: {
+            color: '#758696',
+            width: 1,
+            style: LightweightCharts.LineStyle.Dashed,
+            labelBackgroundColor: '#2b2b43',
+        },
+    },
+    rightPriceScale: { 
+        borderColor: '#2b2b43', // Separator line color
+    },
+    timeScale: { 
+        borderColor: '#2b2b43',
+        timeVisible: true,
+        secondsVisible: false,
+    }
+});
+
+  const tvCandleSeries = chart.addCandlestickSeries({ 
+    // Authentic TV Green
+    upColor: '#089981', 
+    wickUpColor: '#089981',
+    
+    // Authentic TV Red
+    downColor: '#f23645', 
+    wickDownColor: '#f23645',
+    
+    // Disable borders for a flatter, more modern look 
+    // (or set them to the same color as the candle)
+    borderVisible: false, 
+});
 
     let isDisposed = false;
 
