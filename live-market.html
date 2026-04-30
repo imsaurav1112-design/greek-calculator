@@ -197,81 +197,75 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
 @media (max-width: 768px) {
-.workspace { flex-direction: column; }
-  .table-wrapper { order: 1; }
+    /* 1. Workspace & Main Layout */
+    .workspace { flex-direction: column; }
+    .table-wrapper { order: 1; flex: 1; }
+    
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
     header::-webkit-scrollbar { display: none; }
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
-    .left-nav { order: 2; width: 100%; height: 55px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); justify-content: space-evenly; align-items: center; padding: 0; background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); z-index: 90; flex-shrink: 0; }
-.settings-panel { position: fixed; left: 10px; top: auto; bottom: 70px; width: 220px; max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 105; }
-    .settings-panel::-webkit-scrollbar { width: 4px; }
-    .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }    
-    table { min-width: 850px; } 
-th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
-    .chart-sidebar, .right-sidebar { position: fixed !important; top: 52px; left: 0; width: 100% !important; height: calc(100dvh - 52px - 55px) !important; z-index: 100; background: var(--bg); border: none; }
+    
+    /* 2. Bottom Navigation Bar */
+    .left-nav { 
+        order: 2; width: 100%; height: 55px; flex-direction: row; 
+        border-right: none; border-top: 1px solid var(--border); 
+        justify-content: space-evenly; align-items: center; padding: 0; 
+        background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); 
+        z-index: 90; flex-shrink: 0; 
+    }
+
+    /* 3. Main Option Chain Table Compression */
+    table { min-width: 100%; width: 100%; table-layout: auto; }
+    th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
+    th.ce-header, th.pe-header { font-size: 9px; padding: 2px 1px; }
+
+    /* Narrowing specific Option Chain columns */
+    td:nth-child(1), th:nth-child(1), td:last-child, th:last-child { width: 30px; max-width: 30px; } /* IV */
+    td:nth-child(5), th:nth-child(5), td:nth-last-child(5), th:nth-last-child(5) { width: 40px; max-width: 40px; } /* LTP */
+    td:nth-child(6), th:nth-child(6), td:nth-last-child(6), th:nth-last-child(6) { width: 35px; max-width: 35px; } /* RPL/SPL */
+    th.strike-cell, td.strike-cell { width: 45px; min-width: 45px; font-size: 11px; }
+
+    /* 4. FULL SCREEN CHARTS (No Gaps) */
+    .chart-sidebar, .right-sidebar { 
+        position: fixed !important; top: 52px; left: 0; 
+        width: 100vw !important; 
+        height: calc(100dvh - 52px - 55px) !important; 
+        z-index: 100; background: var(--bg); border: none; 
+    }
     .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .chart-sidebar.open { transform: translateX(0); }
     .chart-sidebar .resizer { display: none; } 
-    .charts-container { flex-direction: column; height: auto; gap: 10px; }
-    .chart-box { height: 250px; }
-    .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
-    footer { height: auto; padding: 8px 10px; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
-    .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-    .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: none; }
-    .footer-right { width: 100%; justify-content: space-between; }
-  table { 
-        min-width: 100%; /* Let it shrink to the screen width if possible */
+    #tv-chart { width: 100% !important; height: 100% !important; }
+
+    /* 5. PAPER TRADING HISTORY PANEL (Optimized Spacing) */
+    #history-modal .history-table {
+        min-width: 500px !important; /* Reduced from 600 to prevent excessive scrolling */
+        table-layout: fixed;
         width: 100%;
-        table-layout: auto; 
-    }
-  th.ce-header, th.pe-header {
-        font-size: 9px; /* Make header text smaller to match tight columns */
-        padding: 2px 1px;
-    }
-  td:nth-child(1), th:nth-child(1), /* CE IV */
-    td:last-child, th:last-child {    /* PE IV */
-        width: 30px; 
-        max-width: 30px;
-    }
-
-    td:nth-child(5), th:nth-child(5), /* CE LTP */
-    td:nth-last-child(5), th:nth-last-child(5) { /* PE LTP */
-        width: 40px;
-        max-width: 40px;
-    }
-
-    td:nth-child(6), th:nth-child(6), /* CE RPL */
-    td:nth-last-child(6), th:nth-last-child(6) { /* PE SPL */
-        width: 35px;
-        max-width: 35px;
-    }
-
-    /* Shrink the Strike column slightly */
-    th.strike-cell, td.strike-cell {
-        width: 45px;
-        min-width: 45px;
-        font-size: 11px; /* Keep Strike slightly larger for readability */
-    }
-  #history-modal .history-table {
-        min-width: 700px !important; /* Forces the table to stay wide */
-        table-layout: fixed; /* Helps maintain consistent column widths */
     }
 
     #history-modal .history-table th, 
     #history-modal .history-table td {
-        padding: 12px 8px !important; /* Give the data breathing room */
-        font-size: 11px;
-        word-break: break-all;
+        padding: 8px 4px !important; /* Tighter padding to bring columns together */
+        font-size: 10px;
+        white-space: nowrap;
+        word-break: normal;
     }
 
-    /* Target specific column widths for the history log */
-    #history-modal .history-table th:nth-child(1) { width: 80px; }  /* Time */
-    #history-modal .history-table th:nth-child(2) { width: 100px; } /* Symbol */
-    #history-modal .history-table th:nth-child(3) { width: 80px; }  /* Strike */
-    #history-modal .history-table th:nth-child(4) { width: 60px; }  /* Type */
-}
+    /* Column-specific widths to eliminate gaps */
+    #history-modal .history-table th:nth-child(1) { width: 65px; }  /* Time (Narrow) */
+    #history-modal .history-table th:nth-child(2) { width: 85px; }  /* Symbol */
+    #history-modal .history-table th:nth-child(3) { width: 60px; }  /* Strike */
+    #history-modal .history-table th:nth-child(4) { width: 40px; }  /* Type (CE/PE) */
+    #history-modal .history-table th:nth-child(5) { width: 60px; }  /* Entry */
+    #history-modal .history-table th:nth-child(6) { width: 55px; }  /* SL */
+    #history-modal .history-table th:nth-child(7) { width: 60px; }  /* Target */
+    #history-modal .history-table th:nth-child(8) { width: 75px; }  /* Status (Last column takes remaining) */
+
+    /* Modal Tweaks */
+    .modal-content { width: 95%; padding: 12px; max-height: 85vh; }
+    .settings-panel { position: fixed; left: 10px; bottom: 70px; top: auto; width: 220px; max-height: 60vh; }
 }
 </style>
 </head>
