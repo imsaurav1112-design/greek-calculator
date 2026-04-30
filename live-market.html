@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
-  <style>
+<style>
 :root {
   --bg: #09090b;         
   --card: #141415;       
@@ -92,22 +92,13 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
 .workspace { 
-    flex: 1; /* Fills the exact space between header and footer */
-    display: flex; 
-    overflow: hidden; 
-    position: relative; 
-    background: var(--bg); 
-    min-height: 0; /* Magic fix: Allows children to scroll */
+    flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); min-height: 0; 
 }
 
 .table-wrapper { 
-    flex: 1; /* Takes up all available space inside workspace */
-    overflow: auto; 
-    position: relative; 
-    -webkit-overflow-scrolling: touch; 
-    min-height: 0; /* Magic fix: Stops the table from overflowing the screen */
+    flex: 1; overflow: auto; position: relative; -webkit-overflow-scrolling: touch; min-height: 0; 
 }
-  table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
+table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; table-layout: auto; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 600; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
 th.strike-cell { background: #1e293b !important; color: #f8fafc !important; border-bottom: 1px solid var(--accent); }
@@ -131,6 +122,10 @@ td:last-child { border-right: none; }
 .itm-ce { background-color: var(--itm-ce); }
 .itm-pe { background-color: var(--itm-pe); }
 
+/* 🟢 NEW: Clickable LTP styling */
+.clickable-ltp { cursor: pointer; position: relative; transition: 0.2s; }
+.clickable-ltp:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); }
+
 .max-ce-heat { background-color: var(--red) !important; color: #fff !important; font-weight: 800 !important; }
 .max-pe-heat { background-color: var(--green) !important; color: #fff !important; font-weight: 800 !important; }
 .heat-2nd { background-color: var(--gold) !important; color: #000 !important; font-weight: 800 !important; }
@@ -144,35 +139,20 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { 
-    background: var(--card); 
-    border: 1px solid var(--border); 
-    border-radius: 12px; 
-    width: 90%; 
-    max-width: 1000px; 
-    padding: 24px; 
-    position: relative; 
-    box-shadow: 0 15px 50px rgba(0,0,0,0.9); 
-    display: flex; 
-    flex-direction: column; 
-    gap: 20px; 
-    
-    /* 🟢 THE FIX: Force the modal to fit the screen and scroll internally */
-    max-height: 90vh; /* Never grow taller than 90% of the viewport height */
-    overflow-y: auto; /* Enable vertical scrolling */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on phones */
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
+    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
 }
-
-/* Optional: Make the scrollbar look sleek so it matches your dark theme */
-.modal-content::-webkit-scrollbar {
-    width: 6px;
-}
-.modal-content::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 6px;
-}.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.modal-content::-webkit-scrollbar { width: 6px; }
+.modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
 .modal-close:hover { color: var(--red); transform: scale(1.1); }
 .modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
 .modal-header span { color: var(--accent); }
+
+/* Custom Inputs for Paper Trading */
+.order-input { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; font-size: 14px;}
+.order-input:focus { border-color: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
+
 .charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
 .chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
 
@@ -207,106 +187,30 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
-/* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-.workspace { 
-        flex-direction: column; 
-    }
-  .table-wrapper {
-        order: 1; /* Keeps the table at the top of the workspace */
-    }
-    
-    /* 1. Header: Smooth horizontal scroll, smaller buttons */
+.workspace { flex-direction: column; }
+  .table-wrapper { order: 1; }
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
     header::-webkit-scrollbar { display: none; }
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
-    
-/* Bottom App Navigation Bar */
-    .left-nav { 
-        order: 2; /* Forces the nav bar to sit UNDER the table */
-        width: 100%; 
-        height: 55px; 
-        flex-direction: row; 
-        border-right: none; 
-        border-top: 1px solid var(--border); 
-        justify-content: space-evenly; 
-        align-items: center;
-        padding: 0; 
-        background: rgba(20, 20, 21, 0.95);
-        backdrop-filter: blur(10px);
-        z-index: 90;
-        flex-shrink: 0; /* Stops the table from crushing the nav bar */
-    }
-    
-.settings-panel { 
-        position: fixed; 
-        left: 10px; 
-        top: auto; 
-        /* Drops it slightly closer to the bottom nav for easier thumb reach */
-        bottom: 70px; 
-        width: 220px; 
-        
-        /* 🟢 FIX: Forces the menu to stop growing and start scrolling */
-        max-height: 60vh; /* Limits height to 60% of the screen */
-        overflow-y: auto; /* Enables vertical scrolling inside the menu */
-        -webkit-overflow-scrolling: touch; /* Buttery smooth iOS scrolling */
-        z-index: 105; /* Ensures it stays above the chart sidebars */
-    }
-    
-    /* Optional: Hide the ugly scrollbar on modern phones for a cleaner look */
-    .settings-panel::-webkit-scrollbar {
-        width: 4px;
-    }
-    .settings-panel::-webkit-scrollbar-thumb {
-        background-color: var(--border);
-        border-radius: 4px;
-    }    
-    /* 4. Table Strict Constraints */
+    .left-nav { order: 2; width: 100%; height: 55px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); justify-content: space-evenly; align-items: center; padding: 0; background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); z-index: 90; flex-shrink: 0; }
+.settings-panel { position: fixed; left: 10px; top: auto; bottom: 70px; width: 220px; max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 105; }
+    .settings-panel::-webkit-scrollbar { width: 4px; }
+    .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }    
     table { min-width: 850px; } 
-th, td {
-    font-size: 11px;
-    /* 🟢 1. Ultra-tight padding: 4px top/bottom, 4px left/right */
-    padding: 4px 4px; 
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace; 
-    text-align: center; 
-    /* 🟢 2. REMOVED min-width: 14ch so smaller columns can shrink tightly */
-}
-    
-/* 5. Full Screen Overlay Sidebars (Scenario & Chart panels) */
-    .chart-sidebar, .right-sidebar { 
-        position: fixed !important; /* 🟢 FIX: Removes them from the vertical column completely */
-        top: 52px; /* Snaps right under header */
-        left: 0; 
-        width: 100% !important; 
-        height: calc(100dvh - 52px - 55px) !important; /* Fits perfectly between header and nav */
-        z-index: 100; 
-        background: var(--bg); 
-        border: none;
-    }
-
-    /* 🟢 Smooth slide-in animation for mobile charts */
+th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; }
+    .chart-sidebar, .right-sidebar { position: fixed !important; top: 52px; left: 0; width: 100% !important; height: calc(100dvh - 52px - 55px) !important; z-index: 100; background: var(--bg); border: none; }
     .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .chart-sidebar.open { transform: translateX(0); }
-    
     .chart-sidebar .resizer { display: none; } 
     .charts-container { flex-direction: column; height: auto; gap: 10px; }
     .chart-box { height: 250px; }
     .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
-    
-    /* 6. Ultra-Compact Footer */
-    footer { 
-        height: auto; 
-        padding: 8px 10px; 
-        flex-direction: column; 
-        gap: 6px; 
-        font-size: 10px;
-        z-index: 95;
-    }
+    footer { height: auto; padding: 8px 10px; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
     .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
     .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: none; } /* Hide dividers to save space */
+    .footer-left .divider { display: none; }
     .footer-right { width: 100%; justify-content: space-between; }
 }
 </style>
@@ -401,6 +305,11 @@ th, td {
                 </div>
             </div>
         </div>
+
+        <!-- 🟢 NEW: Paper Trading History Button -->
+        <button class="nav-btn" onclick="openHistoryModal()" title="Paper Trading History">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        </button>
 
         <div style="flex:1;"></div>
         <button class="nav-btn" onclick="window.open('backtester.html', '_blank')" title="Open Backtester">
@@ -504,6 +413,7 @@ th, td {
     <input type="number" id="inp-spot" style="display:none;">
 </footer>
 
+<!-- Strike Charts Modal -->
 <div class="modal-overlay" id="chart-modal" onclick="closeCharts(event)">
     <div class="modal-content">
         <button class="modal-close" onclick="closeCharts(event)">✖</button>
@@ -530,6 +440,69 @@ th, td {
                 </div>
                 <div id="tv-modal-oi-chg" style="flex: 1; width: 100%;"></div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🟢 NEW: Paper Order Ticket Modal -->
+<div class="modal-overlay" id="order-modal" onclick="closeOrderModal(event)">
+    <div class="modal-content" style="max-width: 400px;">
+        <button class="modal-close" onclick="closeOrderModal(event)">✖</button>
+        <h2 class="modal-header">Paper Order <span id="order-title-span">Ticket</span></h2>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top: 10px;">
+            <input type="hidden" id="order-sym">
+            
+            <label style="font-size:11px; color:var(--muted); font-weight:600;">STRIKE & TYPE
+                <div style="display:flex; gap:10px; margin-top:6px;">
+                    <input type="number" id="order-strike" class="order-input" style="flex:2;">
+                    <select id="order-type" class="order-input" style="flex:1;">
+                        <option value="CE">CE</option>
+                        <option value="PE">PE</option>
+                    </select>
+                </div>
+            </label>
+            
+            <label style="font-size:11px; color:var(--muted); font-weight:600;">LIMIT ENTRY PRICE
+                <input type="number" id="order-entry" step="0.05" class="order-input" style="margin-top:6px;">
+            </label>
+            
+            <div style="display:flex; gap:10px;">
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">STOP LOSS
+                    <input type="number" id="order-sl" step="0.05" class="order-input" style="margin-top:6px;">
+                </label>
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">TARGET
+                    <input type="number" id="order-target" step="0.05" class="order-input" style="margin-top:6px;">
+                </label>
+            </div>
+            
+            <button class="primary-btn" onclick="submitPaperTrade()" style="padding:12px; font-size:14px; border-radius:6px; margin-top:10px; width:100%;">Execute Trade</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🟢 NEW: Paper Trade History Modal -->
+<div class="modal-overlay" id="history-modal" onclick="closeHistoryModal(event)">
+    <div class="modal-content" style="max-width: 800px;">
+        <button class="modal-close" onclick="closeHistoryModal(event)">✖</button>
+        <h2 class="modal-header">Paper Trade <span>History</span></h2>
+        <div style="overflow-x: auto; margin-top: 10px;">
+            <table class="history-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px;">Time</th>
+                        <th>Symbol</th>
+                        <th>Strike</th>
+                        <th>Type</th>
+                        <th>Entry</th>
+                        <th>SL</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="trade-history-body">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -827,7 +800,7 @@ async function fetchUpstoxChain(quiet = false) {
 if (lastEntry !== nowStr) {
         liveHistory.push({
             time: nowStr,
-            spot: data.spot, // 🟢 ADD THIS: Saves the spot price to memory
+            spot: data.spot, 
             rows: globalRows.map(r => ({
                 strike: r.strike,
                 ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
@@ -879,23 +852,19 @@ tvChartInst = LightweightCharts.createChart(container, {
             grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
             crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
             
-            // 🟢 Added autoScale to stretch the dots into visible candles
             rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, 
             timeScale: { borderColor: '#2a2e39', timeVisible: true }
-            // 🟢 Watermark line completely removed
         });
 
 tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        tvLineSeries.applyOptions({ visible: false }); // 🟢 Hide line by default
+        tvLineSeries.applyOptions({ visible: false }); 
         
         tvCandleSeries = tvChartInst.addCandlestickSeries({ 
             upColor: '#26a69a', downColor: '#ef5350', 
             borderVisible: false, 
             wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
         });
-        // 🟢 Candles are visible by default 
         
-
 updateRealSpotChart();
 
         if (globalData && globalData.chain && globalData.coa) {
@@ -928,18 +897,16 @@ function toggleTVType() {
 
 function refreshTVChart() { 
     if(tvChartInst) {
-        // 🟢 Removed fitContent() so candles remain a readable size
-        tvChartInst.timeScale().scrollToRealTime(); // 🟢 Instantly locks focus on the newest candle
+        tvChartInst.timeScale().scrollToRealTime(); 
         tvChartInst.priceScale('right').applyOptions({ autoScale: true }); 
     }
 }
 
-// 🟢 NEW ENGINE: Fetches spot history and aggregates into 3-Minute Japanese Candlesticks
 function updateRealSpotChart() {
     if (!tvLineSeries || !tvCandleSeries || !liveHistory || liveHistory.length === 0) return;
 
     const spotData = [];
-    const candleMap = new Map(); // 🟢 Uses a Map to group snapshots into 3-minute buckets
+    const candleMap = new Map(); 
     const seenTimes = new Set();
 
     liveHistory.forEach(snap => {
@@ -951,28 +918,22 @@ function updateRealSpotChart() {
         if (seenTimes.has(timestamp)) return;
         seenTimes.add(timestamp);
 
-        // Standard 1-minute data for the Line chart (if user toggles back)
         spotData.push({ time: timestamp, value: spotVal });
 
-        // --- 3-MINUTE CANDLE MATH ---
-        // 180 seconds = 3 minutes. 09:15 IST perfectly aligns with this division limit.
         const bucketTime = Math.floor(timestamp / 180) * 180;
 
         if (!candleMap.has(bucketTime)) {
-            // First tick of the 3-minute window (Sets the Open)
             candleMap.set(bucketTime, { time: bucketTime, open: spotVal, high: spotVal, low: spotVal, close: spotVal });
         } else {
-            // Updating the active candle
             const candle = candleMap.get(bucketTime);
-            candle.high = Math.max(candle.high, spotVal); // Push High up if price spikes
-            candle.low = Math.min(candle.low, spotVal);   // Push Low down if price drops
-            candle.close = spotVal;                       // Constantly update the Close
+            candle.high = Math.max(candle.high, spotVal); 
+            candle.low = Math.min(candle.low, spotVal);   
+            candle.close = spotVal;                       
         }
     });
 
     spotData.sort((a, b) => a.time - b.time);
     
-    // Convert the buckets back into an array for TradingView
     const candleData = Array.from(candleMap.values()).sort((a, b) => a.time - b.time);
 
     tvLineSeries.setData(spotData);
@@ -1008,16 +969,12 @@ function updateTVChartEOR_EOS(chainData, coaData) {
         activePriceLines.push({ series: baseSeries, line: pLine });
     };
 
-// Resistance Levels (On chart line)
     drawLine(eorVal, '#ef5350', 2, 0, 'R1');
     drawLine(eorPlus1Val, '#ff8a65', 1, 2, 'R2');
-    
-    // Support Levels (on chart line)
     drawLine(eosVal, '#26a69a', 2, 0, 'S1');
     drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'S2');
 }
 
-// 🟢 Helper to convert "09:15 AM" to TradingView UNIX timestamp
 function parseTimeToUnix(timeStr) {
     const [time, period] = timeStr.split(' ');
     let [hrs, mins] = time.split(':');
@@ -1030,10 +987,9 @@ function parseTimeToUnix(timeStr) {
     return Math.floor(d.getTime() / 1000); 
 }
 
-// 🟢 Helper to create an Institutional TradingView Chart (Now with Self-Cleaning Memory)
 function createInstChart(containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = ''; // Clear old chart HTML
+    container.innerHTML = '';
 
 const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 800,
@@ -1043,31 +999,25 @@ const chart = LightweightCharts.createChart(container, {
         timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#27272a' },
         rightPriceScale: { borderColor: '#27272a', scaleMargins: { top: 0.1, bottom: 0.1 } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        
-        // 🟢 THE FIX: Disable all drag-to-pan and scroll-to-zoom behaviors
         handleScroll: false,
         handleScale: false
     });
 
     let isDisposed = false;
 
-    // Make it mobile responsive safely
     const observer = new ResizeObserver(entries => {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
         try { 
             chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
-        } catch(e) { 
-            // Failsafe in case a rogue resize sneaks through
-        }
+        } catch(e) {}
     });
     observer.observe(container);
 
-    // Intercept the remove command to kill the observer so it doesn't crash the next chart
     const originalRemove = chart.remove.bind(chart);
     chart.remove = function() {
         isDisposed = true;
-        observer.disconnect(); // Kill the ghost watcher
-        originalRemove();      // Safely destroy the TradingView instance
+        observer.disconnect();
+        originalRemove();      
     };
 
     return chart;
@@ -1083,8 +1033,8 @@ function showStrikeCharts(strike) {
 
     const ceVolData = [], peVolData = [];
     const ceOiData = [], peOiData = [];
-    const ceLtpData = [], peLtpData = [];       // For the Price lines
-    const ceOiChgData = [], peOiChgData = [];   // For the missing OI Chg chart
+    const ceLtpData = [], peLtpData = [];       
+    const ceOiChgData = [], peOiChgData = [];   
     const seenTimes = new Set();
 
     liveHistory.forEach(snap => {
@@ -1099,7 +1049,6 @@ function showStrikeCharts(strike) {
             ceOiData.push({ time: timestamp, value: row.ceOI });
             peOiData.push({ time: timestamp, value: row.peOI });
             
-            // 🟢 Extract the missing data
             ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 });
             peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
             ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 });
@@ -1107,23 +1056,19 @@ function showStrikeCharts(strike) {
         }
     });
 
-    // TradingView mandatory chronological sorting
     const sorter = (a, b) => a.time - b.time;
     ceVolData.sort(sorter); peVolData.sort(sorter);
     ceOiData.sort(sorter); peOiData.sort(sorter);
     ceLtpData.sort(sorter); peLtpData.sort(sorter);
     ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-// --- 1. VOLUME CHART ---
     if (tvModalVolChart) tvModalVolChart.remove();
     tvModalVolChart = createInstChart('tv-modal-vol');
-    // 🟢 Changed from Area to Line
     const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
     const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
     ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
     tvModalVolChart.timeScale().fitContent();
 
-    // --- 2. DUAL-AXIS OI BUILDUP VS PRICE ---
     if (tvModalOiChart) tvModalOiChart.remove();
     tvModalOiChart = createInstChart('tv-modal-oi');
     
@@ -1132,7 +1077,6 @@ function showStrikeCharts(strike) {
         rightPriceScale: { visible: true, borderColor: '#27272a' }
     });
 
-    // 🟢 Changed from Area to Line
     const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
     const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
     
@@ -1143,11 +1087,9 @@ function showStrikeCharts(strike) {
     ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
     tvModalOiChart.timeScale().fitContent();
 
-    // --- 3. INTRADAY OI CHANGE CHART ---
     if (tvModalOiChgChart) tvModalOiChgChart.remove();
     tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
     
-    // 🟢 Changed from Area to Line
     const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
     const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
     
@@ -1156,8 +1098,6 @@ function showStrikeCharts(strike) {
 }
 
 function closeCharts(event) { 
-    // 🟢 If an event exists, make sure they clicked the dark overlay OR the X button.
-    // If they clicked the white modal content, do nothing.
     if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) {
         return; 
     }
@@ -1179,7 +1119,6 @@ function updateMarketIntelligence(coa) {
     
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
-    // Safely format the new Probable Intraday Range (S2 to R2)
     const s2_val = coa.s2 !== undefined ? coa.s2 : 0;
     const r2_val = coa.r2 !== undefined ? coa.r2 : 0;
     document.getElementById('coa-range').innerText = `${s2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${r2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
@@ -1193,15 +1132,12 @@ function updateMarketIntelligence(coa) {
         lastLogSignature = currentSig;
 
 logBody.innerHTML = coa.logs.map(log => {
-            // The logs are now strings (sentences), not objects with .eor/.eos
             if (typeof log === 'string') {
-                // Split the string into "TIME - MESSAGE"
                 const parts = log.split(' - ');
                 if (parts.length >= 2) {
                     const time = parts[0];
                     const msg = parts.slice(1).join(' - ');
                     
-                    // Style the message based on its content
                     let msgColor = 'var(--text)';
                     if (msg.includes('Bullish') || msg.includes('Top')) msgColor = 'var(--green)';
                     if (msg.includes('Bearish') || msg.includes('Bottom')) msgColor = 'var(--red)';
@@ -1216,6 +1152,83 @@ logBody.innerHTML = coa.logs.map(log => {
         logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
     }
 }
+
+// 🟢 NEW: Paper Trading Setup 
+let paperTrades = JSON.parse(localStorage.getItem('paperTrades') || '[]');
+
+function openOrderModal(sym, strike, type, ltp) {
+    document.getElementById('order-sym').value = sym;
+    document.getElementById('order-strike').value = strike;
+    document.getElementById('order-type').value = type;
+    document.getElementById('order-entry').value = ltp.toFixed(2);
+    // Add default mock values for SL/Target just to save the user a click
+    document.getElementById('order-sl').value = (ltp * 0.9).toFixed(2);
+    document.getElementById('order-target').value = (ltp * 1.2).toFixed(2);
+    
+    document.getElementById('order-modal').style.display = 'flex';
+}
+
+function closeOrderModal(event) {
+    if (event && event.target.id !== 'order-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('order-modal').style.display = 'none';
+}
+
+async function submitPaperTrade() {
+    const trade = {
+        id: Date.now(),
+        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        sym: document.getElementById('order-sym').value,
+        strike: document.getElementById('order-strike').value,
+        type: document.getElementById('order-type').value,
+        entry: document.getElementById('order-entry').value,
+        sl: document.getElementById('order-sl').value,
+        target: document.getElementById('order-target').value,
+        status: 'Open'
+    };
+    
+    paperTrades.push(trade);
+    localStorage.setItem('paperTrades', JSON.stringify(paperTrades));
+    
+    // 🟢 Send to your Python backend to be permanently logged / emailed
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        fetch(`${UPSTOX_API}/api/paper-trade`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(trade)
+        }).catch(err => console.log('Backend sync skipped:', err));
+    } catch(e) {}
+    
+    document.getElementById('order-modal').style.display = 'none';
+    alert(`Order Placed for ${trade.sym} ${trade.strike} ${trade.type} at ₹${trade.entry}`);
+}
+
+function openHistoryModal() {
+    const body = document.getElementById('trade-history-body');
+    if (paperTrades.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--muted); padding: 20px;">No paper trades executed today. Click an LTP cell to start trading.</td></tr>`;
+    } else {
+        body.innerHTML = paperTrades.map(t => `
+            <tr>
+                <td style="padding: 10px;">${t.time}</td>
+                <td><b>${t.sym}</b></td>
+                <td>${t.strike}</td>
+                <td style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'}; font-weight:bold;">${t.type}</td>
+                <td>${t.entry}</td>
+                <td style="color:var(--muted);">${t.sl}</td>
+                <td style="color:var(--gold);">${t.target}</td>
+                <td style="color:var(--accent); font-weight:600;">${t.status}</td>
+            </tr>
+        `).join('');
+    }
+    document.getElementById('history-modal').style.display = 'flex';
+}
+
+function closeHistoryModal(event) {
+    if (event && event.target.id !== 'history-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('history-modal').style.display = 'none';
+}
+
 
 let renderTable = function(rows, sym, data, quiet = false) {
   const spot = parseFloat(document.getElementById('inp-spot').value) || 0;
@@ -1305,19 +1318,22 @@ let renderTable = function(rows, sym, data, quiet = false) {
     const ceChgStr = (r.ce.change_oi >= 0 ? '+' : '') + fmtN(r.ce.change_oi, 0);
     const peChgStr = (r.pe.change_oi >= 0 ? '+' : '') + fmtN(r.pe.change_oi, 0);
 
+    // 🟢 NEW: Clickable LTP integration here
     html += `<tr class="${isAtm ? 'atm-row' : ''}">
       ${ceExtraTd}
       <td class="${ceBg}" style="color:var(--muted);">${(parseFloat(r.ce.iv)||0).toFixed(1)}</td>
       <td ${tdHeat(ceBg, getHeatCls(Math.abs(r.ce.change_oi), maxCeChg, secCeChg, 'ce'))}>${formatCell(ceChgStr, Math.abs(r.ce.change_oi), maxCeChg, secCeChg)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
-      <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
+      
+      <td class="${ceBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'CE', ${r.ce.ltp || 0})">${(r.ce.ltp||0).toFixed(1)}</td>
+      
       <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(1)}</td>
-      
       <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike.toLocaleString('en-IN')}</td>
-      
       <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(1)}</td>
-      <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
+      
+      <td class="${peBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'PE', ${r.pe.ltp || 0})">${(r.pe.ltp||0).toFixed(1)}</td>
+      
       <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
       <td ${tdHeat(peBg, getHeatCls(Math.abs(r.pe.change_oi), maxPeChg, secPeChg, 'pe'))}>${formatCell(peChgStr, Math.abs(r.pe.change_oi), maxPeChg, secPeChg)}</td>
@@ -1361,7 +1377,6 @@ let renderTable = function(rows, sym, data, quiet = false) {
 function abs(x) { return x < 0 ? -x : x; }
 
 window.initTerminal = async function() {
-    // 🟢 1. SECURITY GATE: Check if user is Pro
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
         const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
@@ -1370,13 +1385,9 @@ window.initTerminal = async function() {
         if (profile.tier !== "pro") {
             alert("The Live Terminal requires a Pro subscription.");
             window.location.href = "index.html#pricing";
-            return; // Stop execution, don't load the terminal
+            return; 
         }
-    } catch(e) {
-        console.error("Failed to verify Pro status", e);
-        // Optional: You could kick them out here too if the server fails, 
-        // but usually it's better to let them try to load if the check fails.
-    }
+    } catch(e) {}
     window.loadExpiries(); 
     
     setInterval(() => {
