@@ -1324,23 +1324,38 @@ async function submitPaperTrade() {
     alert(`Order Placed for ${trade.sym} ${trade.strike} ${trade.type} at ₹${trade.entry}`);
 }
 
-function openHistoryModal() {
+window.openHistoryModal = function() {
+    // 1. First, calculate the latest P&L based on current market prices
+    window.calculateLivePnL(); 
+    
     const body = document.getElementById('trade-history-body');
+    
     if (paperTrades.length === 0) {
         body.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--muted); padding: 20px;">No paper trades executed today. Click an LTP cell to start trading.</td></tr>`;
     } else {
-        body.innerHTML = paperTrades.map(t => `
-            <tr>
-                <td style="padding: 10px;">${t.time}</td>
-                <td><b>${t.sym}</b></td>
-                <td>${t.strike}</td>
-                <td style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'}; font-weight:bold;">${t.type}</td>
-                <td>${t.entry}</td>
-                <td style="color:var(--muted);">${t.sl}</td>
-                <td style="color:var(--gold);">${t.target}</td>
-                <td style="color:var(--accent); font-weight:600;">${t.status}</td>
-            </tr>
-        `).join('');
+        body.innerHTML = paperTrades.map(t => {
+            // Determine P&L color logic
+            const pnlValue = parseFloat(t.pnl) || 0;
+            const pnlColor = pnlValue >= 0 ? 'var(--green)' : 'var(--red)';
+            
+            // Show 'Exit' button only if the trade is still 'Open'
+            const actionBtn = t.status === 'Open' 
+                ? `<button onclick="window.exitTrade(${t.id})" style="background:var(--red); color:white; border:none; padding:6px 10px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;">Exit</button>` 
+                : `<span style="color:var(--muted); opacity:0.5;">Closed</span>`;
+
+            return `
+                <tr>
+                    <td style="padding: 10px;">${t.time}</td>
+                    <td><b>${t.sym}</b></td>
+                    <td>${t.strike}</td>
+                    <td style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'}; font-weight:bold;">${t.type}</td>
+                    <td>${t.entry}</td>
+                    <td style="color:${pnlColor}; font-weight:bold;">${t.pnl || '0.00'}</td>
+                    <td style="font-weight:600;">${t.status}</td>
+                    <td>${actionBtn}</td>
+                </tr>
+            `;
+        }).join('');
     }
     document.getElementById('history-modal').style.display = 'flex';
 }
@@ -1567,6 +1582,46 @@ window.adjustStrike = function(direction) {
   window.logoutFirebase = function() {
       signOut(auth);
   };
+  // 🟢 NEW: Calculate Live P&L for the History Modal
+window.calculateLivePnL = function() {
+    if (!globalRows || globalRows.length === 0) return;
+
+    paperTrades.forEach(trade => {
+        if (trade.status === 'Open') {
+            const currentRow = globalRows.find(r => r.strike == trade.strike);
+            if (currentRow) {
+                const currentLtp = trade.type === 'CE' ? currentRow.ce.ltp : currentRow.pe.ltp;
+                const lotSize = globalData.lot_size || 50;
+                trade.live_ltp = currentLtp;
+                trade.pnl = ((currentLtp - trade.entry) * lotSize).toFixed(2);
+            }
+        }
+    });
+};
+
+// 🟢 NEW: Exit a trade and sync with Backend
+window.exitTrade = async function(tradeId) {
+    const trade = paperTrades.find(t => t.id === tradeId);
+    if (!trade) return;
+
+    const exitPrice = trade.live_ltp || trade.entry;
+    const finalPnl = trade.pnl || 0;
+
+    trade.status = 'Closed';
+    trade.exit_price = exitPrice;
+    localStorage.setItem('paperTrades', JSON.stringify(paperTrades));
+
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        await fetch(`${UPSTOX_API}/api/paper-trade/exit`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ id: tradeId, exit_price: exitPrice, pnl: finalPnl })
+        });
+    } catch(e) { console.error("Exit sync failed", e); }
+    
+    openHistoryModal(); // Refresh the table
+};
 </script>
 </body>
 </html>
