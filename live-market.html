@@ -254,6 +254,24 @@ th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'J
         min-width: 45px;
         font-size: 11px; /* Keep Strike slightly larger for readability */
     }
+  #history-modal .history-table {
+        min-width: 700px !important; /* Forces the table to stay wide */
+        table-layout: fixed; /* Helps maintain consistent column widths */
+    }
+
+    #history-modal .history-table th, 
+    #history-modal .history-table td {
+        padding: 12px 8px !important; /* Give the data breathing room */
+        font-size: 11px;
+        word-break: break-all;
+    }
+
+    /* Target specific column widths for the history log */
+    #history-modal .history-table th:nth-child(1) { width: 80px; }  /* Time */
+    #history-modal .history-table th:nth-child(2) { width: 100px; } /* Symbol */
+    #history-modal .history-table th:nth-child(3) { width: 80px; }  /* Strike */
+    #history-modal .history-table th:nth-child(4) { width: 60px; }  /* Type */
+}
 }
 </style>
 </head>
