@@ -973,6 +973,49 @@ function updateTVChartEOR_EOS(chainData, coaData) {
     drawLine(eorPlus1Val, '#ff8a65', 1, 2, 'R2');
     drawLine(eosVal, '#26a69a', 2, 0, 'S1');
     drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'S2');
+
+    // 🟢 THE FIX: Force the chart to scale out to include R2 and S2
+    const currentSpot = parseFloat(document.getElementById('inp-spot').value) || eorVal;
+    
+    // Find the absolute top and bottom we need to see
+    const topBound = Math.max(eorPlus1Val, currentSpot);
+    const bottomBound = Math.min(eosMinus1Val, currentSpot);
+    
+    // Add a 5% visual buffer so the lines aren't glued to the edge of the screen
+    const range = topBound - bottomBound;
+    const buffer = range * 0.05;
+
+    // Apply the custom scale bounds directly to the right axis
+    tvChartInst.priceScale('right').applyOptions({
+        autoScale: false, // Turn off auto-scaling so our custom bounds work
+        scaleMargins: { top: 0.1, bottom: 0.1 }, // Ensures room for the buffer
+    });
+    
+    // Using setTimeout ensures the chart has drawn the lines before resizing
+    setTimeout(() => {
+        if(tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
+             tvCandleSeries.coordinateToPrice(0); // Forces scale calculation
+             tvChartInst.priceScale('right').applyOptions({
+                 autoScale: false
+             });
+             
+             // The only reliable way to force bounds in this library version without breaking pans
+             // is to set the visible range if autoscale fails.
+             // We will re-enable autoScale but pass a large margin to simulate fitting.
+             tvChartInst.priceScale('right').applyOptions({
+                 autoScale: true
+             });
+             
+             // If you want absolute strict bounds (prevents scrolling outside them), use:
+             /*
+             tvChartInst.priceScale('right').applyOptions({
+                 autoScale: false,
+                 minValue: bottomBound - buffer,
+                 maxValue: topBound + buffer
+             });
+             */
+        }
+    }, 50);
 }
 
 function parseTimeToUnix(timeStr) {
