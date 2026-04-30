@@ -201,10 +201,22 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .workspace { flex-direction: column; }
     .table-wrapper { order: 1; flex: 1; }
     
-    header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
+    header { 
+        position: relative !important; /* Required for z-index to work */
+        z-index: 1000 !important; /* Forces header above ALL sidebars and charts */
+        overflow-x: auto; 
+        overflow-y: visible !important; /* Prevents dropdown menus from being cut off */
+        white-space: nowrap; 
+        padding: 0 10px; 
+        gap: 8px; 
+        -webkit-overflow-scrolling: touch; }
     header::-webkit-scrollbar { display: none; }
-    header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
-    .logo { font-size: 14px; }
+    header button, header select, .custom-dropdown-wrapper button { 
+        font-size: 11px; 
+        padding: 6px 10px; 
+        position: relative;
+        pointer-events: auto !important; /* Guarantees they are clickable */ }
+    .logo { font-size: 12px; }
     
     /* 2. Bottom Navigation Bar */
     .left-nav { 
@@ -217,7 +229,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
     /* 3. Main Option Chain Table Compression */
     table { min-width: 100%; width: 100%; table-layout: auto; }
-    th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
+    th, td { font-size: 10px; padding: 4px 3px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
     th.ce-header, th.pe-header { font-size: 9px; padding: 2px 1px; }
 
     /* Narrowing specific Option Chain columns */
