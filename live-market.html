@@ -197,128 +197,106 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
 @media (max-width: 768px) {
-    /* 1. Workspace & Main Layout */
-    .workspace { flex-direction: column; }
-    .table-wrapper { order: 1; flex: 1; }
-    
-    header { 
-        position: relative !important; /* Required for z-index to work */
-        z-index: 1000 !important; /* Forces header above ALL sidebars and charts */
-        overflow-x: auto; 
-        overflow-y: visible !important; /* Prevents dropdown menus from being cut off */
-        white-space: nowrap; 
-        padding: 0 10px; 
-        gap: 8px; 
-        -webkit-overflow-scrolling: touch; }
-    header::-webkit-scrollbar { display: none; }
-    header button, header select, .custom-dropdown-wrapper button { 
-        font-size: 11px; 
-        padding: 6px 10px; 
-        position: relative;
-        pointer-events: auto !important; /* Guarantees they are clickable */ }
-    .logo { font-size: 12px; }
-    
-    /* 2. Bottom Navigation Bar */
-    .left-nav { 
-        order: 2; width: 100%; height: 55px; flex-direction: row; 
-        border-right: none; border-top: 1px solid var(--border); 
-        justify-content: space-evenly; align-items: center; padding: 0; 
-        background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); 
-        z-index: 90; flex-shrink: 0; 
-    }
+    /* 1. Workspace & Main Layout */
+    .workspace { flex-direction: column; }
+    .table-wrapper { order: 1; flex: 1; }
+    
+    header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
+    header::-webkit-scrollbar { display: none; }
+    header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
+    .logo { font-size: 14px; }
+    
+    /* 2. Bottom Navigation Bar */
+    .left-nav { 
+        order: 2; width: 100%; height: 55px; flex-direction: row; 
+        border-right: none; border-top: 1px solid var(--border); 
+        justify-content: space-evenly; align-items: center; padding: 0; 
+        background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); 
+        z-index: 90; flex-shrink: 0; 
+    }
 
-    /* 3. Main Option Chain Table Compression */
-    table { min-width: 100%; width: 100%; table-layout: auto; }
-    th, td { font-size: 10px; padding: 4px 3px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
-    th.ce-header, th.pe-header { font-size: 9px; padding: 2px 1px; }
+    /* 3. Main Option Chain Table Compression */
+    table { min-width: 100%; width: 100%; table-layout: auto; }
+    th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; letter-spacing: -0.2px;}
+    th.ce-header, th.pe-header { font-size: 9px; padding: 2px 1px; }
 
-    /* Narrowing specific Option Chain columns */
-    td:nth-child(1), th:nth-child(1), td:last-child, th:last-child { width: 30px; max-width: 30px; } /* IV */
-    td:nth-child(5), th:nth-child(5), td:nth-last-child(5), th:nth-last-child(5) { width: 40px; max-width: 40px; } /* LTP */
-    td:nth-child(6), th:nth-child(6), td:nth-last-child(6), th:nth-last-child(6) { width: 35px; max-width: 35px; } /* RPL/SPL */
-    th.strike-cell, td.strike-cell { width: 45px; min-width: 45px; font-size: 11px; }
+    /* Narrowing specific Option Chain columns */
+    td:nth-child(1), th:nth-child(1), td:last-child, th:last-child { width: 30px; max-width: 30px; } /* IV */
+    td:nth-child(5), th:nth-child(5), td:nth-last-child(5), th:nth-last-child(5) { width: 40px; max-width: 40px; } /* LTP */
+    td:nth-child(6), th:nth-child(6), td:nth-last-child(6), th:nth-last-child(6) { width: 35px; max-width: 35px; } /* RPL/SPL */
+    th.strike-cell, td.strike-cell { width: 45px; min-width: 45px; font-size: 11px; }
 
-/* 4. FULL SCREEN CHARTS (Fixed Scaling & Gaps) */
-    .chart-sidebar, .right-sidebar { 
-        position: fixed !important; 
-        top: 52px; 
-        left: 0; 
-        width: 100vw !important; 
-        height: calc(100dvh - 52px - 55px) !important; 
-        z-index: 100; 
-        background: var(--bg); 
-        border: none;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden; /* Prevent body scrolling while chart is open */
-    }
+   /* 4. FULL SCREEN CHARTS (Fixed Scaling & Gaps) */
+    .chart-sidebar, .right-sidebar { 
+        position: fixed !important; 
+        top: 52px; 
+        left: 0; 
+        width: 100vw !important; 
+        /* Using dynamic viewport height to account for mobile browser address bars */
+        height: calc(100dvh - 52px - 55px) !important; 
+        z-index: 100; 
+        background: var(--bg); 
+        border: none;
+        display: flex;
+        flex-direction: column;
+    }
 
-    .chart-sidebar { 
-        transform: translateX(-100%); 
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
+    .chart-sidebar { 
+        transform: translateX(-100%); 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
 
-    .chart-sidebar.open { transform: translateX(0); }
-    .chart-sidebar .resizer { display: none; } 
+    .chart-sidebar.open { transform: translateX(0); }
+    .chart-sidebar .resizer { display: none; } 
 
-    /* Use flex to force the box to take up remaining height */
-    .charts-container {
-        flex: 1 !important; /* Take up all available vertical space */
-        width: 100vw !important;
-        display: flex !important; 
-        flex-direction: column !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+    /* Force the internal chart containers to expand */
+    .charts-container {
+        height: 100% !important;
+        width: 100% !important;
+        display: block !important; /* Stack them vertically if there are multiple */
+        padding: 0 !important;
+    }
 
-    .chart-box {
-        flex: 1 !important; /* Force to fill container */
-        width: 100vw !important;
-        border: none !important;
-        border-radius: 0 !important; /* Remove desktop rounded corners on mobile */
-        padding: 0 !important;
-        margin: 0 !important;
-        position: relative; /* Essential for TradingView internal absolute positioning */
-    }
+    .chart-box {
+        height: 100% !important; /* Forces the single active chart to fill the view */
+        width: 100% !important;
+        border: none !important;
+    }
 
-    /* Target the actual div you pass to TradingView */
-    #tv-chart { 
-        position: absolute; /* Lock it to the boundaries of .chart-box */
-        top: 0;
-        left: 0;
-        width: 100% !important; 
-        height: 100% !important; 
-    }
+    #tv-chart { 
+        width: 100% !important; 
+        height: 100% !important; 
+    }
 
-    /* 5. PAPER TRADING HISTORY PANEL */
-    #history-modal .history-table {
-        min-width: 500px !important;
-        table-layout: fixed;
-        width: 100%;
-    }
+    /* 5. PAPER TRADING HISTORY PANEL */
+    #history-modal .history-table {
+        min-width: 500px !important;
+        table-layout: fixed;
+        width: 100%;
+    }
 
-    #history-modal .history-table th, 
-    #history-modal .history-table td {
-        padding: 8px 4px !important;
-        font-size: 10px;
-        white-space: nowrap;
-    }
+    #history-modal .history-table th, 
+    #history-modal .history-table td {
+        padding: 8px 4px !important;
+        font-size: 10px;
+        white-space: nowrap;
+    }
 
-    /* Column Widths */
-    #history-modal .history-table th:nth-child(1) { width: 60px; } /* Time */
-    #history-modal .history-table th:nth-child(2) { width: 80px; } /* Symbol */
-    #history-modal .history-table th:nth-child(3) { width: 60px; } /* Strike */
-    #history-modal .history-table th:nth-child(4) { width: 40px; } /* Type */
-    #history-modal .history-table th:nth-child(5) { width: 55px; } /* Entry */
-    #history-modal .history-table th:nth-child(6) { width: 55px; } /* P&L */
-    #history-modal .history-table th:nth-child(7) { width: 55px; } /* Status */
-    #history-modal .history-table th:nth-child(8) { width: 50px; } /* Exit */
+    /* Column Widths */
+    #history-modal .history-table th:nth-child(1) { width: 60px; } /* Time */
+    #history-modal .history-table th:nth-child(2) { width: 80px; } /* Symbol */
+    #history-modal .history-table th:nth-child(3) { width: 60px; } /* Strike */
+    #history-modal .history-table th:nth-child(4) { width: 40px; } /* Type */
+    #history-modal .history-table th:nth-child(5) { width: 55px; } /* Entry */
+    #history-modal .history-table th:nth-child(6) { width: 55px; } /* P&L */
+    #history-modal .history-table th:nth-child(7) { width: 55px; } /* Status */
+    #history-modal .history-table th:nth-child(8) { width: 50px; } /* Exit */
 
-    /* Modal Tweaks */
-    .modal-content { width: 95%; padding: 12px; max-height: 85vh; overflow-x: auto; }
-    .settings-panel { position: fixed; left: 10px; bottom: 70px; top: auto; width: 220px; max-height: 60vh; }
+    /* Modal Tweaks */
+    .modal-content { width: 95%; padding: 12px; max-height: 85vh; overflow-x: auto; }
+    .settings-panel { position: fixed; left: 10px; bottom: 70px; top: auto; width: 220px; max-height: 60vh; }
 }
-</style>
+fir the live chart on phone to view nicely fit on screen its canvas n all should look perfect on screen</style>
 </head>
 <body>
 
