@@ -256,25 +256,32 @@ header {
     display: none; 
     position: absolute; 
     left: 60px; 
-    top: 0; 
+    top: -50px; /* Shifts it up slightly so it doesn't hit the bottom */
     background: var(--card); 
     border: 1px solid var(--border); 
     border-radius: 8px; 
     width: 190px; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     flex-direction: column; 
-    z-index: 1000; 
+    z-index: 9999; /* Boosted z-index */
     
-    /* 🟢 THE SCROLL FIX: Limit height and enable scrolling */
-    max-height: 85vh; /* Prevents it from going off the bottom of the screen */
-    overflow-y: auto; /* Enables vertical scrolling */
-    -webkit-overflow-scrolling: touch; /* Buttery smooth scrolling on touchpads/phones */
-}    
-/* 🟢 Sleek custom scrollbar for the settings menu */
+    /* 🟢 THE SCROLL ENFORCERS */
+    max-height: 65vh !important; /* Safe height to prevent workspace clipping */
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* 🟢 Stops the browser from squishing the rows to avoid scrolling */
+.settings-panel > * {
+    flex-shrink: 0 !important;
+}
+
 .settings-panel::-webkit-scrollbar { width: 5px; }
-.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; } 
-  .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    /* 4. Table Strict Constraints */
+.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
+
+.light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }    /* 4. Table Strict Constraints */
+  
     table { min-width: 850px; } 
     th, td {
     font-size: 10px;
