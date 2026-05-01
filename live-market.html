@@ -199,7 +199,12 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
     
-    /* 1. Header: Smooth horizontal scroll, smaller buttons */
+  header::after {
+        content: '';
+        display: block;
+        min-width: 15px;
+        flex-shrink: 0;
+    }
    header { 
         display: flex !important;
         flex-wrap: nowrap !important; /* Forces single line */
@@ -214,6 +219,9 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     }
     header > * { flex-shrink: 0 !important; }
     header::-webkit-scrollbar { display: none; }
+  header > *:last-child {
+        margin-right: 24px !important; /* Pushes the Chart button away from the screen edge */
+    }
   
    header button, header select, .custom-dropdown-wrapper button { 
         font-size: 11px !important; 
@@ -224,8 +232,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         position: fixed !important; 
         top: 60px !important; /* Appears just below the header */
         left: 10px !important; /* Sticks to the left side of the screen */
-        width: calc(100vw - 20px) !important; /* Makes it span the screen width */
+        width: max-content !important;
         z-index: 9999 !important;
+        min-width: 0 !important;
+        width: max-content !important;
+    }
+  .custom-option {
+        padding: 8px 12px !important; /* Slightly tighter fit for phone */
     }
   
     .logo { font-size: 14px; }
