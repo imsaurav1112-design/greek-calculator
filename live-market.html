@@ -208,15 +208,17 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 header { 
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important; /* Keep it on one line */
-        overflow: visible !important; /* CRITICAL: Lets dropdowns drop over the table */
-        width: 100vw !important; 
-        padding: 8px 10px !important; 
+        flex-wrap: nowrap !important; 
+        overflow: visible !important; 
+        width: 100vw !important;  /* THE FIX: Slim down the bar and center the items */
+        height: 44px !important; /* Shrinks the overall bar (desktop is 52px) */
+        padding: 0 10px !important; /* Removes excess top/bottom padding */
+        align-items: center !important; /* Keeps everything perfectly vertically centered */
         gap: 8px !important; 
         z-index: 1000 !important; 
         position: relative !important; 
     }
-   header > * {
+  header > * {
         flex-shrink: 0 !important; 
     }
     header::-webkit-scrollbar { display: none; }
@@ -224,9 +226,9 @@ header {
         margin-right: 24px !important; /* Pushes the Chart button away from the screen edge */
     }
   
-header button, header select, .custom-dropdown-wrapper button { 
+    header button, header select, .custom-dropdown-wrapper button { 
         font-size: 11px !important; 
-        padding: 6px 10px !important; 
+        padding: 4px 10px !important; /* Reduced vertical padding from 6px to 4px */
         pointer-events: auto !important; 
         min-width: 0 !important; 
         width: max-content !important; 
