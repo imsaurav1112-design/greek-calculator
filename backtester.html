@@ -93,8 +93,33 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 
 /* Settings Panel logic */
 .settings-panel {
-    display: none; position: absolute; left: 60px; top: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; width: 190px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; z-index: 1000; overflow: hidden;
+    display: none; 
+    position: absolute; 
+    left: 60px; 
+    top: -50px; /* Shifts it up slightly so it doesn't hit the bottom */
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    width: 190px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    flex-direction: column; 
+    z-index: 9999; /* Boosted z-index */
+    
+    /* 🟢 THE SCROLL ENFORCERS */
+    max-height: 65vh !important; /* Safe height to prevent workspace clipping */
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch; 
 }
+
+/* 🟢 Stops the browser from squishing the rows to avoid scrolling */
+.settings-panel > * {
+    flex-shrink: 0 !important;
+}
+
+.settings-panel::-webkit-scrollbar { width: 5px; }
+.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
+
 .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .settings-header { padding: 10px 16px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--section); }
 .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.15s;}
@@ -265,25 +290,18 @@ header {
     .logo { font-size: 14px; }
         
 /* Settings Panel logic */
-.settings-panel {
-    display: none; 
-    position: absolute; 
-    left: 60px; 
-    top: 0; 
-    background: var(--card); 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    width: 190px; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-    flex-direction: column; 
-    z-index: 1000; 
-    
-    /* 🟢 THE SCROLL FIX: Limit height and enable scrolling */
-    max-height: 85vh; /* Prevents it from going off the bottom of the screen */
-    overflow-y: auto; /* Enables vertical scrolling */
-    -webkit-overflow-scrolling: touch; /* Buttery smooth scrolling on touchpads/phones */
-}
-
+.settings-panel { 
+        position: fixed !important; /* Escapes all workspace clipping */
+        left: 10px !important; 
+        top: auto !important; 
+        bottom: 70px !important; 
+        width: 220px !important; 
+        max-height: 60vh !important; 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important; 
+        z-index: 9999 !important; 
+    }
 /* 🟢 Sleek custom scrollbar for the settings menu */
 .settings-panel::-webkit-scrollbar { width: 5px; }
 .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
