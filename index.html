@@ -441,8 +441,7 @@ initBgAnimation();
         profileBtn.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
         
         window.currentFirebaseToken = await user.getIdToken();
-        
-    try {
+        try {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || "";
             
@@ -451,12 +450,21 @@ initBgAnimation();
             });
             const profile = await r.json();
             
-            // 🟢 Populate the Panel with Name
-            document.getElementById('prof-name').innerText = profile.name || "Trader";
-            document.getElementById('prof-email').innerText = profile.email;
-            const referralUrl = window.location.origin + window.location.pathname + "?ref=" + profile.referral_code;
+            // 🟢 1. FIX THE NAME: Fallback to Google's built-in display name if DB is empty
+            const finalName = profile.name || user.displayName || "Trader";
+            document.getElementById('prof-name').innerText = finalName;
+            document.getElementById('prof-email').innerText = profile.email || user.email;
+            
+            const refCodeVal = profile.referral_code || "PENDING";
+            const referralUrl = window.location.origin + window.location.pathname + "?ref=" + refCodeVal;
             document.getElementById('prof-ref-code').value = referralUrl;
-            document.getElementById('prof-wallet').innerText = `₹${profile.wallet_balance.toFixed(2)}`;
+            
+            // 🟢 2. FIX THE WALLET CRASH: Safely parse the number so undefined/null doesn't crash the page
+            const walletNum = parseFloat(profile.wallet_balance) || 0.00;
+            document.getElementById('prof-wallet').innerText = `₹${walletNum.toFixed(2)}`;
+            
+            // 🟢 3. Update the floating profile icon to use their actual initial!
+            document.getElementById('profile-btn').innerText = finalName.charAt(0).toUpperCase();
             
             const badge = document.getElementById('prof-tier-badge');
             const expiryText = document.getElementById('prof-expiry');
