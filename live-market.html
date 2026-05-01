@@ -218,7 +218,14 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         pointer-events: auto !important; 
         flex-shrink: 0 !important; /* Prevents buttons from squishing */
     }
-    .logo { font-size: 10px; }
+  .custom-menu {
+        position: fixed !important; 
+        top: 60px !important; /* Appears just below the header */
+        left: 10px !important; /* Sticks to the left side of the screen */
+        width: calc(100vw - 20px) !important; /* Makes it span the screen width */
+        z-index: 9999 !important;
+    }
+    .logo { font-size: 14px; }
         
 .settings-panel { 
         position: fixed; 
@@ -281,7 +288,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 <body>
 
 <header>
-    <div class="logo"><span>GC</span>Live Data</div>
+    <div class="logo"><span>GC</span>Live</div>
     
    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="min-width: 130px; display: flex; justify-content: space-between; align-items: center;">
