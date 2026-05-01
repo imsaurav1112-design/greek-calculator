@@ -310,12 +310,12 @@ header button, header select, .custom-dropdown-wrapper button {
 <body>
 
 <header>
-    <div class="logo"><span>GC</span>Live</div>
+    <div class="logo"><span>GC</span>Live Data</div>
     
    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
-<button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
-    NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
-</button>
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
+            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
         <div class="custom-menu" id="symbol-menu">
             <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
             <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
@@ -328,38 +328,38 @@ header button, header select, .custom-dropdown-wrapper button {
     <div class="divider"></div>
     
     <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
-    <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="display: flex; gap: 6px; align-items: center;">
-    Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
-    </button>
+        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="display: flex; gap: 6px; align-items: center;">
+            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
         <div class="custom-menu" id="expiry-menu">
             <div class="custom-option">Loading...</div>
         </div>
     </div>
     <input type="hidden" id="sel-expiry" value="">
+    
     <div class="divider"></div>
-
     <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
-
-    <div class="divider"></div>
-    <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        Quick View
-    </button>
-
-    <div class="divider"></div>
-    <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Chart
-    </button>
 
     <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
 <div class="workspace">
-    <div class="left-nav">
+   <div class="left-nav">
+        <!-- 1. Home Button -->
         <button class="nav-btn" onclick="window.location.href='index.html'" title="Return to Home">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         </button>
         
+        <!-- 🟢 2. PERMANENT Quick View Button (Icon Only) -->
+        <button class="nav-btn" onclick="toggleIntelPanel()" title="Quick View" style="color: var(--accent);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </button>
+
+        <!-- 🟢 3. PERMANENT Chart Button (Icon Only) -->
+        <button class="nav-btn" onclick="toggleChartSidebar()" title="Chart" style="color: var(--gold);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </button>
+
+        <!-- 4. Settings Menu -->
         <div style="position: relative;" id="settings-wrapper">
             <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
