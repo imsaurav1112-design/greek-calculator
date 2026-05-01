@@ -205,20 +205,20 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         min-width: 15px;
         flex-shrink: 0;
     }
-  header { 
+header { 
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important; /* 👈 THE MAGIC: Wraps buttons to a new line if they don't fit */
-        height: auto !important; 
-        min-height: 52px;
-        overflow: visible !important; /* 👈 CRITICAL: Lets the menus spill down over the table */
+        flex-wrap: nowrap !important; /* Keep it on one line */
+        overflow: visible !important; /* CRITICAL: Lets dropdowns drop over the table */
         width: 100vw !important; 
         padding: 8px 10px !important; 
-        gap: 10px !important; 
+        gap: 8px !important; 
         z-index: 1000 !important; 
         position: relative !important; 
     }
-    header > * { flex-shrink: 0 !important; }
+   header > * {
+        flex-shrink: 0 !important; 
+    }
     header::-webkit-scrollbar { display: none; }
   header > *:last-child {
         margin-right: 24px !important; /* Pushes the Chart button away from the screen edge */
@@ -228,16 +228,16 @@ header button, header select, .custom-dropdown-wrapper button {
         font-size: 11px !important; 
         padding: 6px 10px !important; 
         pointer-events: auto !important; 
-        flex-shrink: 0 !important; 
+        min-width: 0 !important; 
         width: max-content !important; 
     }
-  .custom-menu {
+ .custom-menu {
         position: absolute !important; 
-        top: 100% !important; /* Pushes it directly below the button */
-        left: 0 !important; /* Aligns with the left edge of the button */
+        top: 100% !important;
+        left: 0 !important;
         margin-top: 8px !important;
         min-width: 0 !important;
-        width: max-content !important; /* Wraps tight to the text */
+        width: max-content !important; /* Shrinks the menu to exactly fit the text */
         z-index: 9999 !important;
     }
   .custom-option {
@@ -310,7 +310,7 @@ header button, header select, .custom-dropdown-wrapper button {
 <body>
 
 <header>
-    <div class="logo"><span>GC</span>Live Data</div>
+    <div class="logo"><span>GC</span>Live</div>
     
    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
