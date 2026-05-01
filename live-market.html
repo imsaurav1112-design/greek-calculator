@@ -202,27 +202,29 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .table-wrapper { order: 1; flex: 1; }
     
   /* 🟢 THE ULTIMATE MOBILE HEADER SCROLL FIX */
-    header { 
+header { 
+        width: 100vw !important;
+        max-width: 100vw !important;
+        padding: 0 !important; 
+        margin: 0 !important;
+        overflow: hidden !important; 
+        position: relative !important;
+        z-index: 1000 !important;
+    }
+  .header-scroll-track {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important; 
+        width: 100% !important;
         overflow-x: auto !important; 
-        overflow-y: visible !important; 
-        width: 100% !important; 
-        max-width: 100vw !important;
-        padding: 8px 10px !important; 
-        gap: 10px !important; 
-        z-index: 1000 !important; 
-        position: relative !important; 
-        
-        /* Forces mobile browsers to allow horizontal swiping */
+        overflow-y: visible !important;
+        padding: 8px 10px !important;
+        gap: 12px !important;
         -webkit-overflow-scrolling: touch !important; 
         touch-action: pan-x !important; 
-        
-        /* Stops the swipe from accidentally triggering the browser's "back" button */
         overscroll-behavior-x: contain !important; 
     }
-    
+    .header-scroll-track::-webkit-scrollbar { display: none !important; }
     header::-webkit-scrollbar { display: none; }
 
     /* Guarantee that NO button, div, or wrapper inside the header is allowed to shrink */
@@ -233,14 +235,17 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         flex-shrink: 0 !important; 
         min-width: max-content !important; 
     }
-
-    header button, header select, .custom-dropdown-wrapper button { 
+.header-scroll-track > * {
+        flex-shrink: 0 !important; 
+        min-width: max-content !important; 
+    }
+   .header-scroll-track button, 
+    .header-scroll-track select, 
+    .custom-dropdown-wrapper button { 
         font-size: 11px !important; 
         padding: 6px 10px !important; 
         pointer-events: auto !important; 
-        min-width: 0 !important; 
-        width: max-content !important; 
-    }    
+    }
     /* 2. Bottom Navigation Bar */
     .left-nav { 
         order: 2; width: 100%; height: 55px; flex-direction: row; 
@@ -336,49 +341,53 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 <body>
 
 <header>
-    <div class="logo"><span>GC</span>Live Data</div>
-    
-   <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
-        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="min-width: 130px; display: flex; justify-content: space-between; align-items: center;">
-            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
-        </button>
-        <div class="custom-menu" id="symbol-menu">
-            <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
-            <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
-            <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
-            <div class="custom-option" onclick="selectSymbol('FINNIFTY', 'FINNIFTY')">FINNIFTY</div>
+    <!-- 🟢 NEW WRAPPER ADDED HERE -->
+    <div class="header-scroll-track">
+        <div class="logo"><span>GC</span>Live Data</div>
+        
+        <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
+            <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)">
+                NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+            </button>
+            <div class="custom-menu" id="symbol-menu">
+                <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
+                <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
+                <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
+                <div class="custom-option" onclick="selectSymbol('FINNIFTY', 'FINNIFTY')">FINNIFTY</div>
+            </div>
         </div>
-    </div>
-    <input type="hidden" id="sel-symbol" value="NIFTY">
-    
-    <div class="divider"></div>
-    
-    <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
-        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
-            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
-        </button>
-        <div class="custom-menu" id="expiry-menu">
-            <div class="custom-option">Loading...</div>
+        <input type="hidden" id="sel-symbol" value="NIFTY">
+        
+        <div class="divider"></div>
+        
+        <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
+            <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)">
+                Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+            </button>
+            <div class="custom-menu" id="expiry-menu">
+                <div class="custom-option">Loading...</div>
+            </div>
         </div>
+        <input type="hidden" id="sel-expiry" value="">
+        <div class="divider"></div>
+
+        <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
+
+        <div class="divider"></div>
+        <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            Quick View
+        </button>
+
+        <div class="divider"></div>
+        <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Chart
+        </button>
+
+        <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
+    <!-- 🟢 END OF NEW WRAPPER -->
     </div>
-    <input type="hidden" id="sel-expiry" value="">
-    <div class="divider"></div>
-
-    <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
-
-    <div class="divider"></div>
-    <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        Quick View
-    </button>
-
-    <div class="divider"></div>
-    <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Chart
-    </button>
-
-    <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
 
 <div class="workspace">
