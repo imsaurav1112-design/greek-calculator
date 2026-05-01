@@ -201,34 +201,46 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .workspace { flex-direction: column; }
     .table-wrapper { order: 1; flex: 1; }
     
-   header { 
+  /* 🟢 THE ULTIMATE MOBILE HEADER SCROLL FIX */
+    header { 
         display: flex !important;
-        justify-content: flex-start !important; /* Start from the left */
-        flex-wrap: nowrap !important; /* Force a single horizontal line */
-        overflow-x: auto !important; /* Enable horizontal swipe */
+        flex-direction: row !important;
+        flex-wrap: nowrap !important; 
+        overflow-x: auto !important; 
         overflow-y: visible !important; 
-        width: 100vw !important; /* Take up exactly the width of the phone */
+        width: 100% !important; 
+        max-width: 100vw !important;
         padding: 8px 10px !important; 
-        gap: 12px !important; /* Add breathing room between buttons */
-        -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS/Android */
+        gap: 10px !important; 
         z-index: 1000 !important; 
         position: relative !important; 
+        
+        /* Forces mobile browsers to allow horizontal swiping */
+        -webkit-overflow-scrolling: touch !important; 
+        touch-action: pan-x !important; 
+        
+        /* Stops the swipe from accidentally triggering the browser's "back" button */
+        overscroll-behavior-x: contain !important; 
     }
-  header > * {
+    
+    header::-webkit-scrollbar { display: none; }
+
+    /* Guarantee that NO button, div, or wrapper inside the header is allowed to shrink */
+    header > div, 
+    header > button, 
+    header > select, 
+    .custom-dropdown-wrapper {
         flex-shrink: 0 !important; 
+        min-width: max-content !important; 
     }
-   header::-webkit-scrollbar { 
-        display: none; /* Hide the ugly scrollbar line */
-    }
-header button, header select, .custom-dropdown-wrapper button { 
-        font-size: 11px; 
-        padding: 6px 8px !important; /* Slightly tighter padding */
-        position: relative;
+
+    header button, header select, .custom-dropdown-wrapper button { 
+        font-size: 11px !important; 
+        padding: 6px 10px !important; 
         pointer-events: auto !important; 
-        min-width: 0 !important; /* 🟢 Kills the 130px inline style on mobile */
-        width: max-content !important; /* 🟢 Only takes exactly as much space as the text needs */
-    }
-    
+        min-width: 0 !important; 
+        width: max-content !important; 
+    }    
     /* 2. Bottom Navigation Bar */
     .left-nav { 
         order: 2; width: 100%; height: 55px; flex-direction: row; 
