@@ -220,11 +220,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
    header::-webkit-scrollbar { 
         display: none; /* Hide the ugly scrollbar line */
     }
-    header button, header select, .custom-dropdown-wrapper button { 
+header button, header select, .custom-dropdown-wrapper button { 
         font-size: 11px; 
-        padding: 6px 10px; 
+        padding: 6px 8px !important; /* Slightly tighter padding */
         position: relative;
         pointer-events: auto !important; 
+        min-width: 0 !important; /* 🟢 Kills the 130px inline style on mobile */
+        width: max-content !important; /* 🟢 Only takes exactly as much space as the text needs */
     }
     
     /* 2. Bottom Navigation Bar */
