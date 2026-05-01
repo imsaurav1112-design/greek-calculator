@@ -201,10 +201,31 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .workspace { flex-direction: column; }
     .table-wrapper { order: 1; flex: 1; }
     
-    header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
-    header::-webkit-scrollbar { display: none; }
-    header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
-    .logo { font-size: 14px; }
+   header { 
+        display: flex !important;
+        justify-content: flex-start !important; /* Start from the left */
+        flex-wrap: nowrap !important; /* Force a single horizontal line */
+        overflow-x: auto !important; /* Enable horizontal swipe */
+        overflow-y: visible !important; 
+        width: 100vw !important; /* Take up exactly the width of the phone */
+        padding: 8px 10px !important; 
+        gap: 12px !important; /* Add breathing room between buttons */
+        -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS/Android */
+        z-index: 1000 !important; 
+        position: relative !important; 
+    }
+  header > * {
+        flex-shrink: 0 !important; 
+    }
+   header::-webkit-scrollbar { 
+        display: none; /* Hide the ugly scrollbar line */
+    }
+    header button, header select, .custom-dropdown-wrapper button { 
+        font-size: 11px; 
+        padding: 6px 10px; 
+        position: relative;
+        pointer-events: auto !important; 
+    }
     
     /* 2. Bottom Navigation Bar */
     .left-nav { 
@@ -296,7 +317,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .modal-content { width: 95%; padding: 12px; max-height: 85vh; overflow-x: auto; }
     .settings-panel { position: fixed; left: 10px; bottom: 70px; top: auto; width: 220px; max-height: 60vh; }
 }
-fir the live chart on phone to view nicely fit on screen its canvas n all should look perfect on screen</style>
+</style>
 </head>
 <body>
 
