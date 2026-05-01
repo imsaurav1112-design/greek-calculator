@@ -459,10 +459,21 @@ initBgAnimation();
             const referralUrl = window.location.origin + window.location.pathname + "?ref=" + refCodeVal;
             document.getElementById('prof-ref-code').value = referralUrl;
             
-            // 🟢 2. FIX THE WALLET CRASH: Safely parse the number so undefined/null doesn't crash the page
-            const walletNum = parseFloat(profile.wallet_balance) || 0.00;
-            document.getElementById('prof-wallet').innerText = `₹${walletNum.toFixed(2)}`;
+            // 🟢 2. FIX THE WALLET: Advanced Parsing
+            // Console log to let you see exactly what the backend is sending!
+            console.log("Database Profile Response:", profile);
             
+            // Try multiple common keys just in case the backend uses a different name
+            let rawBalance = profile.wallet_balance ?? profile.balance ?? profile.wallet ?? 0;
+            
+            // If the database accidentally sent a string with text (e.g., "₹500" or "500 INR"), 
+            // this regex aggressively strips out everything except the pure numbers and decimals.
+            if (typeof rawBalance === 'string') {
+                rawBalance = rawBalance.replace(/[^0-9.-]+/g, "");
+            }
+            
+            const walletNum = parseFloat(rawBalance) || 0.00;
+            document.getElementById('prof-wallet').innerText = `₹${walletNum.toFixed(2)}`;            
             // 🟢 3. Update the floating profile icon to use their actual initial!
             document.getElementById('profile-btn').innerText = finalName.charAt(0).toUpperCase();
             
