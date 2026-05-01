@@ -49,6 +49,7 @@ body {
     width: 100vw;
     overflow: hidden; 
 }
+
 /* --- SLEEK HEADER --- */
 header { 
     height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
@@ -210,25 +211,72 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-.workspace { flex-direction: column; }
-  .table-wrapper { order: 1; }
-    header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
+    header::after {
+        content: '';
+        display: block;
+        min-width: 15px;
+        flex-shrink: 0;
+    }
+    
+    header { 
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important; 
+        overflow: visible !important; 
+        width: 100vw !important;  
+        height: 44px !important; 
+        padding: 0 10px !important; 
+        align-items: center !important; 
+        gap: 8px !important; 
+        z-index: 1000 !important; 
+        position: relative !important; 
+    }
+    header > * { flex-shrink: 0 !important; }
     header::-webkit-scrollbar { display: none; }
-    header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
+    header > *:last-child { margin-right: 24px !important; }
+  
+    header button, header select, .custom-dropdown-wrapper button, header input[type="date"] { 
+        font-size: 11px !important; 
+        padding: 4px 10px !important; 
+        pointer-events: auto !important; 
+        min-width: 0 !important; 
+        width: max-content !important; 
+    }
+
+    .custom-menu {
+        position: absolute !important; 
+        top: 100% !important;
+        left: 0 !important;
+        margin-top: 8px !important;
+        min-width: 0 !important;
+        width: max-content !important; 
+        z-index: 9999 !important;
+    }
+    .custom-option { padding: 8px 12px !important; }
+    .custom-dropdown-wrapper { position: relative !important; }
+  
     .logo { font-size: 14px; }
+        
+    .workspace { flex-direction: column; }
+    .table-wrapper { order: 1; }
     .left-nav { order: 2; width: 100%; height: 55px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); justify-content: space-evenly; align-items: center; padding: 0; background: rgba(20, 20, 21, 0.95); backdrop-filter: blur(10px); z-index: 90; flex-shrink: 0; }
-.settings-panel { position: fixed; left: 10px; top: auto; bottom: 70px; width: 220px; max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 105; }
+    
+    .settings-panel { position: fixed; left: 10px; top: auto; bottom: 70px; width: 220px; max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; z-index: 105; }
     .settings-panel::-webkit-scrollbar { width: 4px; }
     .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 4px; }  
+    
     table { min-width: 850px; } 
-th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; }
+    th, td { font-size: 10px; padding: 4px 2px; white-space: nowrap; font-family: 'JetBrains Mono', monospace; text-align: center; }
+
     .chart-sidebar, .right-sidebar { position: fixed !important; top: 52px; left: 0; width: 100% !important; height: calc(100dvh - 52px - 55px) !important; z-index: 100; background: var(--bg); border: none; }
     .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .chart-sidebar.open { transform: translateX(0); }
     .chart-sidebar .resizer { display: none; } 
+    
     .charts-container { flex-direction: column; height: auto; gap: 10px; }
     .chart-box { height: 250px; }
     .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
+    
     footer { height: auto; padding: 8px 10px; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
     .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
     .footer-left span { font-size: 10px; }
@@ -242,10 +290,8 @@ th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'J
 <header>
     <div class="logo"><span>GC</span> Backtester</div>
     
-    <div class="divider"></div>
-    
     <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
-        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="min-width: 130px; display: flex; justify-content: space-between; align-items: center;">
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
             NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
         </button>
         <div class="custom-menu" id="symbol-menu">
@@ -259,7 +305,7 @@ th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'J
     <div class="divider"></div>
     
     <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
-        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="display: flex; gap: 6px; align-items: center;">
             Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
         </button>
         <div class="custom-menu" id="expiry-menu">
@@ -271,7 +317,7 @@ th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'J
     <div class="divider"></div>
 
     <div class="custom-dropdown-wrapper" id="date-dropdown-wrapper">
-        <button id="btn-date" onclick="toggleMenu('date-menu', event)" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+        <button id="btn-date" onclick="toggleMenu('date-menu', event)" style="display: flex; gap: 6px; align-items: center;">
             Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
         </button>
         <div class="custom-menu" id="date-menu">
@@ -283,29 +329,27 @@ th, td { font-size: 11px; padding: 4px 4px; white-space: nowrap; font-family: 'J
     <div class="divider"></div>
 
     <button class="primary-btn" onclick="fetchBacktestData()">Load Data</button>
-
-    <div class="divider" style="margin-left: auto;"></div>
-
-    <button onclick="toggleIntelPanel()" style="display: flex; align-items: center; gap: 6px; color: var(--accent); background: rgba(59, 130, 246, 0.1); border-color: var(--accent);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-        Scenario Panel
-    </button>
-
-    <div class="divider"></div>
-    <button onclick="toggleChartSidebar()" style="display: flex; align-items: center; gap: 6px; color: var(--gold); background: rgba(245, 158, 11, 0.1); border-color: var(--gold);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        Live Chart
-    </button>
-
     <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
 
 <div class="workspace">
     <div class="left-nav">
+        <!-- 1. Home Button -->
         <button class="nav-btn" onclick="window.location.href='index.html'" title="Return to Home">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         </button>
         
+        <!-- 🟢 2. PERMANENT Quick View Button (Icon Only) -->
+        <button class="nav-btn" onclick="toggleIntelPanel()" title="Quick View" style="color: var(--accent);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        </button>
+
+        <!-- 🟢 3. PERMANENT Chart Button (Icon Only) -->
+        <button class="nav-btn" onclick="toggleChartSidebar()" title="Chart" style="color: var(--gold);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        </button>
+        
+        <!-- 4. Settings Menu -->
         <div style="position: relative;" id="settings-wrapper">
             <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -912,14 +956,13 @@ function initTVChart() {
             layout: { background: { type: 'solid', color: '#131722' }, textColor: '#b2b5be', fontFamily: "'Poppins', sans-serif" },
             grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
             crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, // 🟢 Auto-zoom vertically
+            rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, 
             timeScale: { borderColor: '#2a2e39', timeVisible: true }
         });
 
         tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        tvLineSeries.applyOptions({ visible: false }); // 🟢 Hidden by default
+        tvLineSeries.applyOptions({ visible: false }); 
         
-        // 🟢 Colored Borders ON so flat candles are visible
         tvCandleSeries = tvChartInst.addCandlestickSeries({ 
             upColor: '#26a69a', downColor: '#ef5350', 
             borderVisible: true, borderColor: '#26a69a',
@@ -1115,11 +1158,11 @@ let renderTable = function(rows, sym, data, quiet = false) {
       <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
       <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
-      <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(1)}</td>
+      <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(0)}</td>
       
-      <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike.toLocaleString('en-IN')}</td>
+      <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike}</td>
       
-      <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(1)}</td>
+      <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(0)}</td>
       <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
@@ -1206,7 +1249,7 @@ function createInstChart(containerId) {
 function showStrikeCharts(strike) {
     if (backtestSnapshots.length === 0) return;
     document.getElementById('chart-modal').style.display = 'flex';
-    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
+    document.getElementById('modal-strike-title').innerText = strike;
 
     const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
     const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];
