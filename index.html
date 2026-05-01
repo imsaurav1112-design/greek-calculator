@@ -546,13 +546,57 @@ initBgAnimation();
       }
   };
 
-  window.startCheckout = async function(planId) {
+window.startCheckout = async function(planId) {
       if (!window.currentFirebaseToken) {
           alert("Please sign in with Google first!");
           window.handleGoogleLogin();
           return;
       }
 
+      // 🟢 1. Define the exact costs of your plans
+      const planPrices = {
+          "1_month": 249,
+          "3_months": 599,
+          "6_months": 999
+      };
+      const cost = planPrices[planId];
+
+      // 🟢 2. Check the user's current wallet balance securely
+      const walletText = document.getElementById('prof-wallet').innerText.replace(/[^0-9.-]+/g, "");
+      const walletBalance = parseFloat(walletText) || 0;
+
+      // 🟢 3. The Wallet Intercept Logic
+      if (walletBalance >= cost) {
+          const useWallet = confirm(`🎉 You have ₹${walletBalance.toFixed(2)} in your referral wallet! Would you like to use it to buy this plan for ₹${cost}?`);
+          
+          if (useWallet) {
+              try {
+                  const resp = await fetch('https://ioc-backend-kq9x.onrender.com/pay-with-wallet', {
+                      method: 'POST',
+                      headers: { 
+                          'Authorization': `Bearer ${window.currentFirebaseToken}`,
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ plan: planId, cost: cost })
+                  });
+                  const data = await resp.json();
+                  
+                  if (resp.ok) {
+                      alert("Payment Successful using Wallet Balance! Welcome to Pro.");
+                      window.location.reload();
+                      return; // 👈 Exits the function so Razorpay doesn't pop up!
+                  } else {
+                      alert("Wallet payment failed: " + (data.error || "Unknown Error"));
+                      return;
+                  }
+              } catch (err) {
+                  alert("Could not process wallet payment. Please try again.");
+                  return;
+              }
+          }
+      }
+
+      // 🟢 4. Fallback to standard Razorpay if they don't have enough money (or clicked Cancel)
       try {
           const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
               method: 'POST',
@@ -574,7 +618,7 @@ initBgAnimation();
               "key": orderData.key, 
               "amount": orderData.amount, 
               "currency": "INR",
-              "name": "InsiderOwl",
+              "name": "Greek Calculator",
               "description": "Pro Terminal Subscription",
               "order_id": orderData.order_id, 
               "handler": async function (response) {
