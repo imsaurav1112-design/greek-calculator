@@ -202,12 +202,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     /* 1. Header: Smooth horizontal scroll, smaller buttons */
    header { 
         display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important; 
-        overflow: visible !important; /* <--- This allows the dropdown to show */
-        width: 100% !important; 
+        flex-wrap: wrap !important; /* Forces a new line when out of space */
+        height: auto !important; /* Allows the header to grow to 2 rows */
+        min-height: 52px;
+        overflow: visible !important; /* Guarantees dropdowns work */
+        width: 100vw !important; 
         padding: 8px 10px !important; 
-        gap: 10px !important; 
+        gap: 8px !important; 
         z-index: 1000 !important; 
         position: relative !important; 
     }
@@ -216,15 +217,10 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         font-size: 11px !important; 
         padding: 6px 10px !important; 
         pointer-events: auto !important; 
-        flex-shrink: 0 !important; /* Prevents buttons from squishing */
+        flex-shrink: 0 !important; 
+        width: max-content !important; 
     }
-  .custom-menu {
-        position: fixed !important; 
-        top: 60px !important; /* Appears just below the header */
-        left: 10px !important; /* Sticks to the left side of the screen */
-        width: calc(100vw - 20px) !important; /* Makes it span the screen width */
-        z-index: 9999 !important;
-    }
+  
     .logo { font-size: 14px; }
         
 .settings-panel { 
