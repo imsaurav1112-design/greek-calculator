@@ -198,36 +198,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-.workspace { 
-        flex-direction: column; 
-    }
-  .table-wrapper {
-        order: 1; /* Keeps the table at the top of the workspace */
-    }
     
     /* 1. Header: Smooth horizontal scroll, smaller buttons */
     header { overflow-x: auto; white-space: nowrap; padding: 0 10px; gap: 8px; -webkit-overflow-scrolling: touch; }
     header::-webkit-scrollbar { display: none; }
     header button, header select, .custom-dropdown-wrapper button { font-size: 11px; padding: 6px 10px; }
     .logo { font-size: 14px; }
-    
-/* Bottom App Navigation Bar */
-    .left-nav { 
-        order: 2; /* Forces the nav bar to sit UNDER the table */
-        width: 100%; 
-        height: 55px; 
-        flex-direction: row; 
-        border-right: none; 
-        border-top: 1px solid var(--border); 
-        justify-content: space-evenly; 
-        align-items: center;
-        padding: 0; 
-        background: rgba(20, 20, 21, 0.95);
-        backdrop-filter: blur(10px);
-        z-index: 90;
-        flex-shrink: 0; /* Stops the table from crushing the nav bar */
-    }
-    
+        
 .settings-panel { 
         position: fixed; 
         left: 10px; 
@@ -926,15 +903,20 @@ function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
     sidebar.classList.toggle('open');
     
-    // 🟢 Add this to force TradingView to redraw for the phone screen
-    if (tvChartInst && sidebar.classList.contains('open')) {
-        setTimeout(() => {
-            const container = document.getElementById('tv-chart');
-            tvChartInst.applyOptions({
-                width: container.clientWidth,
-                height: container.clientHeight
-            });
-        }, 300); // Wait for the transition to finish
+    // 🟢 THE FIX: Check if the chart exists, if not, create it!
+    if (sidebar.classList.contains('open')) {
+        if (!tvChartInst) {
+            initTVChart();
+        } else {
+            // Force TradingView to redraw for the phone screen
+            setTimeout(() => {
+                const container = document.getElementById('tv-chart');
+                tvChartInst.applyOptions({
+                    width: container.clientWidth,
+                    height: container.clientHeight
+                });
+            }, 300);
+        }
     }
 }
 
