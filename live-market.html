@@ -205,17 +205,18 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         min-width: 15px;
         flex-shrink: 0;
     }
-   header { 
+  header { 
         display: flex !important;
-        flex-wrap: nowrap !important; /* Forces single line */
-        overflow-x: auto !important; /* Enables horizontal scroll */
-        overflow-y: hidden !important; /* Traps everything inside vertically */
+        flex-direction: row !important;
+        flex-wrap: wrap !important; /* 👈 THE MAGIC: Wraps buttons to a new line if they don't fit */
+        height: auto !important; 
+        min-height: 52px;
+        overflow: visible !important; /* 👈 CRITICAL: Lets the menus spill down over the table */
         width: 100vw !important; 
         padding: 8px 10px !important; 
         gap: 10px !important; 
         z-index: 1000 !important; 
         position: relative !important; 
-        -webkit-overflow-scrolling: touch !important; 
     }
     header > * { flex-shrink: 0 !important; }
     header::-webkit-scrollbar { display: none; }
@@ -223,22 +224,27 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         margin-right: 24px !important; /* Pushes the Chart button away from the screen edge */
     }
   
-   header button, header select, .custom-dropdown-wrapper button { 
+header button, header select, .custom-dropdown-wrapper button { 
         font-size: 11px !important; 
         padding: 6px 10px !important; 
         pointer-events: auto !important; 
+        flex-shrink: 0 !important; 
+        width: max-content !important; 
     }
   .custom-menu {
-        position: fixed !important; 
-        top: 60px !important; /* Appears just below the header */
-        left: 10px !important; /* Sticks to the left side of the screen */
-        width: max-content !important;
-        z-index: 9999 !important;
+        position: absolute !important; 
+        top: 100% !important; /* Pushes it directly below the button */
+        left: 0 !important; /* Aligns with the left edge of the button */
+        margin-top: 8px !important;
         min-width: 0 !important;
-        width: max-content !important;
+        width: max-content !important; /* Wraps tight to the text */
+        z-index: 9999 !important;
     }
   .custom-option {
         padding: 8px 12px !important; /* Slightly tighter fit for phone */
+    }
+  .custom-dropdown-wrapper {
+        position: relative !important;
     }
   
     .logo { font-size: 14px; }
