@@ -264,30 +264,32 @@ header {
   
     .logo { font-size: 14px; }
         
-.settings-panel { 
-        position: fixed; 
-        left: 10px; 
-        top: auto; 
-        /* Drops it slightly closer to the bottom nav for easier thumb reach */
-        bottom: 70px; 
-        width: 220px; 
-        
-        /* 🟢 FIX: Forces the menu to stop growing and start scrolling */
-        max-height: 60vh; /* Limits height to 60% of the screen */
-        overflow-y: auto; /* Enables vertical scrolling inside the menu */
-        -webkit-overflow-scrolling: touch; /* Buttery smooth iOS scrolling */
-        z-index: 105; /* Ensures it stays above the chart sidebars */
-    }
+/* Settings Panel logic */
+.settings-panel {
+    display: none; 
+    position: absolute; 
+    left: 60px; 
+    top: 0; 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    width: 190px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    flex-direction: column; 
+    z-index: 1000; 
     
-    /* Optional: Hide the ugly scrollbar on modern phones for a cleaner look */
-    .settings-panel::-webkit-scrollbar {
-        width: 4px;
-    }
-    .settings-panel::-webkit-scrollbar-thumb {
-        background-color: var(--border);
-        border-radius: 4px;
-    }    
-    /* 4. Table Strict Constraints */
+    /* 🟢 THE SCROLL FIX: Limit height and enable scrolling */
+    max-height: 85vh; /* Prevents it from going off the bottom of the screen */
+    overflow-y: auto; /* Enables vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Buttery smooth scrolling on touchpads/phones */
+}
+
+/* 🟢 Sleek custom scrollbar for the settings menu */
+.settings-panel::-webkit-scrollbar { width: 5px; }
+.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
+
+.light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }    /* 4. Table Strict Constraints */
+  
     table { min-width: 850px; } 
     th, td {
     font-size: 10px;
