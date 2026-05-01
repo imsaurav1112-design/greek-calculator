@@ -267,46 +267,51 @@ header {
     th.strike-cell, td.strike-cell { width: 45px; min-width: 45px; font-size: 11px; }
 
    /* 4. FULL SCREEN CHARTS (Fixed Scaling & Gaps) */
-    .chart-sidebar, .right-sidebar { 
-        position: fixed !important; 
-        top: 52px; 
-        left: 0; 
-        width: 100vw !important; 
-        /* Using dynamic viewport height to account for mobile browser address bars */
-        height: calc(100dvh - 52px - 55px) !important; 
-        z-index: 100; 
-        background: var(--bg); 
-        border: none;
-        display: flex;
-        flex-direction: column;
-    }
+.chart-sidebar, .right-sidebar { 
+        position: fixed !important; 
+        top: 52px; 
+        left: 0; 
+        width: 100vw !important; 
+        height: calc(100dvh - 52px - 55px) !important; 
+        z-index: 100; 
+        background: var(--bg); 
+        border: none;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
+    }
 
-    .chart-sidebar { 
-        transform: translateX(-100%); 
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
-
-    .chart-sidebar.open { transform: translateX(0); }
-    .chart-sidebar .resizer { display: none; } 
+.chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .chart-sidebar.open { transform: translateX(0); }
+    .chart-sidebar .resizer { display: none; }
 
     /* Force the internal chart containers to expand */
     .charts-container {
-        height: 100% !important;
-        width: 100% !important;
-        display: block !important; /* Stack them vertically if there are multiple */
-        padding: 0 !important;
-    }
+        flex: 1 !important; /* 🟢 This fixes the chart height */
+        width: 100vw !important;
+        display: flex !important; 
+        flex-direction: column !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
 
     .chart-box {
-        height: 100% !important; /* Forces the single active chart to fill the view */
-        width: 100% !important;
-        border: none !important;
-    }
+        flex: 1 !important; /* 🟢 This fixes the chart height */
+        width: 100vw !important;
+        border: none !important;
+        border-radius: 0 !important; 
+        padding: 0 !important;
+        margin: 0 !important;
+        position: relative; 
+    }
 
-    #tv-chart { 
-        width: 100% !important; 
-        height: 100% !important; 
-    }
+#tv-chart { 
+        position: absolute; /* 🟢 Locks the canvas inside the flex box */
+        top: 0;
+        left: 0;
+        width: 100% !important; 
+        height: 100% !important; 
+    }
 
     /* 5. PAPER TRADING HISTORY PANEL */
     #history-modal .history-table {
