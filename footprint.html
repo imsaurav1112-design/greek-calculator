@@ -7,94 +7,80 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #09090b;         
-  --card: #141415;       
-  --section: #202023;    
-  --border: #27272a;     
-  --text: #f4f4f5;       
-  --muted: #a1a1aa;      
-  --accent: #3b82f6;       
-  --gold: #f59e0b;         
-  --green: #10b981;        
-  --red: #ef4444;          
+  --bg: #09090b; --card: #141415; --section: #202023; --border: #27272a; 
+  --text: #f4f4f5; --muted: #a1a1aa; --accent: #3b82f6; --gold: #f59e0b; 
+  --green: #10b981; --red: #ef4444; 
 }
-
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); overflow-x: hidden; }
-
-/* 🟢 BACKGROUND CANDLESTICK CANVAS */
 #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; filter: blur(6px); opacity: 0.15; pointer-events: none; }
-
-/* --- HEADER --- */
 header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 100; }
 .logo { font-weight: 800; font-size: 25px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; text-decoration: none; color: var(--text);}
 .logo span { color: var(--accent); }
-.nav-links { display: flex; gap: 20px; align-items: center; }
-.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
-.nav-links a:hover { color: var(--text); }
 
-/* --- TERMINAL UI --- */
-.terminal-wrapper { padding: 40px 5%; max-width: 800px; margin: 0 auto; }
+/* --- HORIZONTAL TERMINAL LAYOUT --- */
+.terminal-wrapper { padding: 30px 2%; width: 100%; box-sizing: border-box; }
 .terminal-header { text-align: center; margin-bottom: 30px; }
 .terminal-header h1 { margin: 0 0 10px 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
-.terminal-header p { color: var(--muted); font-size: 14px; margin: 0; }
 
-.footprint-container { background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
-.fp-header-row { display: flex; background: var(--section); border-bottom: 1px solid var(--border); padding: 12px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+/* The Scrollable Canvas */
+.scrolling-wrapper {
+    display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px;
+    align-items: flex-start; scroll-behavior: smooth;
+}
+.scrolling-wrapper::-webkit-scrollbar { height: 10px; }
+.scrolling-wrapper::-webkit-scrollbar-thumb { background: var(--section); border-radius: 5px; }
+
+/* Individual 5-Min Candle Blocks */
+.candle-block {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    min-width: 320px; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
+}
+.candle-time-header {
+    background: #1a1a1d; color: var(--gold); text-align: center; font-weight: 800;
+    padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.fp-header-row { display: flex; background: var(--section); border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .fp-header-col { flex: 2; text-align: center; }
 .fp-header-col.center { flex: 1; }
 
 .fp-row { display: flex; border-bottom: 1px solid var(--border); transition: 0.2s; position: relative; }
 .fp-row:hover { background: rgba(255,255,255,0.03); }
 
-/* The Point of Control (POC) Styling */
-.fp-row.is-poc { border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05); z-index: 10; box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
-.poc-badge { position: absolute; left: -60px; top: 50%; transform: translateY(-50%); background: var(--gold); color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: none; }
-.fp-row.is-poc .poc-badge { display: block; }
-
-.fp-price { flex: 1; text-align: center; padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 800; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 16px; color: var(--text); }
-.fp-vol { flex: 2; display: flex; align-items: center; padding: 0 20px; position: relative; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; }
+/* POC and Math Styles */
+.fp-row.is-poc { border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05); }
+.fp-price { flex: 1; text-align: center; padding: 10px 5px; font-family: 'JetBrains Mono', monospace; font-weight: 800; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 14px; color: var(--text); }
+.fp-vol { flex: 2; display: flex; align-items: center; padding: 0 15px; position: relative; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px; }
 .fp-sell { justify-content: flex-end; color: #fca5a5; }
 .fp-buy { justify-content: flex-start; color: #6ee7b7; }
 
-/* Imbalance Styling */
 .fp-sell.imbalance { color: var(--red); font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
 .fp-buy.imbalance { color: var(--green); font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
-.bar-bg { position: absolute; top: 4px; bottom: 4px; z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
-.sell-bar { right: 4px; background: rgba(239, 68, 68, 0.15); border-right: 2px solid var(--red); }
-.buy-bar { left: 4px; background: rgba(16, 185, 129, 0.15); border-left: 2px solid var(--green); }
+.bar-bg { position: absolute; top: 3px; bottom: 3px; z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
+.sell-bar { right: 3px; background: rgba(239, 68, 68, 0.15); border-right: 2px solid var(--red); }
+.buy-bar { left: 3px; background: rgba(16, 185, 129, 0.15); border-left: 2px solid var(--green); }
 .fp-text { z-index: 1; }
 </style>
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
-
-<!-- Exact Navbar matching your Main UI -->
 <header>
-    <a href="index.html" class="logo" style="position: relative; top: -5px; left: 10px; padding-top: 15px;">
-        <span> Greek</span> Calculator
-    </a>
-    <div class="nav-links">
-        <span style="background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase;">Pro Terminal</span>
-    </div>
+    <a href="index.html" class="logo" style="position: relative; top: -5px; left: 10px; padding-top: 15px;"><span> Greek</span> Calculator</a>
+    <div class="nav-links"><span style="background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;">PRO</span></div>
 </header>
 
 <div class="terminal-wrapper">
     <div class="terminal-header">
-        <h1>Nifty Futures Orderflow</h1>
-        <p>Cumulative Delta Matrix with Auto-POC & Imbalance Detection</p>
+        <h1>Time-Based Orderflow</h1>
+        <p>5-Minute Cumulative Candles with Auto-POC</p>
     </div>
 
-    <div class="footprint-container">
-        <div class="fp-header-row">
-            <div class="fp-header-col">Aggressive Sellers</div>
-            <div class="fp-header-col center">Strike</div>
-            <div class="fp-header-col">Aggressive Buyers</div>
-        </div>
-        <div id="fp-container">
-            <div style="padding: 60px 30px; text-align: center; color: var(--muted);">
-                Initializing secure WebSocket connection...
-            </div>
+    <!-- This is the new horizontal scrolling wrapper -->
+    <div class="scrolling-wrapper" id="fp-horizontal-scroll">
+        <div style="width: 100%; text-align: center; color: var(--muted); padding: 50px;">
+            Initializing Time-Series Data...<br><span style="font-size: 12px;">(Waiting for next 5-min candle formation)</span>
         </div>
     </div>
 </div>
@@ -103,130 +89,129 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     
-    const firebaseConfig = {
+    const app = initializeApp({
         apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
         authDomain: "insideoptionchain.firebaseapp.com",
-        projectId: "insideoptionchain",
-        storageBucket: "insideoptionchain.firebasestorage.app",
-        messagingSenderId: "112098245685",
-        appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
-    };
-
-    const app = initializeApp(firebaseConfig);
+        projectId: "insideoptionchain"
+    });
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            alert("Terminal access requires authentication.");
-            window.location.href = "index.html";
-            return;
-        }
+        if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
         
         setInterval(async () => {
             try {
-                const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { 
-                    headers: { 'Authorization': `Bearer ${token}` } 
-                });
+                const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
                 
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
-                    renderAdvancedFootprint(data.data);
+                    renderTimeCandles(data.data);
                 }
             } catch(e) { console.log("Awaiting tick data..."); }
         }, 2000);
     });
 
-    function renderAdvancedFootprint(matrix) {
-        const container = document.getElementById('fp-container');
-        container.innerHTML = ""; 
-        
-        const prices = Object.keys(matrix).map(Number).sort((a, b) => b - a);
-        
-        // 1. Calculate POC (Row with highest total volume) & Max Vol for bar scaling
-        let maxTotalVol = 0;
-        let pocPrice = null;
-        let maxSingleVol = 1;
+    let previousCandleCount = 0;
 
-        prices.forEach(p => {
-            const buyVol = matrix[p].buy_vol;
-            const sellVol = matrix[p].sell_vol;
-            const totalRowVol = buyVol + sellVol;
+    function renderTimeCandles(allCandlesData) {
+        const container = document.getElementById('fp-horizontal-scroll');
+        
+        // Chronologically sort the time buckets (e.g. "10:15", "10:20")
+        const timeKeys = Object.keys(allCandlesData).sort();
+        
+        // If data is new, clear the waiting message
+        if (container.innerHTML.includes("Initializing")) container.innerHTML = "";
+
+        timeKeys.forEach(timeKey => {
+            const matrix = allCandlesData[timeKey];
+            const prices = Object.keys(matrix).map(Number).sort((a, b) => b - a);
             
-            if (totalRowVol > maxTotalVol) {
-                maxTotalVol = totalRowVol;
-                pocPrice = p;
+            // Check if we already rendered this block to avoid redrawing old candles
+            let block = document.getElementById(`candle-${timeKey.replace(":", "-")}`);
+            if (!block) {
+                block = document.createElement('div');
+                block.className = 'candle-block';
+                block.id = `candle-${timeKey.replace(":", "-")}`;
+                container.appendChild(block);
             }
-            maxSingleVol = Math.max(maxSingleVol, buyVol, sellVol);
-        });
-
-        // 2. Render Rows with Imbalance Math
-        prices.forEach(price => {
-            const buyVol = matrix[price].buy_vol;
-            const sellVol = matrix[price].sell_vol;
             
-            // Imbalance Detection: 300% greater and volume > 50
-            const isBuyImbalance = (buyVol > sellVol * 3) && (buyVol > 50);
-            const isSellImbalance = (sellVol > buyVol * 3) && (sellVol > 50);
-
-            const buyPct = Math.min((buyVol / maxSingleVol) * 100, 100);
-            const sellPct = Math.min((sellVol / maxSingleVol) * 100, 100);
-            
-            const isPoc = (price === pocPrice);
-
-            const row = document.createElement('div');
-            row.className = `fp-row ${isPoc ? 'is-poc' : ''}`;
-            
-            row.innerHTML = `
-                <div class="poc-badge">POC</div>
-                <div class="fp-vol fp-sell ${isSellImbalance ? 'imbalance' : ''}">
-                    <div class="bar-bg sell-bar" style="width: ${sellPct}%"></div>
-                    <span class="fp-text">${sellVol}</span>
+            let htmlPayload = `
+                <div class="candle-time-header">Candle: ${timeKey}</div>
+                <div class="fp-header-row">
+                    <div class="fp-header-col">Sellers</div>
+                    <div class="fp-header-col center">Strike</div>
+                    <div class="fp-header-col">Buyers</div>
                 </div>
-                
-                <div class="fp-price" style="${isPoc ? 'color: var(--gold);' : ''}">${price}</div>
-                
-                <div class="fp-vol fp-buy ${isBuyImbalance ? 'imbalance' : ''}">
-                    <div class="bar-bg buy-bar" style="width: ${buyPct}%"></div>
-                    <span class="fp-text">${buyVol}</span>
-                </div>
+                <div class="candle-data-rows">
             `;
-            container.appendChild(row);
-        });
-    }
 
-    // Background Animation Script (From your index.html)
+            // POC Calculation for this specific candle
+            let maxTotalVol = 0; let pocPrice = null; let maxSingleVol = 1;
+            prices.forEach(p => {
+                const b = matrix[p].buy_vol; const s = matrix[p].sell_vol;
+                if (b + s > maxTotalVol) { maxTotalVol = b + s; pocPrice = p; }
+                maxSingleVol = Math.max(maxSingleVol, b, s);
+            });
+
+            prices.forEach(price => {
+                const b = matrix[price].buy_vol; const s = matrix[price].sell_vol;
+                const buyPct = Math.min((b / maxSingleVol) * 100, 100);
+                const sellPct = Math.min((s / maxSingleVol) * 100, 100);
+                const isPoc = (price === pocPrice);
+                const isBuyImbalance = (b > s * 3) && (b > 50);
+                const isSellImbalance = (s > b * 3) && (s > 50);
+
+                htmlPayload += `
+                    <div class="fp-row ${isPoc ? 'is-poc' : ''}">
+                        <div class="fp-vol fp-sell ${isSellImbalance ? 'imbalance' : ''}">
+                            <div class="bar-bg sell-bar" style="width: ${sellPct}%"></div>
+                            <span class="fp-text">${s}</span>
+                        </div>
+                        <div class="fp-price" style="${isPoc ? 'color: var(--gold);' : ''}">${price}</div>
+                        <div class="fp-vol fp-buy ${isBuyImbalance ? 'imbalance' : ''}">
+                            <div class="bar-bg buy-bar" style="width: ${buyPct}%"></div>
+                            <span class="fp-text">${b}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            htmlPayload += `</div>`;
+            block.innerHTML = htmlPayload;
+        });
+
+        // Auto-scroll to the newest candle on the right if a new one was added
+        if (timeKeys.length > previousCandleCount) {
+            container.scrollLeft = container.scrollWidth;
+            previousCandleCount = timeKeys.length;
+        }
+    }
+    
+    // Background Animation Setup (From index.html)
     function initBgAnimation() {
-        const canvas = document.getElementById('bg-canvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let width, height;
+        const canvas = document.getElementById('bg-canvas'); if (!canvas) return;
+        const ctx = canvas.getContext('2d'); let width, height;
         function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize); resize();
-        const candles = [];
-        const candleWidth = 12;  const spacing = 25; const speed = 0.4; let lastClose = height / 2;
-        for(let i = 0; i < (width / spacing) + 2; i++) { generateCandle(width - (i * spacing)); }
-        function generateCandle(x) {
-            const isGreen = Math.random() > 0.35; 
-            const bodySize = Math.random() * 30 + 10; 
-            let open, close, high, low;
-            if (isGreen) { close = lastClose - (Math.random() * 25 + 5); open = close + bodySize; } 
-            else { open = lastClose + (Math.random() * 15); close = open + bodySize; }
-            high = Math.min(open, close) - Math.random() * 20; low = Math.max(open, close) + Math.random() * 20;
-            lastClose = close; candles.push({x, open, close, high, low, isGreen});
-            if (lastClose < height * 0.15) { lastClose = height * 0.85; } 
-            else if (lastClose > height * 0.95) { lastClose = height * 0.85; }
+        const candles = []; const cw = 12; const sp = 25; const speed = 0.4; let lc = height/2;
+        for(let i=0; i < (width/sp)+2; i++) { gen(width-(i*sp)); }
+        function gen(x) {
+            const gr = Math.random()>0.35; const bs = Math.random()*30+10; let o, c, h, l;
+            if(gr){ c=lc-(Math.random()*25+5); o=c+bs; } else { o=lc+(Math.random()*15); c=o+bs; }
+            h=Math.min(o,c)-Math.random()*20; l=Math.max(o,c)+Math.random()*20; lc=c;
+            candles.push({x,o,c,h,l,gr});
+            if(lc < height*0.15) lc=height*0.85; else if(lc > height*0.95) lc=height*0.85;
         }
         function draw() {
-            ctx.clearRect(0, 0, width, height);
-            for (let i = 0; i < candles.length; i++) {
-                let c = candles[i]; c.x -= speed; 
-                ctx.strokeStyle = c.isGreen ? '#10b981' : '#ef4444'; ctx.fillStyle = c.isGreen ? '#10b981' : '#ef4444';
-                ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c.x + candleWidth/2, c.high); ctx.lineTo(c.x + candleWidth/2, c.low); ctx.stroke();
-                ctx.fillRect(c.x, Math.min(c.open, c.close), candleWidth, Math.abs(c.open - c.close));
+            ctx.clearRect(0,0,width,height);
+            for(let i=0; i<candles.length; i++) {
+                let c=candles[i]; c.x-=speed; ctx.strokeStyle=c.gr?'#10b981':'#ef4444'; ctx.fillStyle=c.gr?'#10b981':'#ef4444';
+                ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(c.x+cw/2,c.h); ctx.lineTo(c.x+cw/2,c.l); ctx.stroke();
+                ctx.fillRect(c.x,Math.min(c.o,c.c),cw,Math.abs(c.o-c.c));
             }
-            if (candles[0].x < -50) { candles.shift(); }
-            if (candles[candles.length - 1].x < width) { generateCandle(candles[candles.length - 1].x + spacing); }
+            if(candles[0].x<-50) candles.shift();
+            if(candles[candles.length-1].x<width) gen(candles[candles.length-1].x+sp);
             requestAnimationFrame(draw);
         }
         draw();
