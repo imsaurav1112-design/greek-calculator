@@ -3,38 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nifty Orderflow | Greek Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<title>Nifty Orderflow | InsiderOwl</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-    :root { --bg: #09090b; --card: #141415; --text: #f4f4f5; --green: #10b981; --red: #ef4444; --border: #27272a; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .header h1 { color: #3b82f6; margin: 0; }
+    :root { 
+        --bg-main: #0a0a0c; 
+        --bg-card: #121216; 
+        --bg-hover: #1a1a20;
+        --text-main: #f4f4f5; 
+        --text-muted: #a1a1aa;
+        --border-color: #27272a; 
+        
+        /* InsiderOwl Brand Colors */
+        --gold: #eab308;
+        --gold-glow: rgba(234, 179, 8, 0.15);
+        
+        /* Trading Colors */
+        --buy-green: #10b981;
+        --buy-green-bg: rgba(16, 185, 129, 0.15);
+        --sell-red: #ef4444;
+        --sell-red-bg: rgba(239, 68, 68, 0.15);
+    }
     
-    .footprint-container { max-width: 600px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .fp-row { display: flex; border-bottom: 1px solid var(--border); }
-    .fp-price { flex: 1; text-align: center; padding: 12px; font-family: 'JetBrains Mono'; font-weight: bold; background: #1a1a1d; border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 18px;}
+    body { 
+        background-color: var(--bg-main); 
+        color: var(--text-main); 
+        font-family: 'Inter', sans-serif; 
+        margin: 0; 
+        padding: 40px 20px; 
+    }
+
+    /* 🟢 Sleek Header */
+    .header { 
+        text-align: center; 
+        margin-bottom: 40px; 
+    }
+    .brand-tag {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--gold);
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .header h1 { 
+        color: var(--text-main); 
+        margin: 0 0 8px 0; 
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    .header p {
+        color: var(--text-muted); 
+        font-size: 14px;
+        margin: 0;
+    }
     
-    .fp-vol { flex: 2; display: flex; align-items: center; padding: 0 15px; position: relative; font-family: 'JetBrains Mono'; font-weight: bold;}
-    .fp-sell { justify-content: flex-end; color: var(--red); }
-    .fp-buy { justify-content: flex-start; color: var(--green); }
+    /* 🟢 The Data Container */
+    .footprint-container { 
+        max-width: 700px; 
+        margin: 0 auto; 
+        background: var(--bg-card); 
+        border: 1px solid var(--border-color); 
+        border-radius: 12px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        overflow: hidden; 
+    }
+
+    /* Column Headers */
+    .fp-header-row {
+        display: flex;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--border-color);
+        padding: 12px 0;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+    .fp-header-col { flex: 2; text-align: center; }
+    .fp-header-col.center { flex: 1; }
+
+    /* Data Rows */
+    .fp-row { 
+        display: flex; 
+        border-bottom: 1px solid var(--border-color); 
+        transition: background 0.2s ease;
+    }
+    .fp-row:hover {
+        background: var(--bg-hover);
+    }
+    .fp-row:last-child {
+        border-bottom: none;
+    }
+
+    /* The Center Price Column */
+    .fp-price { 
+        flex: 1; 
+        text-align: center; 
+        padding: 12px; 
+        font-family: 'JetBrains Mono', monospace; 
+        font-weight: 700; 
+        background: rgba(0,0,0,0.2); 
+        border-right: 1px solid var(--border-color); 
+        border-left: 1px solid var(--border-color); 
+        font-size: 16px;
+        color: var(--gold);
+    }
     
-    /* The visual Delta Bars */
-    .bar-bg { position: absolute; top: 2px; bottom: 2px; z-index: 0; border-radius: 4px; }
-    .sell-bar { right: 0; background: rgba(239, 68, 68, 0.2); }
-    .buy-bar { left: 0; background: rgba(16, 185, 129, 0.2); }
+    /* The Volume Cells */
+    .fp-vol { 
+        flex: 2; 
+        display: flex; 
+        align-items: center; 
+        padding: 0 20px; 
+        position: relative; 
+        font-family: 'JetBrains Mono', monospace; 
+        font-weight: 500;
+        font-size: 15px;
+    }
+    .fp-sell { justify-content: flex-end; color: var(--sell-red); }
+    .fp-buy { justify-content: flex-start; color: var(--buy-green); }
+    
+    /* The Visual Delta Bars */
+    .bar-bg { 
+        position: absolute; 
+        top: 4px; 
+        bottom: 4px; 
+        z-index: 0; 
+        border-radius: 4px; 
+        transition: width 0.3s ease-out;
+    }
+    .sell-bar { right: 4px; background: var(--sell-red-bg); border-right: 2px solid var(--sell-red); }
+    .buy-bar { left: 4px; background: var(--buy-green-bg); border-left: 2px solid var(--buy-green); }
+    
+    /* Ensure numbers sit above the bars */
     .fp-text { z-index: 1; }
+
+    /* Loading State */
+    .loading-state {
+        padding: 60px 30px; 
+        text-align: center; 
+        color: var(--text-muted);
+        font-size: 15px;
+        line-height: 1.6;
+    }
+    .pulse {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--gold);
+        border-radius: 50%;
+        margin-right: 8px;
+        box-shadow: 0 0 10px var(--gold);
+        animation: pulse-anim 1.5s infinite;
+    }
+    @keyframes pulse-anim {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1); }
+    }
 </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>NIFTY LIVE ORDERFLOW</h1>
-    <p style="color: #a1a1aa; font-size: 14px;">Aggressive Buy vs Sell Volume (Real-time Delta)</p>
+    <span class="brand-tag">InsiderOwl Terminal</span>
+    <h1>Live Orderflow Matrix</h1>
+    <p>Aggressive Buy vs Sell Volume (Real-time Delta)</p>
 </div>
 
-<div class="footprint-container" id="fp-container">
-    <div style="padding: 30px; text-align: center; color: #a1a1aa;">Waiting for live trades...<br>(Market must be open)</div>
+<div class="footprint-container">
+    <!-- Header Row -->
+    <div class="fp-header-row">
+        <div class="fp-header-col">Aggressive Sellers</div>
+        <div class="fp-header-col center">Strike</div>
+        <div class="fp-header-col">Aggressive Buyers</div>
+    </div>
+    
+    <!-- Data Container -->
+    <div id="fp-container">
+        <div class="loading-state">
+            <span class="pulse"></span> Waiting for live tick data...<br>
+            <span style="font-size: 12px; opacity: 0.7; margin-top: 10px; display: block;">(Data will appear when trades execute in the live market)</span>
+        </div>
+    </div>
 </div>
 
 <script type="module">
@@ -79,7 +234,7 @@
 
     function renderFootprint(matrix) {
         const container = document.getElementById('fp-container');
-        container.innerHTML = "";
+        container.innerHTML = ""; // Clear loading state
         
         // Sort prices from Highest to Lowest
         const prices = Object.keys(matrix).sort((a, b) => b - a);
