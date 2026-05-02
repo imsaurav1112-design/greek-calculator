@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pro Canvas Orderflow | Greek Calculator</title>
+<title>Institutional Orderflow | InsiderOwl</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
     :root { 
         --bg: #09090b; --border: #27272a; --text: #f4f4f5; --muted: #a1a1aa; 
         --accent: #3b82f6; --gold: #f59e0b; --green: #10b981; --red: #ef4444; 
     }
-    body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); overflow: hidden; font-family: 'Inter', sans-serif; }
+    body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); overflow: hidden; font-family: 'Inter', sans-serif; user-select: none; }
     
-    /* Sleek Floating Header */
     header { 
         position: absolute; top: 0; left: 0; width: 100%; height: 60px; 
         background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(10px); 
@@ -22,13 +21,9 @@
     }
     .logo { font-weight: 800; font-size: 22px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 8px;}
     .logo span { color: var(--accent); }
-    .status-badge { background: rgba(16, 185, 129, 0.15); color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); letter-spacing: 1px;}
+    .status-badge { background: rgba(16, 185, 129, 0.15); color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); }
 
-    /* The Canvas Container */
-    #chart-container { 
-        position: absolute; top: 60px; left: 0; right: 0; bottom: 0; 
-        cursor: crosshair; background: #0c0c0f;
-    }
+    #chart-container { position: absolute; top: 60px; left: 0; right: 0; bottom: 0; background: #0c0c0f; cursor: crosshair; }
     canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
@@ -38,7 +33,7 @@
     <a href="index.html" class="logo"><span>Greek</span> Calculator</a>
     <div style="display: flex; align-items: center; gap: 15px;">
         <span style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--muted);" id="last-update">Awaiting Data...</span>
-        <div class="status-badge">LIVE ENGINE</div>
+        <div class="status-badge">PRO TERMINAL</div>
     </div>
 </header>
 
@@ -50,33 +45,66 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     
-    const app = initializeApp({
-        apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
-        authDomain: "insideoptionchain.firebaseapp.com",
-        projectId: "insideoptionchain"
-    });
+    const app = initializeApp({ apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo", authDomain: "insideoptionchain.firebaseapp.com", projectId: "insideoptionchain" });
     const auth = getAuth(app);
 
-    // --- CANVAS ENGINE SETUP ---
     const canvas = document.getElementById('orderflowCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
 
-    // Engine Configurations
-    const ROW_HEIGHT = 22;      // Height of each price row
-    const COL_WIDTH = 160;      // Width of a 5-minute candle
-    const Y_AXIS_WIDTH = 80;    // Width of the right price scale
-    const X_AXIS_HEIGHT = 40;   // Height of the bottom time scale
-    const GAP = 10;             // Gap between candles
+    // --- CHART CONFIGURATION ---
+    const COL_WIDTH = 180;      
+    const Y_AXIS_WIDTH = 80;    
+    const X_AXIS_HEIGHT = 100; // Increased for Delta & CumDelta panels
+    const GAP = 15;             
+    const TICK_SIZE = 5;       // Nifty tick step
 
-    function resizeCanvas() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight - 60; // Subtract header
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    // --- CAMERA / INTERACTION STATE ---
+    let offsetX = 0; 
+    let offsetY = 0; 
+    let priceScale = 25; // Base height of rows (stretched by dragging axis)
+    
+    let isDraggingChart = false;
+    let isDraggingScale = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    
+    let latestDataCache = {};
 
-    // --- FIREBASE & API POLLING ---
+    function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight - 60; renderCanvas(); }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+    // --- TRADINGVIEW-STYLE MOUSE CONTROLS ---
+    canvas.addEventListener('mousedown', (e) => {
+        if (e.clientX > width - Y_AXIS_WIDTH) isDraggingScale = true;
+        else isDraggingChart = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => { isDraggingChart = false; isDraggingScale = false; });
+    window.addEventListener('mouseleave', () => { isDraggingChart = false; isDraggingScale = false; });
+
+    window.addEventListener('mousemove', (e) => {
+        const dx = e.clientX - lastMouseX;
+        const dy = e.clientY - lastMouseY;
+        
+        if (isDraggingChart) {
+            offsetX += dx;
+            offsetY += dy;
+            renderCanvas();
+        } else if (isDraggingScale) {
+            // Dragging Y-Axis stretches the candles vertically
+            priceScale -= dy * 0.2;
+            priceScale = Math.max(5, Math.min(priceScale, 100)); // Constrain zoom
+            renderCanvas();
+        }
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    });
+
+    // --- DATA POLLING ---
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
@@ -85,213 +113,144 @@
             try {
                 const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
-                
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
+                    latestDataCache = data.data;
                     document.getElementById('last-update').innerText = "Sync: " + new Date().toLocaleTimeString();
-                    renderCanvas(data.data);
+                    renderCanvas();
                 }
-            } catch(e) { console.log("Awaiting tick data..."); }
+            } catch(e) {}
         }, 2000);
     });
 
-    // --- THE CORE RENDERING ENGINE ---
-    function renderCanvas(allCandlesData) {
+    // --- CORE RENDERING ENGINE ---
+    function renderCanvas() {
         ctx.clearRect(0, 0, width, height);
-        
-        const timeKeys = Object.keys(allCandlesData).sort();
+        const timeKeys = Object.keys(latestDataCache).sort();
         if (timeKeys.length === 0) return;
 
-        // 1. Find the Absolute Min and Max Prices to calculate the Y-Scale
         let minPrice = Infinity, maxPrice = -Infinity;
         timeKeys.forEach(t => {
-            Object.keys(allCandlesData[t]).forEach(pStr => {
+            Object.keys(latestDataCache[t]).forEach(pStr => {
                 const p = parseFloat(pStr);
                 if (p < minPrice) minPrice = p;
                 if (p > maxPrice) maxPrice = p;
             });
         });
 
-        // Add padding to top and bottom of the chart
-        maxPrice += 10; 
-        minPrice -= 10;
-        
-        // Ensure chart covers at least 100 points
-        if (maxPrice - minPrice < 100) { maxPrice += 50; minPrice -= 50; }
-
-        // Math to calculate Y Pixel Coordinate for a given price
+        // The Y Coordinate Math (with Camera Panning & Scaling)
         const getPriceY = (price) => {
-            const priceRange = maxPrice - minPrice;
-            const drawableHeight = height - X_AXIS_HEIGHT - 20; // 20px padding top
-            const pct = (maxPrice - price) / priceRange;
-            return 20 + (pct * drawableHeight);
+            const centerOffset = height / 2;
+            const diffFromMin = price - minPrice;
+            // Subtracting from height to flip Y axis (higher price = higher up)
+            return height - X_AXIS_HEIGHT - 50 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
 
-        // Draw Horizontal Grid Lines
-        ctx.strokeStyle = '#1e1e24';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let p = Math.floor(minPrice); p <= maxPrice; p += 5) {
+        // Draw Horizontal Grid
+        ctx.strokeStyle = '#1e1e24'; ctx.lineWidth = 1; ctx.beginPath();
+        for (let p = Math.floor(minPrice - 50); p <= maxPrice + 50; p += TICK_SIZE) {
             const y = getPriceY(p);
-            ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y);
+            if (y > 0 && y < height - X_AXIS_HEIGHT) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
         }
         ctx.stroke();
 
-        // 2. Render the Candles (Drawing from Right to Left)
-        let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP;
+        let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
+        let cumulativeDelta = 0;
 
-        // Iterate backwards so the newest candle is always on the far right
+        // Iterate backwards (Newest on right)
         for (let i = timeKeys.length - 1; i >= 0; i--) {
-            if (currentX + COL_WIDTH < 0) break; // Stop rendering if off-screen
+            if (currentX + COL_WIDTH < 0) break; 
             
             const timeKey = timeKeys[i];
-            const matrix = allCandlesData[timeKey];
+            const matrix = latestDataCache[timeKey];
             const prices = Object.keys(matrix).map(Number).sort((a,b) => b-a);
             
-            // Calculate POC
-            let maxVol = 0, pocPrice = null, maxSingle = 1;
+            let maxVol = 0, pocPrice = null, maxSingle = 1, candleDelta = 0;
+            
             prices.forEach(p => {
                 const b = matrix[p].buy_vol, s = matrix[p].sell_vol;
+                candleDelta += (b - s); // Calculate Delta
                 if (b+s > maxVol) { maxVol = b+s; pocPrice = p; }
                 maxSingle = Math.max(maxSingle, b, s);
             });
 
-            // Draw X-Axis Time Label
-            ctx.fillStyle = '#1a1a1d';
-            ctx.fillRect(currentX, height - X_AXIS_HEIGHT + 5, COL_WIDTH, 25);
-            ctx.fillStyle = '#a1a1aa';
-            ctx.font = "bold 12px 'JetBrains Mono'";
-            ctx.textAlign = "center";
-            ctx.fillText(timeKey, currentX + COL_WIDTH/2, height - X_AXIS_HEIGHT + 22);
+            cumulativeDelta += candleDelta;
 
             // Draw Orderflow Rows
             prices.forEach(price => {
                 const y = getPriceY(price);
+                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return; // Cull offscreen
+
                 const b = matrix[price].buy_vol;
                 const s = matrix[price].sell_vol;
-                
-                const isPoc = (price === pocPrice);
-                const isBuyImb = (b > s * 3) && (b > 50);
-                const isSellImb = (s > b * 3) && (s > 50);
-
                 const center = currentX + COL_WIDTH / 2;
                 
-                // Highlight POC Row Background
-                if (isPoc) {
-                    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
-                    ctx.fillRect(currentX, y - ROW_HEIGHT/2, COL_WIDTH, ROW_HEIGHT);
-                    ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(currentX, y - ROW_HEIGHT/2, COL_WIDTH, ROW_HEIGHT);
+                // TRUE DIAGONAL IMBALANCE (Ask vs Bid at P-5)
+                const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
+                const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
+                
+                const isBuyImb = (b > bidBelow * 3) && (b > 50);
+                const isSellImb = (s > askAbove * 3) && (s > 50);
+
+                // Dynamic Coloring based on volume density
+                const volIntensity = (b + s) / maxVol;
+                ctx.fillStyle = `rgba(59, 130, 246, ${volIntensity * 0.3})`;
+                ctx.fillRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
+
+                // POC Highlight
+                if (price === pocPrice) {
+                    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+                    ctx.strokeRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
                 }
 
-                // --- Draw Imbalance / Text Math ---
-                ctx.font = "bold 12px 'JetBrains Mono'";
-                ctx.textBaseline = "middle";
+                ctx.font = "bold 12px 'JetBrains Mono'"; ctx.textBaseline = "middle";
 
-                // Sell Text (Left Side)
+                // Sell Text (Bid)
                 ctx.textAlign = "right";
-                ctx.fillStyle = isSellImb ? '#ef4444' : '#fca5a5'; // Bright red if imbalance
-                ctx.fillText(s, center - 8, y);
+                ctx.fillStyle = isSellImb ? '#ef4444' : '#fca5a5';
+                ctx.fillText(s, center - 10, y);
 
-                // Center Divider
-                ctx.fillStyle = '#3f3f46';
-                ctx.fillRect(center - 1, y - ROW_HEIGHT/2 + 2, 2, ROW_HEIGHT - 4);
-
-                // Buy Text (Right Side)
+                // Buy Text (Ask)
                 ctx.textAlign = "left";
-                ctx.fillStyle = isBuyImb ? '#10b981' : '#6ee7b7'; // Bright green if imbalance
-                ctx.fillText(b, center + 8, y);
+                ctx.fillStyle = isBuyImb ? '#10b981' : '#6ee7b7';
+                ctx.fillText(b, center + 10, y);
             });
             
-            // Move X to the left for the next older candle
+            // --- DRAW BOTTOM PANELS (Delta, CumDelta, Time) ---
+            const panelY = height - X_AXIS_HEIGHT;
+            
+            // Delta Box
+            ctx.fillStyle = candleDelta > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+            ctx.fillRect(currentX, panelY, COL_WIDTH, 25);
+            ctx.fillStyle = candleDelta > 0 ? '#10b981' : '#ef4444';
+            ctx.textAlign = "center";
+            ctx.fillText(`Δ: ${candleDelta > 0 ? '+' : ''}${candleDelta}`, currentX + COL_WIDTH/2, panelY + 12);
+
+            // CumDelta Box
+            ctx.fillStyle = cumulativeDelta > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+            ctx.fillRect(currentX, panelY + 25, COL_WIDTH, 25);
+            ctx.fillStyle = cumulativeDelta > 0 ? '#6ee7b7' : '#fca5a5';
+            ctx.fillText(`ΣΔ: ${cumulativeDelta > 0 ? '+' : ''}${cumulativeDelta}`, currentX + COL_WIDTH/2, panelY + 37);
+
+            // Time Axis
+            ctx.fillStyle = '#1a1a1d';
+            ctx.fillRect(currentX, panelY + 50, COL_WIDTH, 30);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.fillText(timeKey, currentX + COL_WIDTH/2, panelY + 65);
+
             currentX -= (COL_WIDTH + GAP);
         }
 
-        // 3. Draw Right Y-Axis (Price Scale)
+        // --- DRAW Y-AXIS (PRICE SCALE) ---
         ctx.fillStyle = '#09090b';
         ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
-        ctx.strokeStyle = '#27272a';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, 0); ctx.lineTo(width - Y_AXIS_WIDTH, height); ctx.stroke();
+        ctx.strokeStyle = '#27272a'; ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, 0); ctx.lineTo(width - Y_AXIS_WIDTH, height); ctx.stroke();
 
-        ctx.fillStyle = '#f4f4f5';
-        ctx.font = "bold 12px 'JetBrains Mono'";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        
-        // Only draw price labels every 10 points to avoid clutter
-        for (let p = Math.floor(minPrice); p <= maxPrice; p += 10) {
+        ctx.fillStyle = '#f4f4f5'; ctx.font = "bold 12px 'JetBrains Mono'"; ctx.textAlign = "left";
+        for (let p = Math.floor(minPrice - 50); p <= maxPrice + 50; p += TICK_SIZE) {
             const y = getPriceY(p);
-            ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y);
+            if (y > 0 && y < height - X_AXIS_HEIGHT) { ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y); }
         }
     }
-// --- NEW INTERACTIVE CAMERA VARIABLES ---
-let offsetX = 0; // Horizontal scroll position
-let offsetY = 0; // Vertical scroll position
-let zoomScale = 1; // 1 = Normal, 2 = Zoomed in
-let isDragging = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-// --- 1. THE MOUSE SCROLL/ZOOM HANDLERS ---
-canvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-});
-
-window.addEventListener('mouseup', () => isDragging = false);
-
-window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    
-    // Calculate how much the mouse moved
-    const dx = e.clientX - lastMouseX;
-    const dy = e.clientY - lastMouseY;
-    
-    // Update our offsets
-    offsetX += dx;
-    offsetY += dy;
-    
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    
-    // Immediate re-draw for smooth feel
-    requestAnimationFrame(() => renderCanvas(latestDataCache));
-});
-
-// Mousewheel for Zooming
-canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const zoomSpeed = 0.001;
-    zoomScale -= e.deltaY * zoomSpeed;
-    
-    // Constrain zoom so it doesn't flip upside down
-    zoomScale = Math.min(Math.max(0.5, zoomScale), 3);
-    
-    renderCanvas(latestDataCache);
-}, { passive: false });
-
-
-// --- 2. THE UPDATED RENDER MATH ---
-function renderCanvas(allCandlesData) {
-    ctx.clearRect(0, 0, width, height);
-    
-    // [ ... keep your min/max price logic here ... ]
-
-    // UPDATED getPriceY with Camera Support
-    const getPriceY = (price) => {
-        const priceRange = maxPrice - minPrice;
-        const drawableHeight = (height - X_AXIS_HEIGHT) * zoomScale; // Apply Zoom
-        const pct = (maxPrice - price) / priceRange;
-        return 20 + (pct * drawableHeight) + offsetY; // Apply Vertical Scroll
-    };
-
-    // UPDATED Horizontal Positioning
-    let currentX = (width - Y_AXIS_WIDTH - COL_WIDTH) + offsetX; // Apply Horizontal Scroll
-
-    // [ ... rest of your loop drawing candles ... ]
-}
 </script>
 </body>
 </html>
