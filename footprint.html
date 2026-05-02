@@ -3,86 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pro Orderflow | Greek Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<title>Pro Canvas Orderflow | Greek Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #09090b; --card: #141415; --section: #202023; --border: #27272a; 
-  --text: #f4f4f5; --muted: #a1a1aa; --accent: #3b82f6; --gold: #f59e0b; 
-  --green: #10b981; --red: #ef4444; 
-}
-body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); overflow-x: hidden; }
-#bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; filter: blur(6px); opacity: 0.15; pointer-events: none; }
-header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 100; }
-.logo { font-weight: 800; font-size: 25px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; text-decoration: none; color: var(--text);}
-.logo span { color: var(--accent); }
+    :root { 
+        --bg: #09090b; --border: #27272a; --text: #f4f4f5; --muted: #a1a1aa; 
+        --accent: #3b82f6; --gold: #f59e0b; --green: #10b981; --red: #ef4444; 
+    }
+    body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); overflow: hidden; font-family: 'Inter', sans-serif; }
+    
+    /* Sleek Floating Header */
+    header { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 60px; 
+        background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(10px); 
+        border-bottom: 1px solid var(--border); display: flex; 
+        justify-content: space-between; align-items: center; padding: 0 30px; 
+        box-sizing: border-box; z-index: 100;
+    }
+    .logo { font-weight: 800; font-size: 22px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 8px;}
+    .logo span { color: var(--accent); }
+    .status-badge { background: rgba(16, 185, 129, 0.15); color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); letter-spacing: 1px;}
 
-/* --- HORIZONTAL TERMINAL LAYOUT --- */
-.terminal-wrapper { padding: 30px 2%; width: 100%; box-sizing: border-box; }
-.terminal-header { text-align: center; margin-bottom: 30px; }
-.terminal-header h1 { margin: 0 0 10px 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
-
-/* The Scrollable Canvas */
-.scrolling-wrapper {
-    display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px;
-    align-items: flex-start; scroll-behavior: smooth;
-}
-.scrolling-wrapper::-webkit-scrollbar { height: 10px; }
-.scrolling-wrapper::-webkit-scrollbar-thumb { background: var(--section); border-radius: 5px; }
-
-/* Individual 5-Min Candle Blocks */
-.candle-block {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    min-width: 320px; flex-shrink: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
-}
-.candle-time-header {
-    background: #1a1a1d; color: var(--gold); text-align: center; font-weight: 800;
-    padding: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px;
-    border-bottom: 1px solid var(--border);
-}
-
-.fp-header-row { display: flex; background: var(--section); border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.fp-header-col { flex: 2; text-align: center; }
-.fp-header-col.center { flex: 1; }
-
-.fp-row { display: flex; border-bottom: 1px solid var(--border); transition: 0.2s; position: relative; }
-.fp-row:hover { background: rgba(255,255,255,0.03); }
-
-/* POC and Math Styles */
-.fp-row.is-poc { border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05); }
-.fp-price { flex: 1; text-align: center; padding: 10px 5px; font-family: 'JetBrains Mono', monospace; font-weight: 800; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 14px; color: var(--text); }
-.fp-vol { flex: 2; display: flex; align-items: center; padding: 0 15px; position: relative; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px; }
-.fp-sell { justify-content: flex-end; color: #fca5a5; }
-.fp-buy { justify-content: flex-start; color: #6ee7b7; }
-
-.fp-sell.imbalance { color: var(--red); font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
-.fp-buy.imbalance { color: var(--green); font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
-
-.bar-bg { position: absolute; top: 3px; bottom: 3px; z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
-.sell-bar { right: 3px; background: rgba(239, 68, 68, 0.15); border-right: 2px solid var(--red); }
-.buy-bar { left: 3px; background: rgba(16, 185, 129, 0.15); border-left: 2px solid var(--green); }
-.fp-text { z-index: 1; }
+    /* The Canvas Container */
+    #chart-container { 
+        position: absolute; top: 60px; left: 0; right: 0; bottom: 0; 
+        cursor: crosshair; background: #0c0c0f;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
 </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
+
 <header>
-    <a href="index.html" class="logo" style="position: relative; top: -5px; left: 10px; padding-top: 15px;"><span> Greek</span> Calculator</a>
-    <div class="nav-links"><span style="background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800;">PRO</span></div>
+    <a href="index.html" class="logo"><span>Greek</span> Calculator</a>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <span style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--muted);" id="last-update">Awaiting Data...</span>
+        <div class="status-badge">LIVE ENGINE</div>
+    </div>
 </header>
 
-<div class="terminal-wrapper">
-    <div class="terminal-header">
-        <h1>Time-Based Orderflow</h1>
-        <p>5-Minute Cumulative Candles with Auto-POC</p>
-    </div>
-
-    <!-- This is the new horizontal scrolling wrapper -->
-    <div class="scrolling-wrapper" id="fp-horizontal-scroll">
-        <div style="width: 100%; text-align: center; color: var(--muted); padding: 50px;">
-            Initializing Time-Series Data...<br><span style="font-size: 12px;">(Waiting for next 5-min candle formation)</span>
-        </div>
-    </div>
+<div id="chart-container">
+    <canvas id="orderflowCanvas"></canvas>
 </div>
 
 <script type="module">
@@ -96,6 +57,26 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     });
     const auth = getAuth(app);
 
+    // --- CANVAS ENGINE SETUP ---
+    const canvas = document.getElementById('orderflowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    // Engine Configurations
+    const ROW_HEIGHT = 22;      // Height of each price row
+    const COL_WIDTH = 160;      // Width of a 5-minute candle
+    const Y_AXIS_WIDTH = 80;    // Width of the right price scale
+    const X_AXIS_HEIGHT = 40;   // Height of the bottom time scale
+    const GAP = 10;             // Gap between candles
+
+    function resizeCanvas() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight - 60; // Subtract header
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- FIREBASE & API POLLING ---
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
@@ -106,117 +87,144 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
                 const data = await r.json();
                 
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
-                    renderTimeCandles(data.data);
+                    document.getElementById('last-update').innerText = "Sync: " + new Date().toLocaleTimeString();
+                    renderCanvas(data.data);
                 }
             } catch(e) { console.log("Awaiting tick data..."); }
         }, 2000);
     });
 
-    let previousCandleCount = 0;
-
-    function renderTimeCandles(allCandlesData) {
-        const container = document.getElementById('fp-horizontal-scroll');
+    // --- THE CORE RENDERING ENGINE ---
+    function renderCanvas(allCandlesData) {
+        ctx.clearRect(0, 0, width, height);
         
-        // Chronologically sort the time buckets (e.g. "10:15", "10:20")
         const timeKeys = Object.keys(allCandlesData).sort();
-        
-        // If data is new, clear the waiting message
-        if (container.innerHTML.includes("Initializing")) container.innerHTML = "";
+        if (timeKeys.length === 0) return;
 
-        timeKeys.forEach(timeKey => {
-            const matrix = allCandlesData[timeKey];
-            const prices = Object.keys(matrix).map(Number).sort((a, b) => b - a);
-            
-            // Check if we already rendered this block to avoid redrawing old candles
-            let block = document.getElementById(`candle-${timeKey.replace(":", "-")}`);
-            if (!block) {
-                block = document.createElement('div');
-                block.className = 'candle-block';
-                block.id = `candle-${timeKey.replace(":", "-")}`;
-                container.appendChild(block);
-            }
-            
-            let htmlPayload = `
-                <div class="candle-time-header">Candle: ${timeKey}</div>
-                <div class="fp-header-row">
-                    <div class="fp-header-col">Sellers</div>
-                    <div class="fp-header-col center">Price</div>
-                    <div class="fp-header-col">Buyers</div>
-                </div>
-                <div class="candle-data-rows">
-            `;
-
-            // POC Calculation for this specific candle
-            let maxTotalVol = 0; let pocPrice = null; let maxSingleVol = 1;
-            prices.forEach(p => {
-                const b = matrix[p].buy_vol; const s = matrix[p].sell_vol;
-                if (b + s > maxTotalVol) { maxTotalVol = b + s; pocPrice = p; }
-                maxSingleVol = Math.max(maxSingleVol, b, s);
+        // 1. Find the Absolute Min and Max Prices to calculate the Y-Scale
+        let minPrice = Infinity, maxPrice = -Infinity;
+        timeKeys.forEach(t => {
+            Object.keys(allCandlesData[t]).forEach(pStr => {
+                const p = parseFloat(pStr);
+                if (p < minPrice) minPrice = p;
+                if (p > maxPrice) maxPrice = p;
             });
-
-            prices.forEach(price => {
-                const b = matrix[price].buy_vol; const s = matrix[price].sell_vol;
-                const buyPct = Math.min((b / maxSingleVol) * 100, 100);
-                const sellPct = Math.min((s / maxSingleVol) * 100, 100);
-                const isPoc = (price === pocPrice);
-                const isBuyImbalance = (b > s * 3) && (b > 50);
-                const isSellImbalance = (s > b * 3) && (s > 50);
-
-                htmlPayload += `
-                    <div class="fp-row ${isPoc ? 'is-poc' : ''}">
-                        <div class="fp-vol fp-sell ${isSellImbalance ? 'imbalance' : ''}">
-                            <div class="bar-bg sell-bar" style="width: ${sellPct}%"></div>
-                            <span class="fp-text">${s}</span>
-                        </div>
-                        <div class="fp-price" style="${isPoc ? 'color: var(--gold);' : ''}">${price}</div>
-                        <div class="fp-vol fp-buy ${isBuyImbalance ? 'imbalance' : ''}">
-                            <div class="bar-bg buy-bar" style="width: ${buyPct}%"></div>
-                            <span class="fp-text">${b}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            htmlPayload += `</div>`;
-            block.innerHTML = htmlPayload;
         });
 
-        // Auto-scroll to the newest candle on the right if a new one was added
-        if (timeKeys.length > previousCandleCount) {
-            container.scrollLeft = container.scrollWidth;
-            previousCandleCount = timeKeys.length;
+        // Add padding to top and bottom of the chart
+        maxPrice += 10; 
+        minPrice -= 10;
+        
+        // Ensure chart covers at least 100 points
+        if (maxPrice - minPrice < 100) { maxPrice += 50; minPrice -= 50; }
+
+        // Math to calculate Y Pixel Coordinate for a given price
+        const getPriceY = (price) => {
+            const priceRange = maxPrice - minPrice;
+            const drawableHeight = height - X_AXIS_HEIGHT - 20; // 20px padding top
+            const pct = (maxPrice - price) / priceRange;
+            return 20 + (pct * drawableHeight);
+        };
+
+        // Draw Horizontal Grid Lines
+        ctx.strokeStyle = '#1e1e24';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let p = Math.floor(minPrice); p <= maxPrice; p += 5) {
+            const y = getPriceY(p);
+            ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y);
+        }
+        ctx.stroke();
+
+        // 2. Render the Candles (Drawing from Right to Left)
+        let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP;
+
+        // Iterate backwards so the newest candle is always on the far right
+        for (let i = timeKeys.length - 1; i >= 0; i--) {
+            if (currentX + COL_WIDTH < 0) break; // Stop rendering if off-screen
+            
+            const timeKey = timeKeys[i];
+            const matrix = allCandlesData[timeKey];
+            const prices = Object.keys(matrix).map(Number).sort((a,b) => b-a);
+            
+            // Calculate POC
+            let maxVol = 0, pocPrice = null, maxSingle = 1;
+            prices.forEach(p => {
+                const b = matrix[p].buy_vol, s = matrix[p].sell_vol;
+                if (b+s > maxVol) { maxVol = b+s; pocPrice = p; }
+                maxSingle = Math.max(maxSingle, b, s);
+            });
+
+            // Draw X-Axis Time Label
+            ctx.fillStyle = '#1a1a1d';
+            ctx.fillRect(currentX, height - X_AXIS_HEIGHT + 5, COL_WIDTH, 25);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = "bold 12px 'JetBrains Mono'";
+            ctx.textAlign = "center";
+            ctx.fillText(timeKey, currentX + COL_WIDTH/2, height - X_AXIS_HEIGHT + 22);
+
+            // Draw Orderflow Rows
+            prices.forEach(price => {
+                const y = getPriceY(price);
+                const b = matrix[price].buy_vol;
+                const s = matrix[price].sell_vol;
+                
+                const isPoc = (price === pocPrice);
+                const isBuyImb = (b > s * 3) && (b > 50);
+                const isSellImb = (s > b * 3) && (s > 50);
+
+                const center = currentX + COL_WIDTH / 2;
+                
+                // Highlight POC Row Background
+                if (isPoc) {
+                    ctx.fillStyle = 'rgba(245, 158, 11, 0.15)';
+                    ctx.fillRect(currentX, y - ROW_HEIGHT/2, COL_WIDTH, ROW_HEIGHT);
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(currentX, y - ROW_HEIGHT/2, COL_WIDTH, ROW_HEIGHT);
+                }
+
+                // --- Draw Imbalance / Text Math ---
+                ctx.font = "bold 12px 'JetBrains Mono'";
+                ctx.textBaseline = "middle";
+
+                // Sell Text (Left Side)
+                ctx.textAlign = "right";
+                ctx.fillStyle = isSellImb ? '#ef4444' : '#fca5a5'; // Bright red if imbalance
+                ctx.fillText(s, center - 8, y);
+
+                // Center Divider
+                ctx.fillStyle = '#3f3f46';
+                ctx.fillRect(center - 1, y - ROW_HEIGHT/2 + 2, 2, ROW_HEIGHT - 4);
+
+                // Buy Text (Right Side)
+                ctx.textAlign = "left";
+                ctx.fillStyle = isBuyImb ? '#10b981' : '#6ee7b7'; // Bright green if imbalance
+                ctx.fillText(b, center + 8, y);
+            });
+            
+            // Move X to the left for the next older candle
+            currentX -= (COL_WIDTH + GAP);
+        }
+
+        // 3. Draw Right Y-Axis (Price Scale)
+        ctx.fillStyle = '#09090b';
+        ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
+        ctx.strokeStyle = '#27272a';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, 0); ctx.lineTo(width - Y_AXIS_WIDTH, height); ctx.stroke();
+
+        ctx.fillStyle = '#f4f4f5';
+        ctx.font = "bold 12px 'JetBrains Mono'";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        
+        // Only draw price labels every 10 points to avoid clutter
+        for (let p = Math.floor(minPrice); p <= maxPrice; p += 10) {
+            const y = getPriceY(p);
+            ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y);
         }
     }
-    
-    // Background Animation Setup (From index.html)
-    function initBgAnimation() {
-        const canvas = document.getElementById('bg-canvas'); if (!canvas) return;
-        const ctx = canvas.getContext('2d'); let width, height;
-        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize); resize();
-        const candles = []; const cw = 12; const sp = 25; const speed = 0.4; let lc = height/2;
-        for(let i=0; i < (width/sp)+2; i++) { gen(width-(i*sp)); }
-        function gen(x) {
-            const gr = Math.random()>0.35; const bs = Math.random()*30+10; let o, c, h, l;
-            if(gr){ c=lc-(Math.random()*25+5); o=c+bs; } else { o=lc+(Math.random()*15); c=o+bs; }
-            h=Math.min(o,c)-Math.random()*20; l=Math.max(o,c)+Math.random()*20; lc=c;
-            candles.push({x,o,c,h,l,gr});
-            if(lc < height*0.15) lc=height*0.85; else if(lc > height*0.95) lc=height*0.85;
-        }
-        function draw() {
-            ctx.clearRect(0,0,width,height);
-            for(let i=0; i<candles.length; i++) {
-                let c=candles[i]; c.x-=speed; ctx.strokeStyle=c.gr?'#10b981':'#ef4444'; ctx.fillStyle=c.gr?'#10b981':'#ef4444';
-                ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(c.x+cw/2,c.h); ctx.lineTo(c.x+cw/2,c.l); ctx.stroke();
-                ctx.fillRect(c.x,Math.min(c.o,c.c),cw,Math.abs(c.o-c.c));
-            }
-            if(candles[0].x<-50) candles.shift();
-            if(candles[candles.length-1].x<width) gen(candles[candles.length-1].x+sp);
-            requestAnimationFrame(draw);
-        }
-        draw();
-    }
-    initBgAnimation();
 </script>
 </body>
 </html>
