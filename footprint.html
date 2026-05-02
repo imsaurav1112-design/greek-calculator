@@ -225,6 +225,38 @@
             ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y);
         }
     }
+    let offsetX = 0;
+let isDragging = false;
+let lastMouseX = 0;
+
+// Listen for Mouse Down to start dragging
+canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastMouseX = e.clientX;
+});
+
+// Listen for Mouse Move to calculate the "Shift"
+window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - lastMouseX;
+    offsetX += deltaX; // Shift the "Camera"
+    lastMouseX = e.clientX;
+    // The next API poll or a manual renderCanvas() call will now show the shift
+});
+
+window.addEventListener('mouseup', () => { isDragging = false; });
+
+// Listen for Scroll Wheel to Zoom In/Out
+canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+        // Zoom In
+        COL_WIDTH = Math.min(COL_WIDTH + 10, 500); 
+    } else {
+        // Zoom Out
+        COL_WIDTH = Math.max(COL_WIDTH - 10, 80);
+    }
+}, { passive: false });
 </script>
 </body>
 </html>
