@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nifty Orderflow | Greek Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+    :root { --bg: #09090b; --card: #141415; --text: #f4f4f5; --green: #10b981; --red: #ef4444; --border: #27272a; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { color: #3b82f6; margin: 0; }
+    
+    .footprint-container { max-width: 600px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .fp-row { display: flex; border-bottom: 1px solid var(--border); }
+    .fp-price { flex: 1; text-align: center; padding: 12px; font-family: 'JetBrains Mono'; font-weight: bold; background: #1a1a1d; border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 18px;}
+    
+    .fp-vol { flex: 2; display: flex; align-items: center; padding: 0 15px; position: relative; font-family: 'JetBrains Mono'; font-weight: bold;}
+    .fp-sell { justify-content: flex-end; color: var(--red); }
+    .fp-buy { justify-content: flex-start; color: var(--green); }
+    
+    /* The visual Delta Bars */
+    .bar-bg { position: absolute; top: 2px; bottom: 2px; z-index: 0; border-radius: 4px; }
+    .sell-bar { right: 0; background: rgba(239, 68, 68, 0.2); }
+    .buy-bar { left: 0; background: rgba(16, 185, 129, 0.2); }
+    .fp-text { z-index: 1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>NIFTY LIVE ORDERFLOW</h1>
+    <p style="color: #a1a1aa; font-size: 14px;">Aggressive Buy vs Sell Volume (Real-time Delta)</p>
+</div>
+
+<div class="footprint-container" id="fp-container">
+    <div style="padding: 30px; text-align: center; color: #a1a1aa;">Waiting for live trades...<br>(Market must be open)</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
+        authDomain: "insideoptionchain.firebaseapp.com",
+        projectId: "insideoptionchain",
+        storageBucket: "insideoptionchain.firebasestorage.app",
+        messagingSenderId: "112098245685",
+        appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            alert("Please login first!");
+            window.location.href = "index.html";
+            return;
+        }
+        
+        const token = await user.getIdToken();
+        
+        // Poll the backend every 2 seconds for fresh footprint data
+        setInterval(async () => {
+            try {
+                const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                const data = await r.json();
+                
+                if (data.status === "success" && Object.keys(data.data).length > 0) {
+                    renderFootprint(data.data);
+                }
+            } catch(e) { console.error("Footprint fetch error", e); }
+        }, 2000);
+    });
+
+    function renderFootprint(matrix) {
+        const container = document.getElementById('fp-container');
+        container.innerHTML = "";
+        
+        // Sort prices from Highest to Lowest
+        const prices = Object.keys(matrix).sort((a, b) => b - a);
+        
+        // Find the absolute maximum volume to scale the background bars correctly
+        let maxVol = 1;
+        for (let p of prices) {
+            maxVol = Math.max(maxVol, matrix[p].buy_vol, matrix[p].sell_vol);
+        }
+
+        prices.forEach(price => {
+            const buyVol = matrix[price].buy_vol;
+            const sellVol = matrix[price].sell_vol;
+            
+            // Calculate width percentages for the bars
+            const buyPct = Math.min((buyVol / maxVol) * 100, 100);
+            const sellPct = Math.min((sellVol / maxVol) * 100, 100);
+
+            const row = document.createElement('div');
+            row.className = 'fp-row';
+            
+            row.innerHTML = `
+                <div class="fp-vol fp-sell">
+                    <div class="bar-bg sell-bar" style="width: ${sellPct}%"></div>
+                    <span class="fp-text">${sellVol}</span>
+                </div>
+                
+                <div class="fp-price">${price}</div>
+                
+                <div class="fp-vol fp-buy">
+                    <div class="bar-bg buy-bar" style="width: ${buyPct}%"></div>
+                    <span class="fp-text">${buyVol}</span>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+</script>
+</body>
+</html>
