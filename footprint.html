@@ -225,38 +225,73 @@
             ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y);
         }
     }
-    let offsetX = 0;
+// --- NEW INTERACTIVE CAMERA VARIABLES ---
+let offsetX = 0; // Horizontal scroll position
+let offsetY = 0; // Vertical scroll position
+let zoomScale = 1; // 1 = Normal, 2 = Zoomed in
 let isDragging = false;
 let lastMouseX = 0;
+let lastMouseY = 0;
 
-// Listen for Mouse Down to start dragging
+// --- 1. THE MOUSE SCROLL/ZOOM HANDLERS ---
 canvas.addEventListener('mousedown', (e) => {
     isDragging = true;
     lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
 });
 
-// Listen for Mouse Move to calculate the "Shift"
+window.addEventListener('mouseup', () => isDragging = false);
+
 window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
-    const deltaX = e.clientX - lastMouseX;
-    offsetX += deltaX; // Shift the "Camera"
+    
+    // Calculate how much the mouse moved
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    
+    // Update our offsets
+    offsetX += dx;
+    offsetY += dy;
+    
     lastMouseX = e.clientX;
-    // The next API poll or a manual renderCanvas() call will now show the shift
+    lastMouseY = e.clientY;
+    
+    // Immediate re-draw for smooth feel
+    requestAnimationFrame(() => renderCanvas(latestDataCache));
 });
 
-window.addEventListener('mouseup', () => { isDragging = false; });
-
-// Listen for Scroll Wheel to Zoom In/Out
+// Mousewheel for Zooming
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (e.deltaY < 0) {
-        // Zoom In
-        COL_WIDTH = Math.min(COL_WIDTH + 10, 500); 
-    } else {
-        // Zoom Out
-        COL_WIDTH = Math.max(COL_WIDTH - 10, 80);
-    }
+    const zoomSpeed = 0.001;
+    zoomScale -= e.deltaY * zoomSpeed;
+    
+    // Constrain zoom so it doesn't flip upside down
+    zoomScale = Math.min(Math.max(0.5, zoomScale), 3);
+    
+    renderCanvas(latestDataCache);
 }, { passive: false });
+
+
+// --- 2. THE UPDATED RENDER MATH ---
+function renderCanvas(allCandlesData) {
+    ctx.clearRect(0, 0, width, height);
+    
+    // [ ... keep your min/max price logic here ... ]
+
+    // UPDATED getPriceY with Camera Support
+    const getPriceY = (price) => {
+        const priceRange = maxPrice - minPrice;
+        const drawableHeight = (height - X_AXIS_HEIGHT) * zoomScale; // Apply Zoom
+        const pct = (maxPrice - price) / priceRange;
+        return 20 + (pct * drawableHeight) + offsetY; // Apply Vertical Scroll
+    };
+
+    // UPDATED Horizontal Positioning
+    let currentX = (width - Y_AXIS_WIDTH - COL_WIDTH) + offsetX; // Apply Horizontal Scroll
+
+    // [ ... rest of your loop drawing candles ... ]
+}
 </script>
 </body>
 </html>
