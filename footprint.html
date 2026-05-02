@@ -2,192 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nifty Orderflow | InsiderOwl</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pro Orderflow | Greek Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-    :root { 
-        --bg-main: #0a0a0c; 
-        --bg-card: #121216; 
-        --bg-hover: #1a1a20;
-        --text-main: #f4f4f5; 
-        --text-muted: #a1a1aa;
-        --border-color: #27272a; 
-        
-        /* InsiderOwl Brand Colors */
-        --gold: #eab308;
-        --gold-glow: rgba(234, 179, 8, 0.15);
-        
-        /* Trading Colors */
-        --buy-green: #10b981;
-        --buy-green-bg: rgba(16, 185, 129, 0.15);
-        --sell-red: #ef4444;
-        --sell-red-bg: rgba(239, 68, 68, 0.15);
-    }
-    
-    body { 
-        background-color: var(--bg-main); 
-        color: var(--text-main); 
-        font-family: 'Inter', sans-serif; 
-        margin: 0; 
-        padding: 40px 20px; 
-    }
+:root {
+  --bg: #09090b;         
+  --card: #141415;       
+  --section: #202023;    
+  --border: #27272a;     
+  --text: #f4f4f5;       
+  --muted: #a1a1aa;      
+  --accent: #3b82f6;       
+  --gold: #f59e0b;         
+  --green: #10b981;        
+  --red: #ef4444;          
+}
 
-    /* 🟢 Sleek Header */
-    .header { 
-        text-align: center; 
-        margin-bottom: 40px; 
-    }
-    .brand-tag {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--gold);
-        font-weight: 600;
-        margin-bottom: 8px;
-        display: block;
-    }
-    .header h1 { 
-        color: var(--text-main); 
-        margin: 0 0 8px 0; 
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-    }
-    .header p {
-        color: var(--text-muted); 
-        font-size: 14px;
-        margin: 0;
-    }
-    
-    /* 🟢 The Data Container */
-    .footprint-container { 
-        max-width: 700px; 
-        margin: 0 auto; 
-        background: var(--bg-card); 
-        border: 1px solid var(--border-color); 
-        border-radius: 12px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        overflow: hidden; 
-    }
+body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
-    /* Column Headers */
-    .fp-header-row {
-        display: flex;
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: 1px solid var(--border-color);
-        padding: 12px 0;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--text-muted);
-        font-weight: 600;
-    }
-    .fp-header-col { flex: 2; text-align: center; }
-    .fp-header-col.center { flex: 1; }
+/* 🟢 BACKGROUND CANDLESTICK CANVAS */
+#bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; filter: blur(6px); opacity: 0.15; pointer-events: none; }
 
-    /* Data Rows */
-    .fp-row { 
-        display: flex; 
-        border-bottom: 1px solid var(--border-color); 
-        transition: background 0.2s ease;
-    }
-    .fp-row:hover {
-        background: var(--bg-hover);
-    }
-    .fp-row:last-child {
-        border-bottom: none;
-    }
+/* --- HEADER --- */
+header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 100; }
+.logo { font-weight: 800; font-size: 25px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; text-decoration: none; color: var(--text);}
+.logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 20px; align-items: center; }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
+.nav-links a:hover { color: var(--text); }
 
-    /* The Center Price Column */
-    .fp-price { 
-        flex: 1; 
-        text-align: center; 
-        padding: 12px; 
-        font-family: 'JetBrains Mono', monospace; 
-        font-weight: 700; 
-        background: rgba(0,0,0,0.2); 
-        border-right: 1px solid var(--border-color); 
-        border-left: 1px solid var(--border-color); 
-        font-size: 16px;
-        color: var(--gold);
-    }
-    
-    /* The Volume Cells */
-    .fp-vol { 
-        flex: 2; 
-        display: flex; 
-        align-items: center; 
-        padding: 0 20px; 
-        position: relative; 
-        font-family: 'JetBrains Mono', monospace; 
-        font-weight: 500;
-        font-size: 15px;
-    }
-    .fp-sell { justify-content: flex-end; color: var(--sell-red); }
-    .fp-buy { justify-content: flex-start; color: var(--buy-green); }
-    
-    /* The Visual Delta Bars */
-    .bar-bg { 
-        position: absolute; 
-        top: 4px; 
-        bottom: 4px; 
-        z-index: 0; 
-        border-radius: 4px; 
-        transition: width 0.3s ease-out;
-    }
-    .sell-bar { right: 4px; background: var(--sell-red-bg); border-right: 2px solid var(--sell-red); }
-    .buy-bar { left: 4px; background: var(--buy-green-bg); border-left: 2px solid var(--buy-green); }
-    
-    /* Ensure numbers sit above the bars */
-    .fp-text { z-index: 1; }
+/* --- TERMINAL UI --- */
+.terminal-wrapper { padding: 40px 5%; max-width: 800px; margin: 0 auto; }
+.terminal-header { text-align: center; margin-bottom: 30px; }
+.terminal-header h1 { margin: 0 0 10px 0; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
+.terminal-header p { color: var(--muted); font-size: 14px; margin: 0; }
 
-    /* Loading State */
-    .loading-state {
-        padding: 60px 30px; 
-        text-align: center; 
-        color: var(--text-muted);
-        font-size: 15px;
-        line-height: 1.6;
-    }
-    .pulse {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        background-color: var(--gold);
-        border-radius: 50%;
-        margin-right: 8px;
-        box-shadow: 0 0 10px var(--gold);
-        animation: pulse-anim 1.5s infinite;
-    }
-    @keyframes pulse-anim {
-        0% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
-        100% { opacity: 1; transform: scale(1); }
-    }
+.footprint-container { background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
+.fp-header-row { display: flex; background: var(--section); border-bottom: 1px solid var(--border); padding: 12px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+.fp-header-col { flex: 2; text-align: center; }
+.fp-header-col.center { flex: 1; }
+
+.fp-row { display: flex; border-bottom: 1px solid var(--border); transition: 0.2s; position: relative; }
+.fp-row:hover { background: rgba(255,255,255,0.03); }
+
+/* The Point of Control (POC) Styling */
+.fp-row.is-poc { border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05); z-index: 10; box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
+.poc-badge { position: absolute; left: -60px; top: 50%; transform: translateY(-50%); background: var(--gold); color: #000; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: none; }
+.fp-row.is-poc .poc-badge { display: block; }
+
+.fp-price { flex: 1; text-align: center; padding: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 800; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); border-left: 1px solid var(--border); font-size: 16px; color: var(--text); }
+.fp-vol { flex: 2; display: flex; align-items: center; padding: 0 20px; position: relative; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; }
+.fp-sell { justify-content: flex-end; color: #fca5a5; }
+.fp-buy { justify-content: flex-start; color: #6ee7b7; }
+
+/* Imbalance Styling */
+.fp-sell.imbalance { color: var(--red); font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+.fp-buy.imbalance { color: var(--green); font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+
+.bar-bg { position: absolute; top: 4px; bottom: 4px; z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
+.sell-bar { right: 4px; background: rgba(239, 68, 68, 0.15); border-right: 2px solid var(--red); }
+.buy-bar { left: 4px; background: rgba(16, 185, 129, 0.15); border-left: 2px solid var(--green); }
+.fp-text { z-index: 1; }
 </style>
 </head>
 <body>
+<canvas id="bg-canvas"></canvas>
 
-<div class="header">
-    <span class="brand-tag">InsiderOwl Terminal</span>
-    <h1>Live Orderflow Matrix</h1>
-    <p>Aggressive Buy vs Sell Volume (Real-time Delta)</p>
-</div>
-
-<div class="footprint-container">
-    <!-- Header Row -->
-    <div class="fp-header-row">
-        <div class="fp-header-col">Aggressive Sellers</div>
-        <div class="fp-header-col center">Strike</div>
-        <div class="fp-header-col">Aggressive Buyers</div>
+<!-- Exact Navbar matching your Main UI -->
+<header>
+    <a href="index.html" class="logo" style="position: relative; top: -5px; left: 10px; padding-top: 15px;">
+        <span> Greek</span> Calculator
+    </a>
+    <div class="nav-links">
+        <span style="background: var(--accent); color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase;">Pro Terminal</span>
     </div>
-    
-    <!-- Data Container -->
-    <div id="fp-container">
-        <div class="loading-state">
-            <span class="pulse"></span> Waiting for live tick data...<br>
-            <span style="font-size: 12px; opacity: 0.7; margin-top: 10px; display: block;">(Data will appear when trades execute in the live market)</span>
+</header>
+
+<div class="terminal-wrapper">
+    <div class="terminal-header">
+        <h1>Nifty Futures Orderflow</h1>
+        <p>Cumulative Delta Matrix with Auto-POC & Imbalance Detection</p>
+    </div>
+
+    <div class="footprint-container">
+        <div class="fp-header-row">
+            <div class="fp-header-col">Aggressive Sellers</div>
+            <div class="fp-header-col center">Strike</div>
+            <div class="fp-header-col">Aggressive Buyers</div>
+        </div>
+        <div id="fp-container">
+            <div style="padding: 60px 30px; text-align: center; color: var(--muted);">
+                Initializing secure WebSocket connection...
+            </div>
         </div>
     </div>
 </div>
@@ -210,14 +117,12 @@
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            alert("Please login first!");
+            alert("Terminal access requires authentication.");
             window.location.href = "index.html";
             return;
         }
-        
         const token = await user.getIdToken();
         
-        // Poll the backend every 2 seconds for fresh footprint data
         setInterval(async () => {
             try {
                 const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { 
@@ -226,45 +131,62 @@
                 const data = await r.json();
                 
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
-                    renderFootprint(data.data);
+                    renderAdvancedFootprint(data.data);
                 }
-            } catch(e) { console.error("Footprint fetch error", e); }
+            } catch(e) { console.log("Awaiting tick data..."); }
         }, 2000);
     });
 
-    function renderFootprint(matrix) {
+    function renderAdvancedFootprint(matrix) {
         const container = document.getElementById('fp-container');
-        container.innerHTML = ""; // Clear loading state
+        container.innerHTML = ""; 
         
-        // Sort prices from Highest to Lowest
-        const prices = Object.keys(matrix).sort((a, b) => b - a);
+        const prices = Object.keys(matrix).map(Number).sort((a, b) => b - a);
         
-        // Find the absolute maximum volume to scale the background bars correctly
-        let maxVol = 1;
-        for (let p of prices) {
-            maxVol = Math.max(maxVol, matrix[p].buy_vol, matrix[p].sell_vol);
-        }
+        // 1. Calculate POC (Row with highest total volume) & Max Vol for bar scaling
+        let maxTotalVol = 0;
+        let pocPrice = null;
+        let maxSingleVol = 1;
 
+        prices.forEach(p => {
+            const buyVol = matrix[p].buy_vol;
+            const sellVol = matrix[p].sell_vol;
+            const totalRowVol = buyVol + sellVol;
+            
+            if (totalRowVol > maxTotalVol) {
+                maxTotalVol = totalRowVol;
+                pocPrice = p;
+            }
+            maxSingleVol = Math.max(maxSingleVol, buyVol, sellVol);
+        });
+
+        // 2. Render Rows with Imbalance Math
         prices.forEach(price => {
             const buyVol = matrix[price].buy_vol;
             const sellVol = matrix[price].sell_vol;
             
-            // Calculate width percentages for the bars
-            const buyPct = Math.min((buyVol / maxVol) * 100, 100);
-            const sellPct = Math.min((sellVol / maxVol) * 100, 100);
+            // Imbalance Detection: 300% greater and volume > 50
+            const isBuyImbalance = (buyVol > sellVol * 3) && (buyVol > 50);
+            const isSellImbalance = (sellVol > buyVol * 3) && (sellVol > 50);
+
+            const buyPct = Math.min((buyVol / maxSingleVol) * 100, 100);
+            const sellPct = Math.min((sellVol / maxSingleVol) * 100, 100);
+            
+            const isPoc = (price === pocPrice);
 
             const row = document.createElement('div');
-            row.className = 'fp-row';
+            row.className = `fp-row ${isPoc ? 'is-poc' : ''}`;
             
             row.innerHTML = `
-                <div class="fp-vol fp-sell">
+                <div class="poc-badge">POC</div>
+                <div class="fp-vol fp-sell ${isSellImbalance ? 'imbalance' : ''}">
                     <div class="bar-bg sell-bar" style="width: ${sellPct}%"></div>
                     <span class="fp-text">${sellVol}</span>
                 </div>
                 
-                <div class="fp-price">${price}</div>
+                <div class="fp-price" style="${isPoc ? 'color: var(--gold);' : ''}">${price}</div>
                 
-                <div class="fp-vol fp-buy">
+                <div class="fp-vol fp-buy ${isBuyImbalance ? 'imbalance' : ''}">
                     <div class="bar-bg buy-bar" style="width: ${buyPct}%"></div>
                     <span class="fp-text">${buyVol}</span>
                 </div>
@@ -272,6 +194,44 @@
             container.appendChild(row);
         });
     }
+
+    // Background Animation Script (From your index.html)
+    function initBgAnimation() {
+        const canvas = document.getElementById('bg-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        const candles = [];
+        const candleWidth = 12;  const spacing = 25; const speed = 0.4; let lastClose = height / 2;
+        for(let i = 0; i < (width / spacing) + 2; i++) { generateCandle(width - (i * spacing)); }
+        function generateCandle(x) {
+            const isGreen = Math.random() > 0.35; 
+            const bodySize = Math.random() * 30 + 10; 
+            let open, close, high, low;
+            if (isGreen) { close = lastClose - (Math.random() * 25 + 5); open = close + bodySize; } 
+            else { open = lastClose + (Math.random() * 15); close = open + bodySize; }
+            high = Math.min(open, close) - Math.random() * 20; low = Math.max(open, close) + Math.random() * 20;
+            lastClose = close; candles.push({x, open, close, high, low, isGreen});
+            if (lastClose < height * 0.15) { lastClose = height * 0.85; } 
+            else if (lastClose > height * 0.95) { lastClose = height * 0.85; }
+        }
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < candles.length; i++) {
+                let c = candles[i]; c.x -= speed; 
+                ctx.strokeStyle = c.isGreen ? '#10b981' : '#ef4444'; ctx.fillStyle = c.isGreen ? '#10b981' : '#ef4444';
+                ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(c.x + candleWidth/2, c.high); ctx.lineTo(c.x + candleWidth/2, c.low); ctx.stroke();
+                ctx.fillRect(c.x, Math.min(c.open, c.close), candleWidth, Math.abs(c.open - c.close));
+            }
+            if (candles[0].x < -50) { candles.shift(); }
+            if (candles[candles.length - 1].x < width) { generateCandle(candles[candles.length - 1].x + spacing); }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+    initBgAnimation();
 </script>
 </body>
 </html>
