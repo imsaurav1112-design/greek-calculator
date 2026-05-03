@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GC Backtester</title>
+<title>GC | Backtester</title>
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
@@ -55,7 +55,7 @@ header {
     height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
 }
 
-.logo { font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border); letter-spacing: 0.5px; white-space: nowrap;}
+.logo { text-decoration: none; font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border); letter-spacing: 0.5px; white-space: nowrap;}
 .logo span { color: var(--accent); }
 .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
 
@@ -345,7 +345,7 @@ header {
 <body>
 
 <header>
-    <div class="logo"><span>GC</span> Backtester</div>
+    <a class="logo"><span>GC</span> Backtester</a>
     
     <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
