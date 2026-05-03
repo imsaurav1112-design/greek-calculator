@@ -62,6 +62,51 @@ header select, header button {
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
+  /* Ticker Tape Styles */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background-color: #111827; /* Dark background */
+    border-bottom: 1px solid #374151;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.ticker-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: ticker-scroll 30s linear infinite;
+}
+
+.ticker-content:hover {
+    animation-play-state: paused; /* Pauses when user hovers to read */
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 2rem;
+    font-family: 'Courier New', Courier, monospace; /* Finance look */
+    font-size: 14px;
+    font-weight: bold;
+    color: #9CA3AF;
+}
+
+.ticker-price {
+    margin-left: 8px;
+}
+
+.tick-up { color: #10B981; }   /* Green */
+.tick-down { color: #EF4444; } /* Red */
+
+/* The infinite scroll animation */
+@keyframes ticker-scroll {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); } 
+}
+
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
     display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
@@ -335,6 +380,14 @@ header {
 
 <header>
     <div class="logo"><span>GC</span>Live</div>
+  
+  <!-- Put this at the very top of your terminal body -->
+<div class="ticker-wrap">
+    <div class="ticker-content" id="live-ticker">
+        <!-- We will inject the stocks here via JavaScript -->
+        <span class="ticker-item">Loading Live Nifty 50...</span>
+    </div>
+</div>
     
    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
@@ -658,6 +711,62 @@ let tvIsCandle = true;
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
 let tvResizeObserver = null; 
+
+  // ==========================================
+// 🟢 NIFTY 50 LIVE TICKER TAPE LOGIC
+// ==========================================
+  // A dictionary to keep track of prices so we know if it went UP or DOWN
+const previousPrices = {};
+
+// Names to map the ugly ISIN codes to readable names
+const tickerNames = {
+    "INE002A01018": "RELIANCE",
+    "INE040A01034": "HDFCBANK",
+    "INE467B01029": "TCS",
+    "INE090A01021": "ICICIBANK",
+    "INE009A01021": "INFY"
+};
+
+function updateTickerTape(instrumentKey, ltp) {
+    const isin = instrumentKey.split('|')[1];
+    const stockName = tickerNames[isin];
+    
+    // Skip if we don't track this stock in the crawler
+    if (!stockName) return; 
+
+    const tickerContainer = document.getElementById('live-ticker');
+    let itemDiv = document.getElementById(`ticker-${isin}`);
+
+    // If the stock isn't in the ticker yet, create it
+    if (!itemDiv) {
+        itemDiv = document.createElement('span');
+        itemDiv.id = `ticker-${isin}`;
+        itemDiv.className = 'ticker-item';
+        tickerContainer.appendChild(itemDiv);
+        
+        // Trick for infinite smooth scroll: Duplicate the content inside the container
+        const clone = itemDiv.cloneNode(true);
+        clone.id = `ticker-${isin}-clone`;
+        tickerContainer.appendChild(clone);
+    }
+
+    // Determine Green or Red
+    let colorClass = "tick-up"; // Default
+    if (previousPrices[isin] && ltp < previousPrices[isin]) {
+        colorClass = "tick-down";
+    }
+    previousPrices[isin] = ltp;
+
+    // Format the HTML
+    const htmlContent = `${stockName}: <span class="${colorClass}">${ltp.toFixed(2)}</span>`;
+    
+    // Update both the original and the clone for the infinite loop
+    itemDiv.innerHTML = htmlContent;
+    document.getElementById(`ticker-${isin}-clone`).innerHTML = htmlContent;
+}
+
+// ⚠️ Put this line inside your existing Live Data listener:
+// updateTickerTape(incomingData.instrument_key, incomingData.ltp);
 
 function toggleSettings(event) {
     if(event) event.stopPropagation();
