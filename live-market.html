@@ -62,17 +62,18 @@ header select, header button {
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
-  /* Ticker Tape Styles */
+/* Ticker Tape Styles */
 .ticker-wrap {
     width: 100%;
     overflow: hidden;
-    background-color: #111827; /* Dark background */
-    border-bottom: 1px solid #374151;
-    height: 40px;
+    background-color: #09090b; /* Matched to your app's main background */
+    border-bottom: 1px solid var(--border);
+    height: 20px; /* 🟢 Exactly 50% of original height */
     display: flex;
     align-items: center;
     box-sizing: border-box;
     white-space: nowrap;
+    flex-shrink: 0; /* Prevents it from getting squished by the workspace */
 }
 
 .ticker-content {
@@ -82,26 +83,26 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 }
 
 .ticker-content:hover {
-    animation-play-state: paused; /* Pauses when user hovers to read */
+    animation-play-state: paused;
 }
 
 .ticker-item {
     display: inline-block;
-    padding: 0 2rem;
-    font-family: 'Courier New', Courier, monospace; /* Finance look */
-    font-size: 14px;
+    padding: 0 1.5rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px; /* 🟢 Reduced from 14px to fit the 20px bar */
     font-weight: bold;
-    color: #9CA3AF;
+    color: var(--muted);
+    line-height: 20px; /* Perfectly centers the text vertically */
 }
 
 .ticker-price {
     margin-left: 8px;
 }
 
-.tick-up { color: #10B981; }   /* Green */
-.tick-down { color: #EF4444; } /* Red */
+.tick-up { color: var(--green); }   
+.tick-down { color: var(--red); } 
 
-/* The infinite scroll animation */
 @keyframes ticker-scroll {
     0% { transform: translate3d(0, 0, 0); }
     100% { transform: translate3d(-50%, 0, 0); } 
