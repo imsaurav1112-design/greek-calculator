@@ -25,6 +25,19 @@
 
     #chart-container { position: absolute; top: 60px; left: 0; right: 0; bottom: 0; background: #0c0c0f; cursor: crosshair; }
     canvas { display: block; width: 100%; height: 100%; }
+
+    /* 🟢 NEW: Session Stats Panel Styles */
+    .stats-panel {
+        position: absolute; top: 75px; left: 140px; /* Offset to clear the Volume Profile */
+        background: rgba(20, 20, 21, 0.85); border: 1px solid var(--border);
+        border-radius: 8px; padding: 15px; width: 220px;
+        font-family: 'JetBrains Mono', monospace; font-size: 11px; z-index: 10;
+        backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-label { color: var(--muted); }
+    .stat-val { font-weight: 700; color: var(--text); }
 </style>
 </head>
 <body>
@@ -39,6 +52,22 @@
 
 <div id="chart-container">
     <canvas id="orderflowCanvas"></canvas>
+    
+    <!-- 🟢 NEW: Session Stats Floating Panel -->
+    <div class="stats-panel" id="stats-panel" style="display: none;">
+        <div style="font-size: 10px; color: var(--accent); margin-bottom: 12px; font-weight: 800; letter-spacing: 0.5px;">SESSION STATISTICS</div>
+        <div class="stat-row"><span class="stat-label">VWAP</span><span class="stat-val" id="st-vwap">--</span></div>
+        <div class="stat-row"><span class="stat-label">Cum Delta</span><span class="stat-val" id="st-delta">--</span></div>
+        <div class="stat-row"><span class="stat-label">VPOC</span><span class="stat-val" id="st-vpoc" style="color: var(--gold);">--</span></div>
+        <div class="stat-row"><span class="stat-label">VAH / VAL</span><span class="stat-val" id="st-va">-- / --</span></div>
+        
+        <div style="height: 1px; background: var(--border); margin: 12px 0;"></div>
+        
+        <div class="stat-row"><span class="stat-label">OR High (15m)</span><span class="stat-val" id="st-orh" style="color: var(--green);">--</span></div>
+        <div class="stat-row"><span class="stat-label">OR Low (15m)</span><span class="stat-val" id="st-orl" style="color: var(--red);">--</span></div>
+        <div class="stat-row"><span class="stat-label">IB High (1h)</span><span class="stat-val" id="st-ibh">--</span></div>
+        <div class="stat-row"><span class="stat-label">IB Low (1h)</span><span class="stat-val" id="st-ibl">--</span></div>
+    </div>
 </div>
 
 <script type="module">
@@ -55,14 +84,15 @@
     // --- CHART CONFIGURATION ---
     const COL_WIDTH = 180;      
     const Y_AXIS_WIDTH = 80;    
-    const X_AXIS_HEIGHT = 100; // Increased for Delta & CumDelta panels
+    const VP_WIDTH = 120;      // 🟢 NEW: Width of the Volume Profile Sidebar
+    const X_AXIS_HEIGHT = 100; 
     const GAP = 15;             
-    const TICK_SIZE = 5;       // Nifty tick step
+    const TICK_SIZE = 5;       
 
     // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
     let offsetY = 0; 
-    let priceScale = 25; // Base height of rows (stretched by dragging axis)
+    let priceScale = 25; 
     
     let isDraggingChart = false;
     let isDraggingScale = false;
@@ -70,11 +100,15 @@
     let lastMouseY = 0;
     
     let latestDataCache = {};
+    
+    // 🟢 NEW: Global Stat Objects
+    let volumeProfile = {};
+    let sessionStats = {};
 
     function resizeCanvas() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight - 60; renderCanvas(); }
     window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-    // --- TRADINGVIEW-STYLE MOUSE CONTROLS ---
+    // --- MOUSE CONTROLS ---
     canvas.addEventListener('mousedown', (e) => {
         if (e.clientX > width - Y_AXIS_WIDTH) isDraggingScale = true;
         else isDraggingChart = true;
@@ -94,9 +128,8 @@
             offsetY += dy;
             renderCanvas();
         } else if (isDraggingScale) {
-            // Dragging Y-Axis stretches the candles vertically
             priceScale -= dy * 0.2;
-            priceScale = Math.max(5, Math.min(priceScale, 100)); // Constrain zoom
+            priceScale = Math.max(5, Math.min(priceScale, 100));
             renderCanvas();
         }
         
@@ -116,11 +149,113 @@
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
                     latestDataCache = data.data;
                     document.getElementById('last-update').innerText = "Sync: " + new Date().toLocaleTimeString();
+                    
+                    processSessionData(); // 🟢 NEW: Calculate stats before rendering
                     renderCanvas();
                 }
             } catch(e) {}
         }, 2000);
     });
+
+    // 🟢 NEW: Calculate Session Stats & Volume Profile
+    function processSessionData() {
+        volumeProfile = {};
+        let totalVol = 0;
+        let totalVolPrice = 0;
+        let totalDelta = 0;
+
+        const times = Object.keys(latestDataCache).sort();
+        if(!times.length) return;
+
+        let orHigh = -Infinity, orLow = Infinity;
+        let ibHigh = -Infinity, ibLow = Infinity;
+
+        // Convert "HH:MM" string to raw minutes for easy range checking
+        const parseTime = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+        const firstTimeMin = parseTime(times[0]);
+
+        times.forEach(t => {
+            const min = parseTime(t);
+            const isOR = min < firstTimeMin + 15; // First 15 mins
+            const isIB = min < firstTimeMin + 60; // First hour
+
+            Object.keys(latestDataCache[t]).forEach(pStr => {
+                const p = parseFloat(pStr);
+                const cell = latestDataCache[t][pStr];
+                const vol = cell.buy_vol + cell.sell_vol;
+                const delta = cell.buy_vol - cell.sell_vol;
+
+                if (!volumeProfile[p]) volumeProfile[p] = 0;
+                volumeProfile[p] += vol;
+                
+                totalVol += vol;
+                totalVolPrice += p * vol;
+                totalDelta += delta;
+
+                // Track Session Ranges
+                if(isOR) { if(p > orHigh) orHigh = p; if(p < orLow) orLow = p; }
+                if(isIB) { if(p > ibHigh) ibHigh = p; if(p < ibLow) ibLow = p; }
+            });
+        });
+
+        // Calculate VPOC (Price with highest total volume)
+        let vpoc = 0;
+        let maxVPVol = 0;
+        Object.keys(volumeProfile).forEach(pStr => {
+            if (volumeProfile[pStr] > maxVPVol) {
+                maxVPVol = volumeProfile[pStr];
+                vpoc = parseFloat(pStr);
+            }
+        });
+
+        // Calculate Value Area (70% of total volume)
+        let targetVol = totalVol * 0.70;
+        let currentVol = volumeProfile[vpoc] || 0;
+        let vah = vpoc;
+        let val = vpoc;
+
+        let up = vpoc + TICK_SIZE;
+        let down = vpoc - TICK_SIZE;
+
+        // Expand out from VPOC until 70% volume is captured
+        while (currentVol < targetVol) {
+            let upVol = volumeProfile[up] || 0;
+            let downVol = volumeProfile[down] || 0;
+            if (upVol === 0 && downVol === 0) break;
+
+            if (upVol >= downVol) {
+                currentVol += upVol;
+                vah = up;
+                up += TICK_SIZE;
+            } else {
+                currentVol += downVol;
+                val = down;
+                down -= TICK_SIZE;
+            }
+        }
+
+        sessionStats = {
+            vwap: totalVolPrice / totalVol, cumDelta: totalDelta,
+            vpoc, vah, val, maxVPVol,
+            orHigh: orHigh === -Infinity ? '--' : orHigh, orLow: orLow === Infinity ? '--' : orLow,
+            ibHigh: ibHigh === -Infinity ? '--' : ibHigh, ibLow: ibLow === Infinity ? '--' : ibLow
+        };
+
+        // Update DOM Elements
+        document.getElementById('stats-panel').style.display = 'block';
+        document.getElementById('st-vwap').innerText = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
+        
+        const dEl = document.getElementById('st-delta');
+        dEl.innerText = (totalDelta > 0 ? '+' : '') + totalDelta;
+        dEl.style.color = totalDelta > 0 ? 'var(--green)' : 'var(--red)';
+        
+        document.getElementById('st-vpoc').innerText = sessionStats.vpoc;
+        document.getElementById('st-va').innerText = `${sessionStats.vah} / ${sessionStats.val}`;
+        document.getElementById('st-orh').innerText = sessionStats.orHigh;
+        document.getElementById('st-orl').innerText = sessionStats.orLow;
+        document.getElementById('st-ibh').innerText = sessionStats.ibHigh;
+        document.getElementById('st-ibl').innerText = sessionStats.ibLow;
+    }
 
     // --- CORE RENDERING ENGINE ---
     function renderCanvas() {
@@ -137,11 +272,8 @@
             });
         });
 
-        // The Y Coordinate Math (with Camera Panning & Scaling)
         const getPriceY = (price) => {
-            const centerOffset = height / 2;
             const diffFromMin = price - minPrice;
-            // Subtracting from height to flip Y axis (higher price = higher up)
             return height - X_AXIS_HEIGHT - 50 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
 
@@ -156,9 +288,9 @@
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         let cumulativeDelta = 0;
 
-        // Iterate backwards (Newest on right)
+        // --- DRAW FOOTPRINT CANDLES ---
         for (let i = timeKeys.length - 1; i >= 0; i--) {
-            if (currentX + COL_WIDTH < 0) break; 
+            if (currentX + COL_WIDTH < VP_WIDTH) break; // 🟢 Hide behind Volume Profile Sidebar
             
             const timeKey = timeKeys[i];
             const matrix = latestDataCache[timeKey];
@@ -168,35 +300,31 @@
             
             prices.forEach(p => {
                 const b = matrix[p].buy_vol, s = matrix[p].sell_vol;
-                candleDelta += (b - s); // Calculate Delta
+                candleDelta += (b - s);
                 if (b+s > maxVol) { maxVol = b+s; pocPrice = p; }
-                maxSingle = Math.max(maxSingle, b, s);
             });
 
             cumulativeDelta += candleDelta;
 
-            // Draw Orderflow Rows
             prices.forEach(price => {
                 const y = getPriceY(price);
-                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return; // Cull offscreen
+                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return;
 
                 const b = matrix[price].buy_vol;
                 const s = matrix[price].sell_vol;
                 const center = currentX + COL_WIDTH / 2;
                 
-                // TRUE DIAGONAL IMBALANCE (Ask vs Bid at P-5)
+                // TRUE DIAGONAL IMBALANCE
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
                 
                 const isBuyImb = (b > bidBelow * 3) && (b > 50);
                 const isSellImb = (s > askAbove * 3) && (s > 50);
 
-                // Dynamic Coloring based on volume density
                 const volIntensity = (b + s) / maxVol;
                 ctx.fillStyle = `rgba(59, 130, 246, ${volIntensity * 0.3})`;
                 ctx.fillRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
 
-                // POC Highlight
                 if (price === pocPrice) {
                     ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
                     ctx.strokeRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
@@ -204,40 +332,76 @@
 
                 ctx.font = "bold 12px 'JetBrains Mono'"; ctx.textBaseline = "middle";
 
-                // Sell Text (Bid)
                 ctx.textAlign = "right";
                 ctx.fillStyle = isSellImb ? '#ef4444' : '#fca5a5';
                 ctx.fillText(s, center - 10, y);
 
-                // Buy Text (Ask)
                 ctx.textAlign = "left";
                 ctx.fillStyle = isBuyImb ? '#10b981' : '#6ee7b7';
                 ctx.fillText(b, center + 10, y);
             });
             
-            // --- DRAW BOTTOM PANELS (Delta, CumDelta, Time) ---
             const panelY = height - X_AXIS_HEIGHT;
             
-            // Delta Box
             ctx.fillStyle = candleDelta > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
             ctx.fillRect(currentX, panelY, COL_WIDTH, 25);
             ctx.fillStyle = candleDelta > 0 ? '#10b981' : '#ef4444';
             ctx.textAlign = "center";
             ctx.fillText(`Δ: ${candleDelta > 0 ? '+' : ''}${candleDelta}`, currentX + COL_WIDTH/2, panelY + 12);
 
-            // CumDelta Box
             ctx.fillStyle = cumulativeDelta > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
             ctx.fillRect(currentX, panelY + 25, COL_WIDTH, 25);
             ctx.fillStyle = cumulativeDelta > 0 ? '#6ee7b7' : '#fca5a5';
             ctx.fillText(`ΣΔ: ${cumulativeDelta > 0 ? '+' : ''}${cumulativeDelta}`, currentX + COL_WIDTH/2, panelY + 37);
 
-            // Time Axis
             ctx.fillStyle = '#1a1a1d';
             ctx.fillRect(currentX, panelY + 50, COL_WIDTH, 30);
             ctx.fillStyle = '#a1a1aa';
             ctx.fillText(timeKey, currentX + COL_WIDTH/2, panelY + 65);
 
             currentX -= (COL_WIDTH + GAP);
+        }
+
+        // 🟢 NEW: DRAW VOLUME PROFILE SIDEBAR (Left Side)
+        if (sessionStats.maxVPVol) {
+            ctx.fillStyle = '#09090b'; // Solid background to hide footprints sliding under it
+            ctx.fillRect(0, 0, VP_WIDTH, height - X_AXIS_HEIGHT);
+            ctx.strokeStyle = '#27272a'; ctx.beginPath(); ctx.moveTo(VP_WIDTH, 0); ctx.lineTo(VP_WIDTH, height - X_AXIS_HEIGHT); ctx.stroke();
+
+            const maxVPBarWidth = VP_WIDTH - 20;
+
+            Object.keys(volumeProfile).forEach(pStr => {
+                const p = parseFloat(pStr);
+                const y = getPriceY(p);
+                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return;
+
+                const vol = volumeProfile[p];
+                const barW = (vol / sessionStats.maxVPVol) * maxVPBarWidth;
+
+                // Highlight Value Area (70%)
+                if (p <= sessionStats.vah && p >= sessionStats.val) {
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)'; // Blue tint for Value Area
+                } else {
+                    ctx.fillStyle = 'rgba(161, 161, 170, 0.15)'; // Muted grey for rest
+                }
+
+                ctx.fillRect(0, y - priceScale/2 + 1, barW, priceScale - 2);
+            });
+
+            // Draw Value Area High / Low Lines across whole chart
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; ctx.lineWidth = 1;
+            const vahY = getPriceY(sessionStats.vah);
+            const valY = getPriceY(sessionStats.val);
+            if (vahY > 0) { ctx.beginPath(); ctx.moveTo(0, vahY); ctx.lineTo(width - Y_AXIS_WIDTH, vahY); ctx.stroke(); }
+            if (valY > 0) { ctx.beginPath(); ctx.moveTo(0, valY); ctx.lineTo(width - Y_AXIS_WIDTH, valY); ctx.stroke(); }
+
+            // Draw VPOC Line across whole chart
+            const vpocY = getPriceY(sessionStats.vpoc);
+            if (vpocY > 0) {
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(0, vpocY); ctx.lineTo(width - Y_AXIS_WIDTH, vpocY); ctx.stroke();
+                ctx.setLineDash([]); // Reset dash for grids
+            }
         }
 
         // --- DRAW Y-AXIS (PRICE SCALE) ---
