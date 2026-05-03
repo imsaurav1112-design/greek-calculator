@@ -345,9 +345,15 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     }
 
     /* 🟢 Class to expand the menu */
-    .left-nav.menu-open {
+.left-nav.menu-open {
         height: auto !important;
         padding-bottom: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8); /* Optional: Adds a nice shadow when open */
+    }
+
+    /* THIS IS THE MISSING LINE! */
+    .left-nav.menu-open .nav-content {
+        display: flex;
     }
 
     .nav-btn {
