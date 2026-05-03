@@ -108,6 +108,52 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
     100% { transform: translate3d(-50%, 0, 0); } 
 }
 
+  /* 🟢 Centered Header Stats */
+.header-center-info {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg);
+    padding: 4px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    pointer-events: none; /* Prevents clicking through if it overlaps buttons */
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.info-item .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+}
+
+.info-item b {
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+}
+
+.info-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+}
+
+/* Hide on mobile to prevent overlap with logo/buttons */
+@media (max-width: 768px) {
+    .header-center-info { display: none; }
+}
+
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
     display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
