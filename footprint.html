@@ -157,12 +157,10 @@
         }, 2000);
     });
 
-    // 🟢 NEW: Calculate Session Stats & Volume Profile
+// 🟢 NEW: Calculate Session Stats & Volume Profile
     function processSessionData() {
         volumeProfile = {};
-        let totalVol = 0;
-        let totalVolPrice = 0;
-        let totalDelta = 0;
+        let totalVol = 0; let totalVolPrice = 0; let totalDelta = 0;
 
         const times = Object.keys(latestDataCache).sort();
         if(!times.length) return;
@@ -170,78 +168,55 @@
         let orHigh = -Infinity, orLow = Infinity;
         let ibHigh = -Infinity, ibLow = Infinity;
 
-        // Convert "HH:MM" string to raw minutes for easy range checking
         const parseTime = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
         const firstTimeMin = parseTime(times[0]);
 
         times.forEach(t => {
             const min = parseTime(t);
-            const isOR = min < firstTimeMin + 15; // First 15 mins
-            const isIB = min < firstTimeMin + 60; // First hour
+            const isOR = min < firstTimeMin + 15; 
+            const isIB = min < firstTimeMin + 60; 
 
-            Object.keys(latestDataCache[t]).forEach(pStr => {
+            // 🟢 UPDATED: Access the 'volumes' object inside the new data structure
+            const matrix = latestDataCache[t].volumes || {};
+            
+            Object.keys(matrix).forEach(pStr => {
                 const p = parseFloat(pStr);
-                const cell = latestDataCache[t][pStr];
+                const cell = matrix[pStr];
                 const vol = cell.buy_vol + cell.sell_vol;
                 const delta = cell.buy_vol - cell.sell_vol;
 
                 if (!volumeProfile[p]) volumeProfile[p] = 0;
                 volumeProfile[p] += vol;
                 
-                totalVol += vol;
-                totalVolPrice += p * vol;
-                totalDelta += delta;
+                totalVol += vol; totalVolPrice += p * vol; totalDelta += delta;
 
-                // Track Session Ranges
                 if(isOR) { if(p > orHigh) orHigh = p; if(p < orLow) orLow = p; }
                 if(isIB) { if(p > ibHigh) ibHigh = p; if(p < ibLow) ibLow = p; }
             });
         });
 
-        // Calculate VPOC (Price with highest total volume)
-        let vpoc = 0;
-        let maxVPVol = 0;
+        let vpoc = 0; let maxVPVol = 0;
         Object.keys(volumeProfile).forEach(pStr => {
-            if (volumeProfile[pStr] > maxVPVol) {
-                maxVPVol = volumeProfile[pStr];
-                vpoc = parseFloat(pStr);
-            }
+            if (volumeProfile[pStr] > maxVPVol) { maxVPVol = volumeProfile[pStr]; vpoc = parseFloat(pStr); }
         });
 
-        // Calculate Value Area (70% of total volume)
-        let targetVol = totalVol * 0.70;
-        let currentVol = volumeProfile[vpoc] || 0;
-        let vah = vpoc;
-        let val = vpoc;
+        let targetVol = totalVol * 0.70; let currentVol = volumeProfile[vpoc] || 0;
+        let vah = vpoc; let val = vpoc;
+        let up = vpoc + TICK_SIZE; let down = vpoc - TICK_SIZE;
 
-        let up = vpoc + TICK_SIZE;
-        let down = vpoc - TICK_SIZE;
-
-        // Expand out from VPOC until 70% volume is captured
         while (currentVol < targetVol) {
-            let upVol = volumeProfile[up] || 0;
-            let downVol = volumeProfile[down] || 0;
+            let upVol = volumeProfile[up] || 0; let downVol = volumeProfile[down] || 0;
             if (upVol === 0 && downVol === 0) break;
-
-            if (upVol >= downVol) {
-                currentVol += upVol;
-                vah = up;
-                up += TICK_SIZE;
-            } else {
-                currentVol += downVol;
-                val = down;
-                down -= TICK_SIZE;
-            }
+            if (upVol >= downVol) { currentVol += upVol; vah = up; up += TICK_SIZE; } 
+            else { currentVol += downVol; val = down; down -= TICK_SIZE; }
         }
 
         sessionStats = {
-            vwap: totalVolPrice / totalVol, cumDelta: totalDelta,
-            vpoc, vah, val, maxVPVol,
+            vwap: totalVolPrice / totalVol, cumDelta: totalDelta, vpoc, vah, val, maxVPVol,
             orHigh: orHigh === -Infinity ? '--' : orHigh, orLow: orLow === Infinity ? '--' : orLow,
             ibHigh: ibHigh === -Infinity ? '--' : ibHigh, ibLow: ibLow === Infinity ? '--' : ibLow
         };
 
-        // Update DOM Elements
         document.getElementById('stats-panel').style.display = 'block';
         document.getElementById('st-vwap').innerText = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
         
@@ -265,11 +240,9 @@
 
         let minPrice = Infinity, maxPrice = -Infinity;
         timeKeys.forEach(t => {
-            Object.keys(latestDataCache[t]).forEach(pStr => {
-                const p = parseFloat(pStr);
-                if (p < minPrice) minPrice = p;
-                if (p > maxPrice) maxPrice = p;
-            });
+            // 🟢 UPDATED: Use the high/low data to set the grid bounds
+            if (latestDataCache[t].high > maxPrice) maxPrice = latestDataCache[t].high;
+            if (latestDataCache[t].low < minPrice) minPrice = latestDataCache[t].low;
         });
 
         const getPriceY = (price) => {
@@ -277,7 +250,6 @@
             return height - X_AXIS_HEIGHT - 50 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
 
-        // Draw Horizontal Grid
         ctx.strokeStyle = '#1e1e24'; ctx.lineWidth = 1; ctx.beginPath();
         for (let p = Math.floor(minPrice - 50); p <= maxPrice + 50; p += TICK_SIZE) {
             const y = getPriceY(p);
@@ -288,15 +260,15 @@
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         let cumulativeDelta = 0;
 
-        // --- DRAW FOOTPRINT CANDLES ---
         for (let i = timeKeys.length - 1; i >= 0; i--) {
-            if (currentX + COL_WIDTH < VP_WIDTH) break; // 🟢 Hide behind Volume Profile Sidebar
+            if (currentX + COL_WIDTH < VP_WIDTH) break; 
             
             const timeKey = timeKeys[i];
-            const matrix = latestDataCache[timeKey];
+            const candleData = latestDataCache[timeKey];
+            const matrix = candleData.volumes || {}; // 🟢 UPDATED
             const prices = Object.keys(matrix).map(Number).sort((a,b) => b-a);
             
-            let maxVol = 0, pocPrice = null, maxSingle = 1, candleDelta = 0;
+            let maxVol = 0, pocPrice = null, candleDelta = 0;
             
             prices.forEach(p => {
                 const b = matrix[p].buy_vol, s = matrix[p].sell_vol;
@@ -306,15 +278,41 @@
 
             cumulativeDelta += candleDelta;
 
+            // 🟢 ==========================================
+            // 🟢 DRAW THE OHLC CANDLESTICK
+            // 🟢 ==========================================
+            const isBullish = candleData.close >= candleData.open;
+            const candleColor = isBullish ? '#10b981' : '#ef4444';
+            const candleX = currentX + 15; // Position candle on the left edge of the column
+            
+            // Draw High/Low Wick
+            ctx.strokeStyle = candleColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(candleX, getPriceY(candleData.high));
+            ctx.lineTo(candleX, getPriceY(candleData.low));
+            ctx.stroke();
+
+            // Draw Open/Close Body
+            const bodyTop = getPriceY(Math.max(candleData.open, candleData.close));
+            const bodyBottom = getPriceY(Math.min(candleData.open, candleData.close));
+            const bodyHeight = Math.max(3, bodyBottom - bodyTop); // Min 3px height so dojis are visible
+            
+            ctx.fillStyle = candleColor;
+            ctx.fillRect(candleX - 4, bodyTop - (priceScale/2), 8, bodyHeight + priceScale);
+            // ==========================================
+
+
             prices.forEach(price => {
                 const y = getPriceY(price);
                 if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return;
 
                 const b = matrix[price].buy_vol;
                 const s = matrix[price].sell_vol;
-                const center = currentX + COL_WIDTH / 2;
                 
-                // TRUE DIAGONAL IMBALANCE
+                // Shift text center slightly right to make room for the new candlestick
+                const center = currentX + 30 + (COL_WIDTH - 30) / 2; 
+                
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
                 
@@ -322,12 +320,14 @@
                 const isSellImb = (s > askAbove * 3) && (s > 50);
 
                 const volIntensity = (b + s) / maxVol;
+                
+                // Draw volume box (shifted right to not overlap candlestick)
                 ctx.fillStyle = `rgba(59, 130, 246, ${volIntensity * 0.3})`;
-                ctx.fillRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
+                ctx.fillRect(currentX + 30, y - priceScale/2, COL_WIDTH - 30, priceScale);
 
                 if (price === pocPrice) {
                     ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-                    ctx.strokeRect(currentX, y - priceScale/2, COL_WIDTH, priceScale);
+                    ctx.strokeRect(currentX + 30, y - priceScale/2, COL_WIDTH - 30, priceScale);
                 }
 
                 ctx.font = "bold 12px 'JetBrains Mono'"; ctx.textBaseline = "middle";
@@ -362,9 +362,8 @@
             currentX -= (COL_WIDTH + GAP);
         }
 
-        // 🟢 NEW: DRAW VOLUME PROFILE SIDEBAR (Left Side)
         if (sessionStats.maxVPVol) {
-            ctx.fillStyle = '#09090b'; // Solid background to hide footprints sliding under it
+            ctx.fillStyle = '#09090b'; 
             ctx.fillRect(0, 0, VP_WIDTH, height - X_AXIS_HEIGHT);
             ctx.strokeStyle = '#27272a'; ctx.beginPath(); ctx.moveTo(VP_WIDTH, 0); ctx.lineTo(VP_WIDTH, height - X_AXIS_HEIGHT); ctx.stroke();
 
@@ -378,33 +377,28 @@
                 const vol = volumeProfile[p];
                 const barW = (vol / sessionStats.maxVPVol) * maxVPBarWidth;
 
-                // Highlight Value Area (70%)
                 if (p <= sessionStats.vah && p >= sessionStats.val) {
-                    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)'; // Blue tint for Value Area
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)'; 
                 } else {
-                    ctx.fillStyle = 'rgba(161, 161, 170, 0.15)'; // Muted grey for rest
+                    ctx.fillStyle = 'rgba(161, 161, 170, 0.15)'; 
                 }
-
                 ctx.fillRect(0, y - priceScale/2 + 1, barW, priceScale - 2);
             });
 
-            // Draw Value Area High / Low Lines across whole chart
             ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; ctx.lineWidth = 1;
             const vahY = getPriceY(sessionStats.vah);
             const valY = getPriceY(sessionStats.val);
             if (vahY > 0) { ctx.beginPath(); ctx.moveTo(0, vahY); ctx.lineTo(width - Y_AXIS_WIDTH, vahY); ctx.stroke(); }
             if (valY > 0) { ctx.beginPath(); ctx.moveTo(0, valY); ctx.lineTo(width - Y_AXIS_WIDTH, valY); ctx.stroke(); }
 
-            // Draw VPOC Line across whole chart
             const vpocY = getPriceY(sessionStats.vpoc);
             if (vpocY > 0) {
                 ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
                 ctx.beginPath(); ctx.moveTo(0, vpocY); ctx.lineTo(width - Y_AXIS_WIDTH, vpocY); ctx.stroke();
-                ctx.setLineDash([]); // Reset dash for grids
+                ctx.setLineDash([]); 
             }
         }
 
-        // --- DRAW Y-AXIS (PRICE SCALE) ---
         ctx.fillStyle = '#09090b';
         ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
         ctx.strokeStyle = '#27272a'; ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, 0); ctx.lineTo(width - Y_AXIS_WIDTH, height); ctx.stroke();
