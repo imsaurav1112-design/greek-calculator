@@ -377,17 +377,22 @@ header {
 </style>
 </head>
 <body>
-
-<header>
-    <div class="logo"><span>GC</span>Live</div>
-  
-  <!-- Put this at the very top of your terminal body -->
+<!-- 🟢 TICKER MOVED TO THE ABSOLUTE TOP -->
 <div class="ticker-wrap">
     <div class="ticker-content" id="live-ticker">
-        <!-- We will inject the stocks here via JavaScript -->
         <span class="ticker-item">Loading Live Nifty 50...</span>
     </div>
 </div>
+
+<header>
+    <div class="logo"><span>GC</span>Live</div>
+    
+    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
+            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+<header>
+    <div class="logo"><span>GC</span>Live</div>
     
    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
