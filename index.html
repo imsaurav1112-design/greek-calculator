@@ -9,17 +9,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #09090b;         
-  --card: #141415;       
-  --section: #202023;    
-  --border: #27272a;     
-  --text: #f4f4f5;       
-  --muted: #a1a1aa;      
-  --accent: #3b82f6;       
-  --accent-glow: rgba(59, 130, 246, 0.4);
-  --gold: #f59e0b;         
-  --green: #10b981;        
-  --red: #ef4444;          
+  --bg: #0a0a0f;           /* Deeper black */
+  --card: #13131a;         /* Subtle lift */
+  --accent: #0ea5e9;       /* Sky blue (less aggressive) */
+  --success: #22c55e;      /* Modern green */
+  --danger: #ef4444;       /* Keep red */
+  --warning: #f59e0b;      /* Keep gold */
+  --info: #8b5cf6;         /* Purple for neutrals */
+  
+  /* Gradients for depth */
+  --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
