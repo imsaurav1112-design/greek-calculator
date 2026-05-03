@@ -1741,6 +1741,19 @@ let renderTable = function(rows, sym, data, quiet = false) {
   }
 
   document.getElementById('oc-body').innerHTML = html;
+
+  // 🟢 INSERT THE NEW LOGIC HERE:
+  // Update India VIX (from your API data)
+  if (data.vix) {
+      document.getElementById('h-vix').innerText = data.vix.toFixed(2);
+  }
+
+  // Update Max Pain (from your API data or COA object)
+  if (data.max_pain) {
+      document.getElementById('h-max-pain').innerText = data.max_pain;
+  } else if (data.coa && data.coa.max_pain) {
+      document.getElementById('h-max-pain').innerText = data.coa.max_pain;
+  }
   
   const atmRow = displayRows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
   document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
