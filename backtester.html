@@ -1418,7 +1418,7 @@ function closeCharts(event) {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, getIdToken } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -1433,13 +1433,21 @@ function closeCharts(event) {
   const auth = getAuth(app);
   window.currentFirebaseToken = null; 
 
-onAuthStateChanged(auth, async (user) => {
+  // 🟢 WATCHER: Grabs your secure token so the page can load
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      window.currentFirebaseToken = await getIdToken(user);
+      // FIX: Call getIdToken directly on the user object
+      window.currentFirebaseToken = await user.getIdToken();
+      console.log("✅ Firebase Auth Synced! Token acquired.");
       
-      window.loadExpiries(); 
+      // Safety check to ensure the function exists before calling it
+      if (typeof window.loadExpiries === "function") {
+          window.loadExpiries(); 
+      }
       
     } else {
+      // Kick them out if not logged in
+      console.error("No user found. Redirecting to login...");
       window.location.href = "index.html";
     }
   });
