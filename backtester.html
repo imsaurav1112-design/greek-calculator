@@ -706,11 +706,16 @@ function selectDate(val) {
 }
 
 window.loadExpiries = async function() {
-  if (!window.currentFirebaseToken) { setTimeout(window.loadExpiries, 500); return; }
+  if (!window.currentFirebaseToken) { 
+      setTimeout(window.loadExpiries, 500); 
+      return; 
+  }
 
   const sym = document.getElementById('sel-symbol').value;
   const menu = document.getElementById('expiry-menu');
   const btn = document.getElementById('btn-expiry');
+  const dateBtn = document.getElementById('btn-date');
+  const dateMenu = document.getElementById('date-menu');
   
   menu.innerHTML = '<div class="custom-option">Loading...</div>';
   btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
@@ -718,21 +723,35 @@ window.loadExpiries = async function() {
 
   try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+    // 🟢 Explicitly tell the server this is the backtester
     const r = await fetch(`${BACKTEST_API}/expiry-dates?symbol=${sym}&source=backtester`, { headers });
+    
     if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
     
     const d = await r.json();
     if (d.error) { showErr(d.error); return; }
 
+    // 🟢 THE FIX: If MongoDB returns 0 saved expiries, handle it gracefully
+    if (!d.expiries || d.expiries.length === 0) {
+        menu.innerHTML = `<div class="custom-option">No Data Saved</div>`; 
+        btn.innerHTML = 'No Data <span style="font-size: 10px; color: var(--muted);">▾</span>';
+        dateBtn.innerHTML = 'No Data <span style="font-size: 10px; color: var(--muted);">▾</span>';
+        dateMenu.innerHTML = `<div class="custom-option">No Data Saved</div>`;
+        return;
+    }
+
     const limitedExpiries = d.expiries.slice(0, 5); 
     menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
     
+    // Auto-select the first available expiry to trigger the Date loading
     if (limitedExpiries.length > 0) {
         selectExpiry(limitedExpiries[0]);
     }
     clearErr();
   } catch(e) { 
-      menu.innerHTML = `<div class="custom-option">Failed</div>`; btn.innerHTML = 'Auth Failed ▾'; showErr(e.message); 
+      menu.innerHTML = `<div class="custom-option">Failed</div>`; 
+      btn.innerHTML = 'Error ▾'; 
+      showErr(e.message); 
   }
 }
 
