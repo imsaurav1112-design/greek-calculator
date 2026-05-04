@@ -406,16 +406,18 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         width: max-content !important; 
     }
     .custom-menu {
-        position: absolute !important; 
-        top: 100% !important;
+        position: fixed !important; 
+        top: 56px !important;
         left: 0 !important;
         margin-top: 8px !important;
         min-width: 0 !important;
         width: max-content !important; 
-        z-index: 9999 !important;
+       z-index: 99999 !important;
     }
     .custom-option { padding: 8px 12px !important; }
-    .custom-dropdown-wrapper { position: relative !important; }
+   .custom-dropdown-wrapper {
+        position: static !important; 
+    }
     .logo { font-size: 14px; }
         
     /* 🟢 Settings Panel Logic */
