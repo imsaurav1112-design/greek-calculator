@@ -1004,10 +1004,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// 🟢 CLOSE MENUS WHEN TOUCHING OUTSIDE
 document.addEventListener('click', function(event) {
-    if (!document.getElementById('settings-wrapper').contains(event.target)) {
-        document.getElementById('settings-panel').style.display = 'none';
-        document.getElementById('btn-settings').classList.remove('active');
+    let clickedInsideMenu = false;
+    let clickedOnButton = false;
+
+    // Check if the tap was inside an open menu
+    document.querySelectorAll('.custom-menu').forEach(menu => {
+        if (menu.contains(event.target)) clickedInsideMenu = true;
+    });
+
+    // Check if the tap was on one of the dropdown buttons
+    if (event.target.closest('.custom-dropdown-wrapper')) {
+        clickedOnButton = true;
+    }
+
+    // If the tap was outside of both the menu AND the buttons, close everything!
+    if (!clickedInsideMenu && !clickedOnButton) {
+        document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+        
+        // Unlock header scroll
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
     }
 });
 
