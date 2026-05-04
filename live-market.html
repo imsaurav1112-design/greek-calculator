@@ -793,7 +793,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     </div>
 </div>
 
-<!-- 🟢 NEW: Paper Order Ticket Modal -->
+<!-- 🟢 UPGRADED: Paper Order Ticket Modal -->
 <div class="modal-overlay" id="order-modal" onclick="closeOrderModal(event)">
     <div class="modal-content" style="max-width: 400px;">
         <button class="modal-close" onclick="closeOrderModal(event)">✖</button>
@@ -801,34 +801,45 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <div style="display:flex; flex-direction:column; gap:14px; margin-top: 10px;">
             <input type="hidden" id="order-sym">
             
-<label style="font-size:11px; color:var(--muted); font-weight:600;">STRIKE & TYPE
+            <label style="font-size:11px; color:var(--muted); font-weight:600;">STRIKE & TYPE
                 <div style="display:flex; gap:10px; margin-top:6px;">
-                    <!-- 🟢 Custom Mobile-Friendly Plus/Minus Buttons -->
                     <div style="display:flex; flex:2; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--bg);">
                         <button type="button" onclick="adjustStrike(-1)" style="background:var(--section); color:var(--text); border:none; border-right:1px solid var(--border); padding:10px 15px; cursor:pointer; font-weight:bold; font-size:16px;">-</button>
-                        
                         <input type="number" id="order-strike" class="order-input" style="flex:1; border:none; border-radius:0; text-align:center; padding:10px 5px; -moz-appearance: textfield; box-shadow:none;">
-                        
                         <button type="button" onclick="adjustStrike(1)" style="background:var(--section); color:var(--text); border:none; border-left:1px solid var(--border); padding:10px 15px; cursor:pointer; font-weight:bold; font-size:16px;">+</button>
                     </div>
-                    
-                    <select id="order-type" class="order-input" style="flex:1;">
+                    <!-- CHANGED ID HERE to order-opt-type -->
+                    <select id="order-opt-type" class="order-input" style="flex:1;">
                         <option value="CE">CE</option>
                         <option value="PE">PE</option>
                     </select>
                 </div>
             </label>
+
+            <div style="display:flex; gap:10px;">
+                <!-- ADDED LOTS QUANTITY HERE -->
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">QUANTITY (LOTS)
+                    <input type="number" id="order-qty" value="1" min="1" class="order-input" style="margin-top:6px;">
+                </label>
+                <!-- ADDED MARKET/LIMIT DROPDOWN HERE -->
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">ORDER TYPE
+                    <select id="order-execution-type" class="order-input" style="margin-top:6px;" onchange="toggleMarketLimit()">
+                        <option value="Market">Market</option>
+                        <option value="Limit">Limit</option>
+                    </select>
+                </label>
+            </div>
             
-            <label style="font-size:11px; color:var(--muted); font-weight:600;">LIMIT ENTRY PRICE
-                <input type="number" id="order-entry" step="0.05" class="order-input" style="margin-top:6px;">
+            <label style="font-size:11px; color:var(--muted); font-weight:600;">ENTRY PRICE <span id="entry-hint" style="color:var(--accent); font-weight:normal;">(Live LTP)</span>
+                <input type="number" id="order-entry" step="0.05" class="order-input" style="margin-top:6px;" disabled>
             </label>
             
             <div style="display:flex; gap:10px;">
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">STOP LOSS
-                    <input type="number" id="order-sl" step="0.05" class="order-input" style="margin-top:6px;">
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">STOP LOSS (Opt)
+                    <input type="number" id="order-sl" step="0.05" placeholder="0.00" class="order-input" style="margin-top:6px;">
                 </label>
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">TARGET
-                    <input type="number" id="order-target" step="0.05" class="order-input" style="margin-top:6px;">
+                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">TARGET (Opt)
+                    <input type="number" id="order-target" step="0.05" placeholder="0.00" class="order-input" style="margin-top:6px;">
                 </label>
             </div>
             
