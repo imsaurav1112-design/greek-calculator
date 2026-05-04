@@ -1506,73 +1506,82 @@ function showStrikeCharts(strike) {
         return;
     }
 
+    // 1. MAKE THE MODAL VISIBLE FIRST
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    const ceVolData = [], peVolData = [];
-    const ceOiData = [], peOiData = [];
-    const ceLtpData = [], peLtpData = [];       
-    const ceOiChgData = [], peOiChgData = [];   
-    const seenTimes = new Set();
+    // 2. DELAY CHART RENDERING BY 100ms
+    // This gives the browser time to physically draw the modal so the containers have height > 0px
+    setTimeout(() => {
+        const ceVolData = [], peVolData = [];
+        const ceOiData = [], peOiData = [];
+        const ceLtpData = [], peLtpData = [];       
+        const ceOiChgData = [], peOiChgData = [];   
+        const seenTimes = new Set();
 
-    liveHistory.forEach(snap => {
-        const timestamp = parseTimeToUnix(snap.time);
-        if (seenTimes.has(timestamp)) return;
-        seenTimes.add(timestamp);
+        liveHistory.forEach(snap => {
+            const timestamp = parseTimeToUnix(snap.time);
+            if (seenTimes.has(timestamp)) return;
+            seenTimes.add(timestamp);
 
-        const row = snap.rows.find(r => r.strike === strike);
-        if (row) {
-            ceVolData.push({ time: timestamp, value: row.ceVol });
-            peVolData.push({ time: timestamp, value: row.peVol });
-            ceOiData.push({ time: timestamp, value: row.ceOI });
-            peOiData.push({ time: timestamp, value: row.peOI });
-            
-            ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 });
-            peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
-            ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 });
-            peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
-        }
-    });
+            const row = snap.rows.find(r => r.strike === strike);
+            if (row) {
+                ceVolData.push({ time: timestamp, value: row.ceVol });
+                peVolData.push({ time: timestamp, value: row.peVol });
+                ceOiData.push({ time: timestamp, value: row.ceOI });
+                peOiData.push({ time: timestamp, value: row.peOI });
+                
+                ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 });
+                peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
+                ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 });
+                peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
+            }
+        });
 
-    const sorter = (a, b) => a.time - b.time;
-    ceVolData.sort(sorter); peVolData.sort(sorter);
-    ceOiData.sort(sorter); peOiData.sort(sorter);
-    ceLtpData.sort(sorter); peLtpData.sort(sorter);
-    ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+        const sorter = (a, b) => a.time - b.time;
+        ceVolData.sort(sorter); peVolData.sort(sorter);
+        ceOiData.sort(sorter); peOiData.sort(sorter);
+        ceLtpData.sort(sorter); peLtpData.sort(sorter);
+        ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-    if (tvModalVolChart) tvModalVolChart.remove();
-    tvModalVolChart = createInstChart('tv-modal-vol');
-    const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
-    const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-    ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
-    tvModalVolChart.timeScale().fitContent();
+        // --- DRAW VOLUME CHART ---
+        if (tvModalVolChart) tvModalVolChart.remove();
+        tvModalVolChart = createInstChart('tv-modal-vol');
+        const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
+        tvModalVolChart.timeScale().fitContent();
 
-    if (tvModalOiChart) tvModalOiChart.remove();
-    tvModalOiChart = createInstChart('tv-modal-oi');
-    
-    tvModalOiChart.applyOptions({
-        leftPriceScale: { visible: true, borderColor: '#27272a' },
-        rightPriceScale: { visible: true, borderColor: '#27272a' }
-    });
+        // --- DRAW OI & PRICE CHART ---
+        if (tvModalOiChart) tvModalOiChart.remove();
+        tvModalOiChart = createInstChart('tv-modal-oi');
+        
+        tvModalOiChart.applyOptions({
+            leftPriceScale: { visible: true, borderColor: '#27272a' },
+            rightPriceScale: { visible: true, borderColor: '#27272a' }
+        });
 
-    const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
-    const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
-    
-    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
-    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+        const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
+        const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
+        
+        const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+        const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
 
-    ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
-    ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
-    tvModalOiChart.timeScale().fitContent();
+        ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+        ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
+        tvModalOiChart.timeScale().fitContent();
 
-    if (tvModalOiChgChart) tvModalOiChgChart.remove();
-    tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
-    
-    const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
-    const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-    
-    ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
-    tvModalOiChgChart.timeScale().fitContent();
+        // --- DRAW INTRADAY OI CHANGE CHART ---
+        if (tvModalOiChgChart) tvModalOiChgChart.remove();
+        tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
+        
+        const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        
+        ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+        tvModalOiChgChart.timeScale().fitContent();
+
+    }, 100); // 100ms pause to let the CSS layout render before painting the canvas
 }
 
 function closeCharts(event) { 
