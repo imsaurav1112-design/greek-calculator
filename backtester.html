@@ -458,13 +458,10 @@ header {
 
     <div class="chart-sidebar" id="chart-sidebar">
         <div class="resizer" id="chart-resizer"></div>
-        <div class="chart-toolbar">
-            <select class="chart-btn" title="Timeframe">
-                <option value="1">1m</option>
-                <option value="3" selected>3m</option>
-                <option value="5">5m</option>
-                <option value="15">15m</option>
-            </select>
+<div class="chart-toolbar">
+            <!-- 🟢 REPLACED DROPDOWN WITH STATIC 5M BADGE -->
+            <div style="background: rgba(41, 98, 255, 0.1); color: #2962FF; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap;">5 MIN CHART</div>
+            
             <div style="width: 1px; height: 20px; background: #2a2e39; margin: 0 4px;"></div>
             
             <button class="chart-btn" id="btn-tv-type" onclick="toggleTVType()" title="Candle / Line">
@@ -1026,10 +1023,23 @@ function initTVChart() {
     const container = document.getElementById('tv-chart');
     
     setTimeout(() => {
-        tvChartInst = LightweightCharts.createChart(container, {
+tvChartInst = LightweightCharts.createChart(container, {
             width: container.clientWidth || 340,
             height: container.clientHeight || 500,
-            layout: { background: { type: 'solid', color: '#131722' }, textColor: '#b2b5be', fontFamily: "'Poppins', sans-serif" },
+            layout: { 
+                background: { type: 'solid', color: '#131722' }, 
+                textColor: '#b2b5be', 
+                fontFamily: "'Poppins', sans-serif" 
+            },
+            // 🟢 NEW: Enable the background watermark to show the time!
+            watermark: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                visible: true,
+                text: 'Waiting for Data...',
+                fontSize: 24,
+                horzAlign: 'center',
+                vertAlign: 'bottom',
+            },
             grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
             crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
             rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, 
@@ -1071,15 +1081,19 @@ function toggleTVType() {
 
 function refreshTVChart() { if(tvChartInst) tvChartInst.timeScale().scrollToRealTime(); }
 
-// 🟢 NEW ENGINE: 3-Minute Candles for Backtester
+// 🟢 FIXED ENGINE: Strict 5-Minute Candles + Live Watermark
 function syncBacktestChartData() {
     if (!tvLineSeries || !tvCandleSeries || backtestSnapshots.length === 0) return;
     
     let spotData = [];
     let candleMap = new Map();
     let lastValidTime = 0;
+    let latestDisplayTime = ""; // To hold the time for our watermark
 
-    // 🟢 ONLY aggregate data up to the current playback frame
+    // 🟢 Hardcoded to 5 Minutes (300 seconds)
+    const tfSeconds = 300;
+
+    // Aggregate data up to the current playback frame
     for (let i = 0; i <= backtestCurrentIndex; i++) {
         let snap = backtestSnapshots[i];
         let spot = parseFloat(snap.spot);
@@ -1090,6 +1104,8 @@ function syncBacktestChartData() {
         }
 
         let tsStr = snap.timestamp || "";
+        latestDisplayTime = tsStr; // Grab the exact string from the database (e.g., "10:15 AM")
+
         let t = Math.floor(new Date(tsStr.replace(' ', 'T')).getTime() / 1000);
         
         if (isNaN(t) && tsStr.includes('-')) {
@@ -1105,8 +1121,9 @@ function syncBacktestChartData() {
 
         spotData.push({ time: t, value: spot });
 
-        // 3-Minute Aggregation Math
-        const bucketTime = Math.floor(t / 180) * 180;
+        // 🟢 THE BUCKET MATH: Forces the time into exactly 5-minute blocks
+        const bucketTime = Math.floor(t / tfSeconds) * tfSeconds;
+        
         if (!candleMap.has(bucketTime)) {
             candleMap.set(bucketTime, { time: bucketTime, open: spot, high: spot, low: spot, close: spot });
         } else {
@@ -1122,10 +1139,15 @@ function syncBacktestChartData() {
     try {
         tvLineSeries.setData(spotData);
         tvCandleSeries.setData(candleData);
+        
+        // 🟢 UPDATE THE WATERMARK: Paint the current backtest time on the chart!
+        tvChartInst.applyOptions({
+            watermark: { text: `Playback: ${latestDisplayTime}` }
+        });
+
         tvChartInst.timeScale().scrollToRealTime(); 
     } catch(err) { console.error("Chart Render Skip:", err); }
 }
-
 function abs(x) { return x < 0 ? -x : x; }
 function getStrikeInterval(symbol) {
   switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
