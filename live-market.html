@@ -901,8 +901,6 @@ let tvResizeObserver = null;
 function toggleMobileNav() {
     const nav = document.getElementById('left-nav');
     nav.classList.toggle('menu-open');
-    
-    // Optional: Close menu if user clicks outside
     if (nav.classList.contains('menu-open')) {
         document.addEventListener('click', function closeMenu(e) {
             if (!nav.contains(e.target)) {
@@ -913,66 +911,49 @@ function toggleMobileNav() {
     }
 }
   
-// ==========================================
-// 🟢 LIVE TICKER TAPE LOGIC (AUTO-POLLING)
-// ==========================================
 const TICKER_SYMBOLS = ["NIFTY 50", "RELIANCE", "HDFCBANK", "TCS", "ICICIBANK", "INFY"];
 const tickerPrices = {};
 
 async function fetchTickerData() {
     try {
-        // Calls the new python route we set up
         const r = await fetch(`${UPSTOX_API}/api/ticker-prices`); 
         if (!r.ok) return;
         const prices = await r.json();
-
         const tickerContainer = document.getElementById('live-ticker');
         
         for (const stock of TICKER_SYMBOLS) {
             if (!prices[stock]) continue;
-            
             const ltp = prices[stock];
-            const safeId = stock.replace(/\s+/g, ''); // Removes spaces for HTML IDs
+            const safeId = stock.replace(/\s+/g, '');
             let itemDiv = document.getElementById(`ticker-${safeId}`);
             
-            // Create if it doesn't exist
             if (!itemDiv) {
                 itemDiv = document.createElement('span');
                 itemDiv.id = `ticker-${safeId}`;
                 itemDiv.className = 'ticker-item';
                 tickerContainer.appendChild(itemDiv);
                 
-                // Clone for infinite scroll
                 const clone = itemDiv.cloneNode(true);
                 clone.id = `ticker-${safeId}-clone`;
                 tickerContainer.appendChild(clone);
             }
 
-            // Determine Green or Red (Up or Down)
             let colorClass = "tick-up";
-            if (tickerPrices[stock] && ltp < tickerPrices[stock]) {
-                colorClass = "tick-down";
-            }
+            if (tickerPrices[stock] && ltp < tickerPrices[stock]) colorClass = "tick-down";
             tickerPrices[stock] = ltp;
 
-            // Update HTML
             const htmlContent = `${stock}: <span class="${colorClass}">${ltp.toFixed(2)}</span>`;
             itemDiv.innerHTML = htmlContent;
             document.getElementById(`ticker-${safeId}-clone`).innerHTML = htmlContent;
         }
         
-        // Remove the "Loading..." text once we have real data
         const loader = document.querySelector('.ticker-item');
         if(loader && loader.innerText.includes("Loading")) loader.remove();
-
-    } catch (e) {
-        console.log("Ticker fetch error", e);
-    }
+    } catch (e) {}
 }
 
-// Fetch ticker prices every 3 seconds
 setInterval(fetchTickerData, 3000);
-setTimeout(fetchTickerData, 1000); // Trigger first load fast
+setTimeout(fetchTickerData, 1000); 
   
 function toggleSettings(event) {
     if(event) event.stopPropagation();
@@ -1018,26 +999,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 🟢 CLOSE MENUS WHEN TOUCHING OUTSIDE
 document.addEventListener('click', function(event) {
     let clickedInsideMenu = false;
     let clickedOnButton = false;
-
-    // Check if the tap was inside an open menu
     document.querySelectorAll('.custom-menu').forEach(menu => {
         if (menu.contains(event.target)) clickedInsideMenu = true;
     });
+    if (event.target.closest('.custom-dropdown-wrapper')) clickedOnButton = true;
 
-    // Check if the tap was on one of the dropdown buttons
-    if (event.target.closest('.custom-dropdown-wrapper')) {
-        clickedOnButton = true;
-    }
-
-    // If the tap was outside of both the menu AND the buttons, close everything!
     if (!clickedInsideMenu && !clickedOnButton) {
         document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-        
-        // Unlock header scroll
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'auto', 'important');
     }
@@ -1112,39 +1083,25 @@ function toggleIntelPanel() {
     panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
 }
 
-// 🟢 SMART DROPDOWN TOGGLE LOGIC
 function toggleMenu(menuId, event) {
     if (event) event.stopPropagation();
-    
     const menu = document.getElementById(menuId);
-    const btn = event.currentTarget; // The specific button you just tapped
+    const btn = event.currentTarget; 
     const isVisible = menu.style.display === 'flex';
-    
-    // 1. Hide all open menus first
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    
     if (!isVisible) {
-        // 2. Get the exact coordinates of the button on the screen
         const rect = btn.getBoundingClientRect();
-        
-        // 3. Stick the menu exactly below the button
         menu.style.display = 'flex';
-        menu.style.top = (rect.bottom + 5) + 'px'; // 5px gap below the button
-        
-        // 4. Prevent the menu from going off the right side of the screen
+        menu.style.top = (rect.bottom + 5) + 'px'; 
         const menuWidth = menu.offsetWidth || 140;
         if (rect.left + menuWidth > window.innerWidth) {
             menu.style.left = (window.innerWidth - menuWidth - 10) + 'px';
         } else {
             menu.style.left = rect.left + 'px';
         }
-        
-        // 5. Lock header scroll so your finger doesn't slide the header by accident
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'hidden', 'important');
-        
     } else {
-        // Unlock header scroll if closing
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'auto', 'important');
     }
@@ -1162,11 +1119,6 @@ function selectExpiry(val) {
     document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('expiry-menu').style.display = 'none';
 }
-
-document.addEventListener('click', function(event) {
-    if (!document.getElementById('symbol-dropdown-wrapper').contains(event.target)) document.getElementById('symbol-menu').style.display = 'none';
-    if (!document.getElementById('expiry-dropdown-wrapper').contains(event.target)) document.getElementById('expiry-menu').style.display = 'none';
-});
 
 function fmtN(n, dec) { return n == null || isNaN(n) ? '—' : Number(n).toLocaleString('en-IN', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }); }
 
@@ -1224,10 +1176,7 @@ window.loadExpiries = async function() {
   try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
-    if (!r.ok) {
-        const errData = await r.json().catch(() => ({}));
-        throw new Error(errData.details || errData.error || `HTTP Error ${r.status}`);
-    }
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
     
     const d = await r.json();
     if (d.error) { 
@@ -1260,14 +1209,13 @@ window.loadExpiries = async function() {
 }
 
 function getStrikeInterval(symbol) {
-  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
+  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'FINNIFTY': return 50; default: return 50; }
 }
 
 async function fetchUpstoxChain(quiet = false) {
   const sym = document.getElementById('sel-symbol').value;
   const expiry = document.getElementById('sel-expiry').value;
   if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
-  
   if (!window.currentFirebaseToken) return; 
 
   if (!quiet) setStatus('loading', 'Fetching...');
@@ -1277,10 +1225,7 @@ async function fetchUpstoxChain(quiet = false) {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
     const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
     
-    if (!r.ok) {
-        const errData = await r.json().catch(() => ({}));
-        throw new Error(errData.details || errData.error || `HTTP Error ${r.status}`);
-    }
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
     const data = await r.json();
     if (data.error) throw new Error(data.details || data.error);
     
@@ -1292,7 +1237,7 @@ async function fetchUpstoxChain(quiet = false) {
     const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
-if (lastEntry !== nowStr) {
+    if (lastEntry !== nowStr) {
         liveHistory.push({
             time: nowStr,
             spot: data.spot, 
@@ -1328,19 +1273,13 @@ if (lastEntry !== nowStr) {
 function toggleChartSidebar() {
     const sidebar = document.getElementById('chart-sidebar');
     sidebar.classList.toggle('open');
-    
-    // 🟢 THE FIX: Check if the chart exists, if not, create it!
     if (sidebar.classList.contains('open')) {
         if (!tvChartInst) {
             initTVChart();
         } else {
-            // Force TradingView to redraw for the phone screen
             setTimeout(() => {
                 const container = document.getElementById('tv-chart');
-                tvChartInst.applyOptions({
-                    width: container.clientWidth,
-                    height: container.clientHeight
-                });
+                tvChartInst.applyOptions({ width: container.clientWidth, height: container.clientHeight });
             }, 300);
         }
     }
@@ -1348,36 +1287,29 @@ function toggleChartSidebar() {
 
 function initTVChart() {
     const container = document.getElementById('tv-chart');
-    
     if (tvResizeObserver) { tvResizeObserver.disconnect(); }
-    
     setTimeout(() => {
         if(tvChartInst) { tvChartInst.remove(); tvChartInst = null; }
-tvChartInst = LightweightCharts.createChart(container, {
+        tvChartInst = LightweightCharts.createChart(container, {
             width: container.clientWidth || 340,
             height: container.clientHeight || 500,
             layout: { background: { type: 'solid', color: '#131722' }, textColor: '#b2b5be', fontFamily: "'Poppins', sans-serif" },
             grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
             crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            
             rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, 
             timeScale: { borderColor: '#2a2e39', timeVisible: true }
         });
 
-tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
+        tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
         tvLineSeries.applyOptions({ visible: false }); 
         
         tvCandleSeries = tvChartInst.addCandlestickSeries({ 
             upColor: '#26a69a', downColor: '#ef5350', 
-            borderVisible: false, 
-            wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
+            borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
         });
         
-updateRealSpotChart();
-
-        if (globalData && globalData.chain && globalData.coa) {
-            updateTVChartEOR_EOS(globalData.chain, globalData.coa);
-        }
+        updateRealSpotChart();
+        if (globalData && globalData.chain && globalData.coa) updateTVChartEOR_EOS(globalData.chain, globalData.coa);
         refreshTVChart();
 
         tvResizeObserver = new ResizeObserver(entries => {
@@ -1398,9 +1330,6 @@ function toggleTVType() {
     } else {
         btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">   <path d="M3 17l6-6 4 4 8-8" />   <path d="M17 12v5M21 12v5M17 12h4v5h-4z" /> </svg>`;
     }
-    if (globalData && globalData.chain && globalData.coa) {
-        updateTVChartEOR_EOS(globalData.chain, globalData.coa);
-    }
 }
 
 function refreshTVChart() { 
@@ -1412,7 +1341,6 @@ function refreshTVChart() {
 
 function updateRealSpotChart() {
     if (!tvLineSeries || !tvCandleSeries || !liveHistory || liveHistory.length === 0) return;
-
     const spotData = [];
     const candleMap = new Map(); 
     const seenTimes = new Set();
@@ -1422,12 +1350,10 @@ function updateRealSpotChart() {
         if (!spotVal) return; 
 
         const timestamp = parseTimeToUnix(snap.time);
-        
         if (seenTimes.has(timestamp)) return;
         seenTimes.add(timestamp);
 
         spotData.push({ time: timestamp, value: spotVal });
-
         const bucketTime = Math.floor(timestamp / 180) * 180;
 
         if (!candleMap.has(bucketTime)) {
@@ -1436,17 +1362,17 @@ function updateRealSpotChart() {
             const candle = candleMap.get(bucketTime);
             candle.high = Math.max(candle.high, spotVal); 
             candle.low = Math.min(candle.low, spotVal);   
-            candle.close = spotVal;                       
+            candle.close = spotVal;                        
         }
     });
 
     spotData.sort((a, b) => a.time - b.time);
-    
     const candleData = Array.from(candleMap.values()).sort((a, b) => a.time - b.time);
 
     tvLineSeries.setData(spotData);
     tvCandleSeries.setData(candleData);
 }
+
 function updateTVChartEOR_EOS(chainData, coaData) {
     if (!tvChartInst || !tvLineSeries) return;
     activePriceLines.forEach(l => { try { l.series.removePriceLine(l.line); } catch(e){} });
@@ -1482,25 +1408,19 @@ function updateTVChartEOR_EOS(chainData, coaData) {
     drawLine(eosVal, '#26a69a', 2, 0, 'S1');
     drawLine(eosMinus1Val, '#80cbc4', 1, 2, 'S2');
 
-    // 🟢 THE FIX: Inject custom bounds directly into the chart's autoscale engine
     const currentSpot = parseFloat(document.getElementById('inp-spot').value) || eorVal;
-    
     const topBound = Math.max(eorPlus1Val, currentSpot);
     const bottomBound = Math.min(eosMinus1Val, currentSpot);
-    const buffer = (topBound - bottomBound) * 0.05; // Add 5% padding so lines aren't touching the edge
+    const buffer = (topBound - bottomBound) * 0.05; 
 
-    // This overrides the chart's default calculation
     const customAutoscale = (original) => {
         const res = original();
         if (res !== null) {
-            // Force the chart to stretch to our R2 and S2 lines
             res.priceRange.minValue = Math.min(res.priceRange.minValue, bottomBound - buffer);
             res.priceRange.maxValue = Math.max(res.priceRange.maxValue, topBound + buffer);
         }
         return res;
     };
-
-    // Apply the override to whichever series is currently active
     tvCandleSeries.applyOptions({ autoscaleInfoProvider: customAutoscale });
     tvLineSeries.applyOptions({ autoscaleInfoProvider: customAutoscale });
 }
@@ -1511,7 +1431,6 @@ function parseTimeToUnix(timeStr) {
     hrs = parseInt(hrs);
     if (period === 'PM' && hrs !== 12) hrs += 12;
     if (period === 'AM' && hrs === 12) hrs = 0;
-    
     const baseDate = new Date().toISOString().split('T')[0];
     const d = new Date(`${baseDate}T${hrs.toString().padStart(2, '0')}:${mins}:00+05:30`);
     return Math.floor(d.getTime() / 1000); 
@@ -1519,34 +1438,21 @@ function parseTimeToUnix(timeStr) {
 
 function createInstChart(containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = ''; // Clear any rogue canvases
-
+    container.innerHTML = ''; 
     const chart = LightweightCharts.createChart(container, {
-        // 🟢 FIX: Force it to read the exact pixel size of the modal box
         width: container.clientWidth || 300,
         height: container.clientHeight || 150,
-        layout: { 
-            background: { type: 'solid', color: '#131722' },
-            textColor: '#d1d4dc', 
-            fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" 
-        },
-        grid: { 
-            vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, 
-            horzLines: { color: 'rgba(42, 46, 57, 0.5)' } 
-        },
+        layout: { background: { type: 'solid', color: '#131722' }, textColor: '#d1d4dc', fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" },
+        grid: { vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, horzLines: { color: 'rgba(42, 46, 57, 0.5)' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
         rightPriceScale: { borderColor: '#2b2b43' },
         timeScale: { borderColor: '#2b2b43', timeVisible: true, secondsVisible: false }
     });
 
-    // 🟢 FIX: Removed the rogue Candlestick series that was blocking your lines!
-
     let isDisposed = false;
     const observer = new ResizeObserver(entries => {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
-        try { 
-            chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
-        } catch(e) {}
+        try { chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); } catch(e) {}
     });
     observer.observe(container);
 
@@ -1556,26 +1462,20 @@ function createInstChart(containerId) {
         observer.disconnect();
         originalRemove();      
     };
-
     return chart;
 }
+
 function showStrikeCharts(strike) {
     if (!liveHistory || liveHistory.length === 0) {
         alert("No historical data available yet. Please wait for the next fetch.");
         return;
     }
-
-    // 1. MAKE THE MODAL VISIBLE FIRST
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    // 2. DELAY CHART RENDERING BY 100ms
-    // This gives the browser time to physically draw the modal so the containers have height > 0px
     setTimeout(() => {
-        const ceVolData = [], peVolData = [];
-        const ceOiData = [], peOiData = [];
-        const ceLtpData = [], peLtpData = [];       
-        const ceOiChgData = [], peOiChgData = [];   
+        const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+        const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];   
         const seenTimes = new Set();
 
         liveHistory.forEach(snap => {
@@ -1585,25 +1485,17 @@ function showStrikeCharts(strike) {
 
             const row = snap.rows.find(r => r.strike === strike);
             if (row) {
-                ceVolData.push({ time: timestamp, value: row.ceVol });
-                peVolData.push({ time: timestamp, value: row.peVol });
-                ceOiData.push({ time: timestamp, value: row.ceOI });
-                peOiData.push({ time: timestamp, value: row.peOI });
-                
-                ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 });
-                peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
-                ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 });
-                peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
+                ceVolData.push({ time: timestamp, value: row.ceVol }); peVolData.push({ time: timestamp, value: row.peVol });
+                ceOiData.push({ time: timestamp, value: row.ceOI }); peOiData.push({ time: timestamp, value: row.peOI });
+                ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 }); peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
+                ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 }); peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
             }
         });
 
         const sorter = (a, b) => a.time - b.time;
-        ceVolData.sort(sorter); peVolData.sort(sorter);
-        ceOiData.sort(sorter); peOiData.sort(sorter);
-        ceLtpData.sort(sorter); peLtpData.sort(sorter);
-        ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+        ceVolData.sort(sorter); peVolData.sort(sorter); ceOiData.sort(sorter); peOiData.sort(sorter);
+        ceLtpData.sort(sorter); peLtpData.sort(sorter); ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-        // --- DRAW VOLUME CHART ---
         if (tvModalVolChart) tvModalVolChart.remove();
         tvModalVolChart = createInstChart('tv-modal-vol');
         const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
@@ -1611,18 +1503,12 @@ function showStrikeCharts(strike) {
         ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
         tvModalVolChart.timeScale().fitContent();
 
-        // --- DRAW OI & PRICE CHART ---
         if (tvModalOiChart) tvModalOiChart.remove();
         tvModalOiChart = createInstChart('tv-modal-oi');
-        
-        tvModalOiChart.applyOptions({
-            leftPriceScale: { visible: true, borderColor: '#27272a' },
-            rightPriceScale: { visible: true, borderColor: '#27272a' }
-        });
+        tvModalOiChart.applyOptions({ leftPriceScale: { visible: true, borderColor: '#27272a' }, rightPriceScale: { visible: true, borderColor: '#27272a' } });
 
         const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
         const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
-        
         const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
         const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
 
@@ -1630,37 +1516,22 @@ function showStrikeCharts(strike) {
         ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
         tvModalOiChart.timeScale().fitContent();
 
-        // --- DRAW INTRADAY OI CHANGE CHART ---
         if (tvModalOiChgChart) tvModalOiChgChart.remove();
         tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
-        
         const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-        
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
         tvModalOiChgChart.timeScale().fitContent();
 
-      // --- BULLETPROOF RESIZE FIX ---
-        // Forces the charts to measure their new empty containers and fill them
         requestAnimationFrame(() => {
             const volDiv = document.getElementById('tv-modal-vol');
             const oiDiv = document.getElementById('tv-modal-oi');
             const oiChgDiv = document.getElementById('tv-modal-oi-chg');
-            
             if(tvModalVolChart && volDiv) tvModalVolChart.resize(volDiv.clientWidth, volDiv.clientHeight);
             if(tvModalOiChart && oiDiv) tvModalOiChart.resize(oiDiv.clientWidth, oiDiv.clientHeight);
             if(tvModalOiChgChart && oiChgDiv) tvModalOiChgChart.resize(oiChgDiv.clientWidth, oiChgDiv.clientHeight);
         });
-
     }, 100); 
-  // 100ms pause to let the CSS layout render before painting the canvas
-}
-
-function closeCharts(event) { 
-    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) {
-        return; 
-    }
-    document.getElementById('chart-modal').style.display = 'none'; 
 }
 
 function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
@@ -1685,23 +1556,19 @@ function updateMarketIntelligence(coa) {
     const logBody = document.getElementById('coa-logs-body');
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
         const currentSig = coa.logs[0].time + coa.logs[0].eor + coa.logs[0].eos;
-        if (lastLogSignature !== "" && currentSig !== lastLogSignature) {
-            playAlertSound();
-        }
+        if (lastLogSignature !== "" && currentSig !== lastLogSignature) playAlertSound();
         lastLogSignature = currentSig;
 
-logBody.innerHTML = coa.logs.map(log => {
+        logBody.innerHTML = coa.logs.map(log => {
             if (typeof log === 'string') {
                 const parts = log.split(' - ');
                 if (parts.length >= 2) {
                     const time = parts[0];
                     const msg = parts.slice(1).join(' - ');
-                    
                     let msgColor = 'var(--text)';
                     if (msg.includes('Bullish') || msg.includes('Top')) msgColor = 'var(--green)';
                     if (msg.includes('Bearish') || msg.includes('Bottom')) msgColor = 'var(--red)';
                     if (msg.includes('Active Challenger')) msgColor = 'var(--gold)';
-                    
                     return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
                 }
             }
@@ -1711,98 +1578,6 @@ logBody.innerHTML = coa.logs.map(log => {
         logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
     }
 }
-
-// 🟢 NEW: Paper Trading Setup 
-let paperTrades = JSON.parse(localStorage.getItem('paperTrades') || '[]');
-
-function openOrderModal(sym, strike, type, ltp) {
-    document.getElementById('order-sym').value = sym;
-    document.getElementById('order-strike').value = strike;
-    document.getElementById('order-type').value = type;
-    document.getElementById('order-entry').value = ltp.toFixed(2);
-    // Add default mock values for SL/Target just to save the user a click
-    document.getElementById('order-sl').value = (ltp * 0.9).toFixed(2);
-    document.getElementById('order-target').value = (ltp * 1.2).toFixed(2);
-    
-    document.getElementById('order-modal').style.display = 'flex';
-}
-
-function closeOrderModal(event) {
-    if (event && event.target.id !== 'order-modal' && !event.target.classList.contains('modal-close')) return;
-    document.getElementById('order-modal').style.display = 'none';
-}
-
-async function submitPaperTrade() {
-    const trade = {
-        id: Date.now(),
-        time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-        sym: document.getElementById('order-sym').value,
-        strike: document.getElementById('order-strike').value,
-        type: document.getElementById('order-type').value,
-        entry: document.getElementById('order-entry').value,
-        sl: document.getElementById('order-sl').value,
-        target: document.getElementById('order-target').value,
-        status: 'Open'
-    };
-    
-    paperTrades.push(trade);
-    localStorage.setItem('paperTrades', JSON.stringify(paperTrades));
-    
-    // 🟢 Send to your Python backend to be permanently logged / emailed
-    try {
-        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-        fetch(`${UPSTOX_API}/api/paper-trade`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(trade)
-        }).catch(err => console.log('Backend sync skipped:', err));
-    } catch(e) {}
-    
-    document.getElementById('order-modal').style.display = 'none';
-    alert(`Order Placed for ${trade.sym} ${trade.strike} ${trade.type} at ₹${trade.entry}`);
-}
-
-window.openHistoryModal = function() {
-    // 1. First, calculate the latest P&L based on current market prices
-    window.calculateLivePnL(); 
-    
-    const body = document.getElementById('trade-history-body');
-    
-    if (paperTrades.length === 0) {
-        body.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--muted); padding: 20px;">No paper trades executed today. Click an LTP cell to start trading.</td></tr>`;
-    } else {
-        body.innerHTML = paperTrades.map(t => {
-            // Determine P&L color logic
-            const pnlValue = parseFloat(t.pnl) || 0;
-            const pnlColor = pnlValue >= 0 ? 'var(--green)' : 'var(--red)';
-            
-            // Show 'Exit' button only if the trade is still 'Open'
-            const actionBtn = t.status === 'Open' 
-                ? `<button onclick="window.exitTrade(${t.id})" style="background:var(--red); color:white; border:none; padding:6px 10px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:bold;">Exit</button>` 
-                : `<span style="color:var(--muted); opacity:0.5;">Closed</span>`;
-
-            return `
-                <tr>
-                    <td style="padding: 10px;">${t.time}</td>
-                    <td><b>${t.sym}</b></td>
-                    <td>${t.strike}</td>
-                    <td style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'}; font-weight:bold;">${t.type}</td>
-                    <td>${t.entry}</td>
-                    <td style="color:${pnlColor}; font-weight:bold;">${t.pnl || '0.00'}</td>
-                    <td style="font-weight:600;">${t.status}</td>
-                    <td>${actionBtn}</td>
-                </tr>
-            `;
-        }).join('');
-    }
-    document.getElementById('history-modal').style.display = 'flex';
-}
-
-function closeHistoryModal(event) {
-    if (event && event.target.id !== 'history-modal' && !event.target.classList.contains('modal-close')) return;
-    document.getElementById('history-modal').style.display = 'none';
-}
-
 
 let renderTable = function(rows, sym, data, quiet = false) {
   const spot = parseFloat(document.getElementById('inp-spot').value) || 0;
@@ -1853,19 +1628,9 @@ let renderTable = function(rows, sym, data, quiet = false) {
   document.querySelector('thead').innerHTML = `
     <tr>
       ${extraThCe}
-      <th class="ce-header" style="width:45px;">IV</th>
-      <th class="ce-header">OI Chg</th>
-      <th class="ce-header">OI</th>
-      <th class="ce-header">Vol</th>
-      <th class="ce-header" style="width:55px;">LTP</th>
-      <th class="ce-header" style="color:var(--red);">RPL</th>
+      <th class="ce-header" style="width:45px;">IV</th><th class="ce-header">OI Chg</th><th class="ce-header">OI</th><th class="ce-header">Vol</th><th class="ce-header" style="width:55px;">LTP</th><th class="ce-header" style="color:var(--red);">RPL</th>
       <th class="strike-cell" style="width:60px;">STRIKE</th>
-      <th class="pe-header" style="color:var(--green);">SPL</th>
-      <th class="pe-header" style="width:55px;">LTP</th>
-      <th class="pe-header">Vol</th>
-      <th class="pe-header">OI</th>
-      <th class="pe-header">OI Chg</th>
-      <th class="pe-header" style="width:45px;">IV</th>
+      <th class="pe-header" style="color:var(--green);">SPL</th><th class="pe-header" style="width:55px;">LTP</th><th class="pe-header">Vol</th><th class="pe-header">OI</th><th class="pe-header">OI Chg</th><th class="pe-header" style="width:45px;">IV</th>
       ${extraThPe}
     </tr>
   `;
@@ -1880,34 +1645,27 @@ let renderTable = function(rows, sym, data, quiet = false) {
   for (let i = 0; i < displayRows.length; i++) {
     const r = displayRows[i];
     const isAtm = r.strike === atm, ceBg = r.strike < spot ? 'itm-ce' : '', peBg = r.strike > spot ? 'itm-pe' : '';
-    
     const eorValue = r.ce_prz > 0 ? r.ce_prz : (r.strike + interval); 
     const eosValue = r.pe_prz > 0 ? r.pe_prz : (r.strike - interval);
     
     function tdHeat(base, heat) { return `class="${base} ${heat}"`; }
-
     const ceExtraTd = activeGreeks.map(g => `<td class="${ceBg}" style="color:var(--muted);">${r.ce[g]?.toFixed(2)||'-'}</td>`).join('');
     const peExtraTd = activeGreeks.map(g => `<td class="${peBg}" style="color:var(--muted);">${r.pe[g]?.toFixed(2)||'-'}</td>`).join('');
 
     const ceChgStr = (r.ce.change_oi >= 0 ? '+' : '') + fmtN(r.ce.change_oi, 0);
     const peChgStr = (r.pe.change_oi >= 0 ? '+' : '') + fmtN(r.pe.change_oi, 0);
 
-    // 🟢 NEW: Clickable LTP integration here
     html += `<tr class="${isAtm ? 'atm-row' : ''}">
       ${ceExtraTd}
       <td class="${ceBg}" style="color:var(--muted);">${(parseFloat(r.ce.iv)||0).toFixed(1)}</td>
       <td ${tdHeat(ceBg, getHeatCls(Math.abs(r.ce.change_oi), maxCeChg, secCeChg, 'ce'))}>${formatCell(ceChgStr, Math.abs(r.ce.change_oi), maxCeChg, secCeChg)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
-      
       <td class="${ceBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'CE', ${r.ce.ltp || 0})">${(r.ce.ltp||0).toFixed(1)}</td>
-      
       <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(0)}</td>
       <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike}</td>
       <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(0)}</td>
-      
       <td class="${peBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'PE', ${r.pe.ltp || 0})">${(r.pe.ltp||0).toFixed(1)}</td>
-      
       <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
       <td ${tdHeat(peBg, getHeatCls(Math.abs(r.pe.change_oi), maxPeChg, secPeChg, 'pe'))}>${formatCell(peChgStr, Math.abs(r.pe.change_oi), maxPeChg, secPeChg)}</td>
@@ -1929,25 +1687,19 @@ let renderTable = function(rows, sym, data, quiet = false) {
 
   document.getElementById('oc-body').innerHTML = html;
 
-// 🟢 Update India VIX
   if (data.vix !== undefined && data.vix !== null) {
       const vixVal = data.vix.toFixed(2);
-      if(document.getElementById('h-vix')) document.getElementById('h-vix').innerText = vixVal; // Desktop
-      if(document.getElementById('m-vix')) document.getElementById('m-vix').innerText = vixVal; // Mobile
+      if(document.getElementById('h-vix')) document.getElementById('h-vix').innerText = vixVal;
+      if(document.getElementById('m-vix')) document.getElementById('m-vix').innerText = vixVal;
   }
 
-// 🟢 Update Max Pain
-let mpVal = "--";
-if (data.max_pain) {
-    mpVal = data.max_pain;
-} else if (data.coa && data.coa.max_pain) {
-    mpVal = data.coa.max_pain;
-}
+  let mpVal = "--";
+  if (data.max_pain) mpVal = data.max_pain;
+  else if (data.coa && data.coa.max_pain) mpVal = data.coa.max_pain;
 
-if(document.getElementById('h-max-pain')) document.getElementById('h-max-pain').innerText = mpVal; // Desktop
-if(document.getElementById('m-max-pain')) document.getElementById('m-max-pain').innerText = mpVal; // Mobile
+  if(document.getElementById('h-max-pain')) document.getElementById('h-max-pain').innerText = mpVal;
+  if(document.getElementById('m-max-pain')) document.getElementById('m-max-pain').innerText = mpVal;
   
-  const atmRow = displayRows.find(r => r.strike === atm) || { ce: {delta:0, theta:0, vega:0}, pe: {delta:0, theta:0, vega:0} };
   document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
   document.getElementById('f-pcr').style.color = data.pcr >= 1 ? 'var(--green)' : 'var(--red)';
   document.getElementById('f-ce-oi').innerText = fmtN(data.total_ce_oi, 0);
@@ -1968,11 +1720,21 @@ if(document.getElementById('m-max-pain')) document.getElementById('m-max-pain').
 
 function abs(x) { return x < 0 ? -x : x; }
 
+// ==========================================
+// 🟢 CLOUD PAPER TRADING ENGINE
+// ==========================================
+
+const originalInit = window.initTerminal;
 window.initTerminal = async function() {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
         const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
         const profile = await r.json();
+        
+        if (profile.paper_balance !== undefined) {
+            const balElement = document.getElementById('ui-paper-bal');
+            if (balElement) balElement.innerText = `₹${profile.paper_balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+        }
         
         if (profile.tier !== "pro") {
             alert("The Live Terminal requires a Pro subscription.");
@@ -1981,24 +1743,32 @@ window.initTerminal = async function() {
         }
     } catch(e) {}
     window.loadExpiries(); 
-    
     setInterval(() => {
         const expiry = document.getElementById('sel-expiry').value;
         if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
             fetchUpstoxChain(true);
         }
     }, 1000); 
-};  
-  // 🟢 adjust strike + - 🟢
+}; 
+
+window.resetPaperBalance = async function() {
+    if(!confirm("Are you sure you want to reset your virtual balance to ₹5,00,000? All PnL will be wiped.")) return;
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
+        const r = await fetch(`${UPSTOX_API}/api/paper-trade/reset-balance`, { method: 'POST', headers: headers });
+        const data = await r.json();
+        if(data.status === 'success') {
+            const balElement = document.getElementById('ui-paper-bal');
+            if(balElement) balElement.innerText = `₹5,00,000.00`;
+            alert("Balance Reset to ₹5,00,000");
+        }
+    } catch(e) { alert("Reset failed."); }
+}
+
 window.adjustStrike = function(direction) {
-    // 1. Get the current symbol (Default to NIFTY if it fails)
     const symInput = document.getElementById('order-sym');
     const sym = symInput ? symInput.value : 'NIFTY';
-    
-    // 2. Determine the interval (50, 100, etc.)
     const interval = window.getStrikeInterval ? window.getStrikeInterval(sym) : 50;
-    
-    // 3. Update the input field
     const strikeInput = document.getElementById('order-strike');
     if (strikeInput) {
         let currentVal = parseInt(strikeInput.value, 10) || 0;
@@ -2006,7 +1776,173 @@ window.adjustStrike = function(direction) {
     }
 };
 
+window.toggleMarketLimit = function() {
+    const type = document.getElementById('order-execution-type').value;
+    const entryInput = document.getElementById('order-entry');
+    const hint = document.getElementById('entry-hint');
+    if(type === 'Market') {
+        entryInput.disabled = true;
+        hint.innerText = "(Live LTP)";
+    } else {
+        entryInput.disabled = false;
+        hint.innerText = "(Custom Limit)";
+    }
+}
+
+window.openOrderModal = function(sym, strike, type, ltp) {
+    document.getElementById('order-sym').value = sym;
+    document.getElementById('order-strike').value = strike;
+    document.getElementById('order-opt-type').value = type;
+    document.getElementById('order-entry').value = ltp.toFixed(2);
+    document.getElementById('order-execution-type').value = 'Market';
+    document.getElementById('order-sl').value = '';
+    document.getElementById('order-target').value = '';
+    
+    window.toggleMarketLimit();
+    document.getElementById('order-modal').style.display = 'flex';
+}
+
+window.closeOrderModal = function(event) {
+    if (event && event.target.id !== 'order-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('order-modal').style.display = 'none';
+}
+
+window.submitPaperTrade = async function() {
+    const sym = document.getElementById('order-sym').value;
+    const lotMultiplier = globalData.lot_size || 50; 
+    const lots = parseInt(document.getElementById('order-qty').value) || 1;
+    const totalQty = lots * lotMultiplier;
+
+    const trade = {
+        sym: sym,
+        strike: parseInt(document.getElementById('order-strike').value),
+        type: document.getElementById('order-opt-type').value,
+        order_type: document.getElementById('order-execution-type').value,
+        entry: parseFloat(document.getElementById('order-entry').value),
+        qty: totalQty,
+        sl: document.getElementById('order-sl').value,
+        target: document.getElementById('order-target').value
+    };
+    
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
+        const r = await fetch(`${UPSTOX_API}/api/paper-trade/place`, {
+            method: 'POST', headers: headers, body: JSON.stringify(trade)
+        });
+        const res = await r.json();
+        
+        if (res.error) {
+            alert("Order Failed: " + res.error);
+        } else {
+            const balElement = document.getElementById('ui-paper-bal');
+            if(balElement) balElement.innerText = `₹${res.new_balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            document.getElementById('order-modal').style.display = 'none';
+            alert(`Executed: ${lots} Lot(s) of ${trade.sym} ${trade.strike} ${trade.type}`);
+        }
+    } catch(e) { alert("Network error connecting to broker."); }
+}
+
+window.openHistoryModal = async function() {
+    document.getElementById('history-modal').style.display = 'flex';
+    document.getElementById('open-trades-body').innerHTML = `<tr><td colspan="9" style="text-align:center;">Loading from Cloud...</td></tr>`;
+    
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+        const r = await fetch(`${UPSTOX_API}/api/paper-trade/positions`, { headers });
+        const data = await r.json();
+        
+        if(data.status !== 'success') return;
+
+        const openBody = document.getElementById('open-trades-body');
+        if (data.open.length === 0) {
+            openBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--muted);">No open positions.</td></tr>`;
+        } else {
+            openBody.innerHTML = data.open.map(t => {
+                let liveLtp = t.entry;
+                if (globalRows && globalRows.length > 0) {
+                    const row = globalRows.find(r => r.strike == t.strike);
+                    if (row) liveLtp = t.type === 'CE' ? row.ce.ltp : row.pe.ltp;
+                }
+                const pnl = ((liveLtp - t.entry) * t.qty).toFixed(2);
+                const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+
+                return `
+                <tr>
+                    <td>${t.time}</td>
+                    <td><b>${t.sym} ${t.strike} <span style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'};">${t.type}</span></b></td>
+                    <td>${t.qty}</td>
+                    <td>${t.entry}</td>
+                    <td style="color:var(--accent); font-weight:bold;">${liveLtp}</td>
+                    <td><input type="number" id="mod-sl-${t.id}" value="${t.sl}" style="width:60px; background:var(--bg); color:var(--text); border:1px solid var(--border); padding:2px;"></td>
+                    <td><input type="number" id="mod-tgt-${t.id}" value="${t.target}" style="width:60px; background:var(--bg); color:var(--text); border:1px solid var(--border); padding:2px;"></td>
+                    <td style="color:${pnlColor}; font-weight:bold;">₹${pnl}</td>
+                    <td>
+                        <button onclick="modifyTrade('${t.id}')" style="background:var(--accent); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Update</button>
+                        <button onclick="exitTrade('${t.id}', ${liveLtp})" style="background:var(--red); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">SQR OFF</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        const closedBody = document.getElementById('closed-trades-body');
+        if (data.closed.length === 0) {
+            closedBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted);">No closed positions today.</td></tr>`;
+        } else {
+            closedBody.innerHTML = data.closed.map(t => {
+                const pnlColor = t.final_pnl >= 0 ? 'var(--green)' : 'var(--red)';
+                return `
+                <tr>
+                    <td>${t.time}</td>
+                    <td><b>${t.sym} ${t.strike} <span style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'};">${t.type}</span></b></td>
+                    <td>${t.qty}</td>
+                    <td>${t.entry}</td>
+                    <td>${t.exit_price}</td>
+                    <td style="color:${pnlColor}; font-weight:bold;">₹${t.final_pnl.toFixed(2)}</td>
+                </tr>`;
+            }).join('');
+        }
+    } catch(e) { console.error(e); }
+}
+
+window.closeHistoryModal = function(event) {
+    if (event && event.target.id !== 'history-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+window.modifyTrade = async function(id) {
+    const sl = document.getElementById(`mod-sl-${id}`).value;
+    const tgt = document.getElementById(`mod-tgt-${id}`).value;
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
+        await fetch(`${UPSTOX_API}/api/paper-trade/modify`, {
+            method: 'POST', headers: headers, body: JSON.stringify({ id: id, sl: sl, target: tgt })
+        });
+        alert("Order Modified Successfully");
+    } catch(e) { alert("Modification Failed"); }
+}
+
+window.exitTrade = async function(id, currentLtp) {
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
+        const r = await fetch(`${UPSTOX_API}/api/paper-trade/exit`, {
+            method: 'POST', headers: headers, body: JSON.stringify({ id: id, exit_price: currentLtp })
+        });
+        const res = await r.json();
+        if(res.status === 'success') {
+            const balElement = document.getElementById('ui-paper-bal');
+            if (balElement) {
+                let currentBal = parseFloat(balElement.innerText.replace(/[^0-9.-]+/g,""));
+                let newBal = currentBal + res.returned_capital;
+                balElement.innerText = `₹${newBal.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+            }
+            window.openHistoryModal(); 
+        } else {
+            alert(res.error);
+        }
+    } catch(e) { alert("Square Off Failed"); }
+}
 </script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, getIdToken, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -2038,46 +1974,5 @@ window.adjustStrike = function(direction) {
   window.logoutFirebase = function() {
       signOut(auth);
   };
-  // 🟢 NEW: Calculate Live P&L for the History Modal
-window.calculateLivePnL = function() {
-    if (!globalRows || globalRows.length === 0) return;
-
-    paperTrades.forEach(trade => {
-        if (trade.status === 'Open') {
-            const currentRow = globalRows.find(r => r.strike == trade.strike);
-            if (currentRow) {
-                const currentLtp = trade.type === 'CE' ? currentRow.ce.ltp : currentRow.pe.ltp;
-                const lotSize = globalData.lot_size || 50;
-                trade.live_ltp = currentLtp;
-                trade.pnl = ((currentLtp - trade.entry) * lotSize).toFixed(2);
-            }
-        }
-    });
-};
-
-// 🟢 NEW: Exit a trade and sync with Backend
-window.exitTrade = async function(tradeId) {
-    const trade = paperTrades.find(t => t.id === tradeId);
-    if (!trade) return;
-
-    const exitPrice = trade.live_ltp || trade.entry;
-    const finalPnl = trade.pnl || 0;
-
-    trade.status = 'Closed';
-    trade.exit_price = exitPrice;
-    localStorage.setItem('paperTrades', JSON.stringify(paperTrades));
-
-    try {
-        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-        await fetch(`${UPSTOX_API}/api/paper-trade/exit`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({ id: tradeId, exit_price: exitPrice, pnl: finalPnl })
-        });
-    } catch(e) { console.error("Exit sync failed", e); }
-    
-    openHistoryModal(); // Refresh the table
-};
 </script>
-</body>
 </html>
