@@ -247,21 +247,24 @@ header {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important; 
-        overflow: visible !important; 
-        width: 100vw !important;  /* THE FIX: Slim down the bar and center the items */
-        height: 44px !important; /* Shrinks the overall bar (desktop is 52px) */
-        padding: 0 10px !important; /* Removes excess top/bottom padding */
-        align-items: center !important; /* Keeps everything perfectly vertically centered */
-        gap: 8px !important; 
+        overflow-x: auto !important; /* Forces horizontal scroll */
+        overflow-y: visible !important; 
+        width: 100vw !important; 
+        height: 52px !important; 
+        padding: 0 16px !important; 
+        align-items: center !important; 
+        gap: 12px !important; 
         z-index: 1000 !important; 
-        position: relative !important; 
+        position: sticky !important;
+        top: 0;
+        -webkit-overflow-scrolling: touch;
     }
-  header > * {
-        flex-shrink: 0 !important; 
+ header > * {
+        flex-shrink: 0 !important; /* Prevents dropdowns from squishing */
     }
-    header::-webkit-scrollbar { display: none; }
-  header > *:last-child {
-        margin-right: 24px !important; /* Pushes the Chart button away from the screen edge */
+   header::-webkit-scrollbar { display: none; }
+ header > *:last-child {
+        padding-right: 20px !important;
     }
   
     header button, header select, .custom-dropdown-wrapper button { 
@@ -287,7 +290,11 @@ header {
         position: relative !important;
     }
   
-    .logo { font-size: 14px; }
+    .logo { 
+        font-size: 14px; 
+        padding-right: 8px; 
+        border-right: 1px solid var(--border);
+    }
         
 /* Settings Panel logic */
 .settings-panel { 
