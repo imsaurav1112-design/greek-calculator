@@ -380,7 +380,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -534,30 +534,29 @@ initBgAnimation();
     }
   });
 
-// 🟢 SWITCHED TO REDIRECT TO BYPASS BROWSER COOP BLOCKS
-  window.handleGoogleLogin = function() {
-      // Visual feedback so the user knows a redirect is happening
-      document.querySelectorAll('.btn-google').forEach(btn => btn.innerText = "Redirecting securely...");
-      
-      // Send user to Google (NO POPUPS)
-      signInWithRedirect(auth, googleProvider);
+// 🟢 REVERTED BACK TO POPUP METHOD
+  window.handleGoogleLogin = async function() {
+      try {
+          // Visual feedback
+          document.querySelectorAll('.btn-google').forEach(btn => btn.innerText = "Opening Secure Login...");
+          
+          // Trigger the Google Popup
+          await signInWithPopup(auth, googleProvider);
+          
+          // Once the popup closes successfully, your onAuthStateChanged listener fires automatically!
+          
+      } catch(err) {
+          console.error("Popup Error:", err);
+          const errDiv = document.getElementById('global-error'); 
+          if (errDiv) {
+              errDiv.innerText = err.message.replace("Firebase:", "").trim();
+              errDiv.style.display = 'block';
+          }
+          // Reset button text if they cancel
+          document.querySelectorAll('.btn-google').forEach(btn => btn.innerText = "Sign in with Google to Launch");
+      }
   };
-
-  // 🟢 CATCH THE USER WHEN THEY BOUNCE BACK FROM GOOGLE
-  getRedirectResult(auth).then((result) => {
-      if (result) {
-          console.log("Logged in successfully via redirect!");
-          // onAuthStateChanged will handle the rest automatically
-      }
-  }).catch((error) => {
-      console.error("Redirect Error:", error);
-      const errDiv = document.getElementById('global-error'); 
-      if (errDiv) {
-          errDiv.innerText = "Login interrupted. Please try again.";
-          errDiv.style.display = 'block';
-      }
-  });
-
+  
 window.startCheckout = async function(planId) {
       if (!window.currentFirebaseToken) {
           alert("Please sign in with Google first!");
