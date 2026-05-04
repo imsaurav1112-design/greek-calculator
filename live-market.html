@@ -885,62 +885,67 @@ function toggleMobileNav() {
     }
 }
   
-  // ==========================================
-// 🟢 NIFTY 50 LIVE TICKER TAPE LOGIC
 // ==========================================
-  // A dictionary to keep track of prices so we know if it went UP or DOWN
-const previousPrices = {};
+// 🟢 LIVE TICKER TAPE LOGIC (AUTO-POLLING)
+// ==========================================
+const TICKER_SYMBOLS = ["NIFTY 50", "RELIANCE", "HDFCBANK", "TCS", "ICICIBANK", "INFY"];
+const tickerPrices = {};
 
-// Names to map the ugly ISIN codes to readable names
-const tickerNames = {
-    "INE002A01018": "RELIANCE",
-    "INE040A01034": "HDFCBANK",
-    "INE467B01029": "TCS",
-    "INE090A01021": "ICICIBANK",
-    "INE009A01021": "INFY"
-};
+async function fetchTickerData() {
+    try {
+        // Calls the new python route we set up
+        const r = await fetch(`${UPSTOX_API}/api/ticker-prices`); 
+        if (!r.ok) return;
+        const prices = await r.json();
 
-function updateTickerTape(instrumentKey, ltp) {
-    const isin = instrumentKey.split('|')[1];
-    const stockName = tickerNames[isin];
-    
-    // Skip if we don't track this stock in the crawler
-    if (!stockName) return; 
-
-    const tickerContainer = document.getElementById('live-ticker');
-    let itemDiv = document.getElementById(`ticker-${isin}`);
-
-    // If the stock isn't in the ticker yet, create it
-    if (!itemDiv) {
-        itemDiv = document.createElement('span');
-        itemDiv.id = `ticker-${isin}`;
-        itemDiv.className = 'ticker-item';
-        tickerContainer.appendChild(itemDiv);
+        const tickerContainer = document.getElementById('live-ticker');
         
-        // Trick for infinite smooth scroll: Duplicate the content inside the container
-        const clone = itemDiv.cloneNode(true);
-        clone.id = `ticker-${isin}-clone`;
-        tickerContainer.appendChild(clone);
-    }
+        for (const stock of TICKER_SYMBOLS) {
+            if (!prices[stock]) continue;
+            
+            const ltp = prices[stock];
+            const safeId = stock.replace(/\s+/g, ''); // Removes spaces for HTML IDs
+            let itemDiv = document.getElementById(`ticker-${safeId}`);
+            
+            // Create if it doesn't exist
+            if (!itemDiv) {
+                itemDiv = document.createElement('span');
+                itemDiv.id = `ticker-${safeId}`;
+                itemDiv.className = 'ticker-item';
+                tickerContainer.appendChild(itemDiv);
+                
+                // Clone for infinite scroll
+                const clone = itemDiv.cloneNode(true);
+                clone.id = `ticker-${safeId}-clone`;
+                tickerContainer.appendChild(clone);
+            }
 
-    // Determine Green or Red
-    let colorClass = "tick-up"; // Default
-    if (previousPrices[isin] && ltp < previousPrices[isin]) {
-        colorClass = "tick-down";
-    }
-    previousPrices[isin] = ltp;
+            // Determine Green or Red (Up or Down)
+            let colorClass = "tick-up";
+            if (tickerPrices[stock] && ltp < tickerPrices[stock]) {
+                colorClass = "tick-down";
+            }
+            tickerPrices[stock] = ltp;
 
-    // Format the HTML
-    const htmlContent = `${stockName}: <span class="${colorClass}">${ltp.toFixed(2)}</span>`;
-    
-    // Update both the original and the clone for the infinite loop
-    itemDiv.innerHTML = htmlContent;
-    document.getElementById(`ticker-${isin}-clone`).innerHTML = htmlContent;
+            // Update HTML
+            const htmlContent = `${stock}: <span class="${colorClass}">${ltp.toFixed(2)}</span>`;
+            itemDiv.innerHTML = htmlContent;
+            document.getElementById(`ticker-${safeId}-clone`).innerHTML = htmlContent;
+        }
+        
+        // Remove the "Loading..." text once we have real data
+        const loader = document.querySelector('.ticker-item');
+        if(loader && loader.innerText.includes("Loading")) loader.remove();
+
+    } catch (e) {
+        console.log("Ticker fetch error", e);
+    }
 }
 
-// ⚠️ Put this line inside your existing Live Data listener:
-// updateTickerTape(incomingData.instrument_key, incomingData.ltp);
-
+// Fetch ticker prices every 3 seconds
+setInterval(fetchTickerData, 3000);
+setTimeout(fetchTickerData, 1000); // Trigger first load fast
+  
 function toggleSettings(event) {
     if(event) event.stopPropagation();
     const panel = document.getElementById('settings-panel');
@@ -1438,59 +1443,29 @@ function parseTimeToUnix(timeStr) {
 
 function createInstChart(containerId) {
     const container = document.getElementById(containerId);
-    container.innerHTML = '';
+    container.innerHTML = ''; // Clear any rogue canvases
 
-const chart = LightweightCharts.createChart(container, {
-    layout: { 
-        background: { type: 'solid', color: '#131722' }, // Authentic TV Dark Background
-        textColor: '#d1d4dc', // Authentic TV Text Color
-        fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" // TV's preferred font stack
-    },
-    grid: { 
-        vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, // Subtle grid lines
-        horzLines: { color: 'rgba(42, 46, 57, 0.5)' } 
-    },
-    crosshair: {
-        mode: LightweightCharts.CrosshairMode.Normal,
-        vertLine: {
-            color: '#758696',
-            width: 1,
-            style: LightweightCharts.LineStyle.Dashed,
-            labelBackgroundColor: '#2b2b43',
+    const chart = LightweightCharts.createChart(container, {
+        // 🟢 FIX: Force it to read the exact pixel size of the modal box
+        width: container.clientWidth || 300,
+        height: container.clientHeight || 150,
+        layout: { 
+            background: { type: 'solid', color: '#131722' },
+            textColor: '#d1d4dc', 
+            fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" 
         },
-        horzLine: {
-            color: '#758696',
-            width: 1,
-            style: LightweightCharts.LineStyle.Dashed,
-            labelBackgroundColor: '#2b2b43',
+        grid: { 
+            vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, 
+            horzLines: { color: 'rgba(42, 46, 57, 0.5)' } 
         },
-    },
-    rightPriceScale: { 
-        borderColor: '#2b2b43', // Separator line color
-    },
-    timeScale: { 
-        borderColor: '#2b2b43',
-        timeVisible: true,
-        secondsVisible: false,
-    }
-});
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor: '#2b2b43' },
+        timeScale: { borderColor: '#2b2b43', timeVisible: true, secondsVisible: false }
+    });
 
-  const tvCandleSeries = chart.addCandlestickSeries({ 
-    // Authentic TV Green
-    upColor: '#089981', 
-    wickUpColor: '#089981',
-    
-    // Authentic TV Red
-    downColor: '#f23645', 
-    wickDownColor: '#f23645',
-    
-    // Disable borders for a flatter, more modern look 
-    // (or set them to the same color as the candle)
-    borderVisible: false, 
-});
+    // 🟢 FIX: Removed the rogue Candlestick series that was blocking your lines!
 
     let isDisposed = false;
-
     const observer = new ResizeObserver(entries => {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
         try { 
