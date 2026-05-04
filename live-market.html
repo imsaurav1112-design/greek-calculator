@@ -406,17 +406,26 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         width: max-content !important; 
     }
     .custom-menu {
-        position: fixed !important; 
-        top: 56px !important;
-        left: 0 !important;
-        margin-top: 8px !important;
-        min-width: 0 !important;
-        width: max-content !important; 
-       z-index: 99999 !important;
+        position: fixed !important; /* Fixed escapes the overflow container */
+        z-index: 99999 !important; /* Forces it above EVERYTHING */
+        margin: 0 !important;
+        min-width: 140px !important;
+        background: var(--card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
+        /* Notice we removed top/left - JavaScript will handle exact placement! */
     }
-    .custom-option { padding: 8px 12px !important; }
+    .custom-option { 
+        padding: 12px 16px !important; 
+        font-size: 13px !important;
+        border-bottom: 1px solid var(--border);
+    }
    .custom-dropdown-wrapper {
         position: static !important; 
+    }
+  .custom-option:last-child {
+        border-bottom: none;
     }
     .logo { font-size: 14px; }
         
@@ -1071,12 +1080,42 @@ function toggleIntelPanel() {
     panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
 }
 
+// 🟢 SMART DROPDOWN TOGGLE LOGIC
 function toggleMenu(menuId, event) {
-    if(event) event.stopPropagation();
+    if (event) event.stopPropagation();
+    
     const menu = document.getElementById(menuId);
+    const btn = event.currentTarget; // The specific button you just tapped
     const isVisible = menu.style.display === 'flex';
+    
+    // 1. Hide all open menus first
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    if (!isVisible) menu.style.display = 'flex';
+    
+    if (!isVisible) {
+        // 2. Get the exact coordinates of the button on the screen
+        const rect = btn.getBoundingClientRect();
+        
+        // 3. Stick the menu exactly below the button
+        menu.style.display = 'flex';
+        menu.style.top = (rect.bottom + 5) + 'px'; // 5px gap below the button
+        
+        // 4. Prevent the menu from going off the right side of the screen
+        const menuWidth = menu.offsetWidth || 140;
+        if (rect.left + menuWidth > window.innerWidth) {
+            menu.style.left = (window.innerWidth - menuWidth - 10) + 'px';
+        } else {
+            menu.style.left = rect.left + 'px';
+        }
+        
+        // 5. Lock header scroll so your finger doesn't slide the header by accident
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'hidden', 'important');
+        
+    } else {
+        // Unlock header scroll if closing
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+    }
 }
 
 function selectSymbol(val, text) {
