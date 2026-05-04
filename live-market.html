@@ -1911,7 +1911,7 @@ window.initTerminal = async function() {
         if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
             fetchUpstoxChain(true);
         }
-    }, 30000); 
+    }, 1000); 
 };  
   // 🟢 adjust strike + - 🟢
 window.adjustStrike = function(direction) {
