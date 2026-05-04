@@ -354,9 +354,10 @@ header {
 <header>
     <a class="logo"><span>GC</span> Backtester</a>
     
+    <!-- Index Selection -->
     <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
-        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
-            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)">
+            NIFTY 50 <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
         </button>
         <div class="custom-menu" id="symbol-menu">
             <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
@@ -366,23 +367,21 @@ header {
     </div>
     <input type="hidden" id="sel-symbol" value="NIFTY">
     
-    <div class="divider"></div>
-    
+    <!-- Expiry Selection -->
     <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
-        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="display: flex; gap: 6px; align-items: center;">
-            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)">
+            Expiry <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
         </button>
         <div class="custom-menu" id="expiry-menu">
             <div class="custom-option">Loading...</div>
         </div>
     </div>
     <input type="hidden" id="sel-expiry" value="">
-    
-    <div class="divider"></div>
 
+    <!-- Date Selection -->
     <div class="custom-dropdown-wrapper" id="date-dropdown-wrapper">
-        <button id="btn-date" onclick="toggleMenu('date-menu', event)" style="display: flex; gap: 6px; align-items: center;">
-            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        <button id="btn-date" onclick="toggleMenu('date-menu', event)">
+            Date <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
         </button>
         <div class="custom-menu" id="date-menu">
             <div class="custom-option">Loading...</div>
@@ -390,12 +389,9 @@ header {
     </div>
     <input type="hidden" id="sel-date" value="">
 
-    <div class="divider"></div>
-
+    <!-- Load Action -->
     <button class="primary-btn" onclick="fetchBacktestData()">Load Data</button>
-    <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
-
 <div class="workspace">
     <div class="left-nav">
         <!-- 1. Home Button -->
