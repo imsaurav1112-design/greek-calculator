@@ -1858,11 +1858,11 @@ let renderTable = function(rows, sym, data, quiet = false) {
   document.getElementById('oc-body').innerHTML = html;
 
 // 🟢 Update India VIX
-if (data.vix) {
-    const vixVal = data.vix.toFixed(2);
-    if(document.getElementById('h-vix')) document.getElementById('h-vix').innerText = vixVal; // Desktop
-    if(document.getElementById('m-vix')) document.getElementById('m-vix').innerText = vixVal; // Mobile
-}
+  if (data.vix !== undefined && data.vix !== null) {
+      const vixVal = data.vix.toFixed(2);
+      if(document.getElementById('h-vix')) document.getElementById('h-vix').innerText = vixVal; // Desktop
+      if(document.getElementById('m-vix')) document.getElementById('m-vix').innerText = vixVal; // Mobile
+  }
 
 // 🟢 Update Max Pain
 let mpVal = "--";
