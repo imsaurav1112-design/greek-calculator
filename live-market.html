@@ -1589,7 +1589,20 @@ function showStrikeCharts(strike) {
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
         tvModalOiChgChart.timeScale().fitContent();
 
-    }, 100); // 100ms pause to let the CSS layout render before painting the canvas
+      // --- BULLETPROOF RESIZE FIX ---
+        // Forces the charts to measure their new empty containers and fill them
+        requestAnimationFrame(() => {
+            const volDiv = document.getElementById('tv-modal-vol');
+            const oiDiv = document.getElementById('tv-modal-oi');
+            const oiChgDiv = document.getElementById('tv-modal-oi-chg');
+            
+            if(tvModalVolChart && volDiv) tvModalVolChart.resize(volDiv.clientWidth, volDiv.clientHeight);
+            if(tvModalOiChart && oiDiv) tvModalOiChart.resize(oiDiv.clientWidth, oiDiv.clientHeight);
+            if(tvModalOiChgChart && oiChgDiv) tvModalOiChgChart.resize(oiChgDiv.clientWidth, oiChgDiv.clientHeight);
+        });
+
+    }, 100); 
+  // 100ms pause to let the CSS layout render before painting the canvas
 }
 
 function closeCharts(event) { 
