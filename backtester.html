@@ -275,19 +275,28 @@ header {
         width: max-content !important; 
     }
  .custom-menu {
-        position: absolute !important; 
-        top: 100% !important;
-        left: 0 !important;
-        margin-top: 8px !important;
+        position: fixed !important; /* Fixed position escapes the header entirely */
+        top: 56px !important; /* Drops perfectly right below the 52px header */
+        left: 16px !important;
+        right: 16px !important;
+        width: auto !important; 
         min-width: 0 !important;
-        width: max-content !important; /* Shrinks the menu to exactly fit the text */
-        z-index: 9999 !important;
+        margin-top: 0 !important;
+        z-index: 99999 !important; /* Forces it to the absolute front */
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9) !important;
+        border-radius: 8px !important;
+        background: var(--card) !important;
     }
-  .custom-option {
-        padding: 8px 12px !important; /* Slightly tighter fit for phone */
+ .custom-option {
+        padding: 14px 16px !important; 
+        font-size: 13px !important;
+        border-bottom: 1px solid var(--border);
     }
   .custom-dropdown-wrapper {
-        position: relative !important;
+        position: static !important; 
+    }
+  .custom-option:last-child {
+        border-bottom: none;
     }
   
     .logo { 
