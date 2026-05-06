@@ -445,7 +445,7 @@ initBgAnimation();
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref') || "";
             
-            const r = await fetch(`https://ioc-backend-kq9x.onrender.com/user-profile?ref=${refCode}`, { 
+            const r = await fetch(`https://api.greekcalculator.in/user-profile?ref=${refCode}`, { 
                 headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
             });
             const profile = await r.json();
@@ -582,7 +582,7 @@ window.startCheckout = async function(planId) {
           
           if (useWallet) {
               try {
-                  const resp = await fetch('https://ioc-backend-kq9x.onrender.com/pay-with-wallet', {
+                  const resp = await fetch('https://api.greekcalculator.in/pay-with-wallet', {
                       method: 'POST',
                       headers: { 
                           'Authorization': `Bearer ${window.currentFirebaseToken}`,
@@ -609,7 +609,7 @@ window.startCheckout = async function(planId) {
 
       // 🟢 4. Fallback to standard Razorpay if they don't have enough money (or clicked Cancel)
       try {
-          const orderResp = await fetch('https://ioc-backend-kq9x.onrender.com/create-order', {
+          const orderResp = await fetch('https://api.greekcalculator.in/create-order', {
               method: 'POST',
               headers: { 
                   'Authorization': `Bearer ${window.currentFirebaseToken}`,
@@ -633,7 +633,7 @@ window.startCheckout = async function(planId) {
               "description": "Pro Terminal Subscription",
               "order_id": orderData.order_id, 
               "handler": async function (response) {
-                  const verifyResp = await fetch('https://ioc-backend-kq9x.onrender.com/verify-payment', {
+                  const verifyResp = await fetch('https://api.greekcalculator.in/verify-payment', {
                       method: 'POST',
                       headers: { 
                           'Authorization': `Bearer ${window.currentFirebaseToken}`,
