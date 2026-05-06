@@ -145,7 +145,7 @@
         
         setInterval(async () => {
             try {
-                const r = await fetch('https://ioc-backend-kq9x.onrender.com/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
+                const r = await fetch('https://api.greekcalculator.in/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
                 if (data.status === "success" && Object.keys(data.data).length > 0) {
                     latestDataCache = data.data;
