@@ -194,7 +194,7 @@
           document.getElementById('dashboard-screen').style.display = 'flex';
           
           // Trigger the fetch for real data here (Once Python is ready)
-          // loadAdminData(); 
+           loadAdminData(); 
 
       } else {
           statusBox.innerHTML = `<span style="color:var(--red)">Access Denied.</span><br>You are not an administrator.`;
@@ -228,6 +228,78 @@
       // Add active class to clicked
       document.getElementById(tabId).classList.add('active');
       element.classList.add('active');
+  };
+
+    // 🟢 FETCH DATA FROM MONGODB
+  window.loadAdminData = async function() {
+      if (!window.currentFirebaseToken) return;
+      
+      const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+      
+      try {
+          // 1. Fetch Users
+          const userRes = await fetch('https://api.greekcalculator.in/api/admin/all-users', { headers });
+          if (userRes.ok) {
+              const userData = await userRes.json();
+              const tbody = document.getElementById('user-table-body');
+              
+              if (userData.users.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted);">No users found.</td></tr>`;
+              } else {
+                  // Update top KPI
+                  document.querySelectorAll('.kpi-value')[0].innerText = userData.users.length;
+                  document.querySelectorAll('.kpi-value')[1].innerText = userData.users.filter(u => u.tier === 'pro').length;
+                  
+                  // Build Table
+                  tbody.innerHTML = userData.users.map(u => `
+                      <tr>
+                          <td>${u.email || 'Unknown'}</td>
+                          <td><span class="badge ${u.tier === 'pro' ? 'pro' : 'free'}">${u.tier || 'free'}</span></td>
+                          <td>${u.expiry || '--'}</td>
+                          <td style="font-family:'Ubuntu Mono';">₹${parseFloat(u.wallet_balance || 0).toFixed(2)}</td>
+                          <td>
+                              <button class="action-btn">Manage</button>
+                          </td>
+                      </tr>
+                  `).join('');
+              }
+          }
+
+          // 2. Fetch Trades
+          const tradeRes = await fetch('https://api.greekcalculator.in/api/admin/all-trades', { headers });
+          if (tradeRes.ok) {
+              const tradeData = await tradeRes.json();
+              const tbody = document.getElementById('trade-table-body');
+              
+              if (tradeData.trades.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades found.</td></tr>`;
+              } else {
+                  // Update top KPI
+                  document.querySelectorAll('.kpi-value')[2].innerText = tradeData.trades.filter(t => t.status === 'Open').length;
+                  
+                  // Build Table
+                  tbody.innerHTML = tradeData.trades.map(t => {
+                      const isCE = t.type && t.type.includes('CE');
+                      const typeColor = isCE ? 'var(--green)' : 'var(--red)';
+                      const statusColor = t.status === 'Open' ? 'var(--gold)' : 'var(--muted)';
+                      const statusBg = t.status === 'Open' ? 'rgba(245,158,11,0.1)' : 'rgba(161, 161, 170, 0.1)';
+                      
+                      return `
+                      <tr>
+                          <td>${t.user_email || t.uid.substring(0,8)}</td>
+                          <td>${t.sym || ''} ${t.strike || ''}</td>
+                          <td style="color:${typeColor}; font-weight:600;">${t.type || 'N/A'}</td>
+                          <td style="font-family:'Ubuntu Mono';">${parseFloat(t.entry || 0).toFixed(2)}</td>
+                          <td style="font-family:'Ubuntu Mono';">₹${parseFloat(t.required_margin || 0).toLocaleString()}</td>
+                          <td><span class="badge" style="background:${statusBg}; color:${statusColor};">${t.status}</span></td>
+                      </tr>
+                      `;
+                  }).join('');
+              }
+          }
+      } catch (err) {
+          console.error("Admin Fetch Error:", err);
+      }
   };
 </script>
 </body>
