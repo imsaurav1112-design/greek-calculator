@@ -399,6 +399,9 @@ header {
     <!-- Load Action -->
     <button class="primary-btn" onclick="fetchBacktestData()">Load Data</button>
 </header>
+
+<div id="error-bar" style="display:none; background: rgba(239, 68, 68, 0.9); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; width: 100%; z-index: 50; flex-shrink: 0;"></div>
+
 <div class="workspace">
     <div class="left-nav">
         <!-- 1. Home Button -->
@@ -897,9 +900,22 @@ function setStatus(statusType, msg) {
     else document.getElementById('status-dot').style.boxShadow = 'none';
 }
 
-function showErr(msg) { const e = document.getElementById('error-bar'); e.textContent = msg; e.style.display = 'block'; setStatus('error', 'Error');}
-function clearErr() { document.getElementById('error-bar').style.display = 'none'; }
+// 🟢 FIXED: Crash-Proof Error Handlers
+function showErr(msg) { 
+    const e = document.getElementById('error-bar'); 
+    if (e) {
+        e.textContent = msg; 
+        e.style.display = 'block'; 
+    } else {
+        console.error("Backtest Error:", msg);
+    }
+    setStatus('error', 'Error');
+}
 
+function clearErr() { 
+    const e = document.getElementById('error-bar');
+    if (e) e.style.display = 'none'; 
+}
 
 async function fetchBacktestData() {
     const sym = document.getElementById('sel-symbol').value;
