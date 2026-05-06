@@ -7,52 +7,160 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
     :root {
-        --bg: #09090b; --card: #141415; --border: #27272a;
+        --bg: #09090b; --card: #141415; --section: #202023; --border: #27272a;
         --text: #f4f4f5; --muted: #a1a1aa; --accent: #3b82f6;
-        --green: #10b981; --red: #ef4444;
+        --green: #10b981; --red: #ef4444; --gold: #f59e0b;
     }
-    body { margin: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    body { margin: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
     
-    .admin-container { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+    /* LOGIN SCREEN */
+    #login-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+    .login-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     .logo { font-weight: 800; font-size: 24px; margin-bottom: 30px; letter-spacing: 0.5px; }
     .logo span { color: var(--accent); }
-    
-    .status-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 13px; color: var(--muted); }
-    
-    .btn { display: block; width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; text-decoration: none; box-sizing: border-box; }
-    
-    .btn-google { background: white; color: #000; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .status-box { background: var(--section); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 30px; font-size: 13px; color: var(--muted); }
+    .btn-google { background: white; color: #000; display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 14px; border-radius: 8px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; border: none; transition: 0.2s; }
     .btn-google:hover { background: #f4f4f5; }
-    
-    .btn-upstox { background: #5a2e8d; color: white; display: none; }
-    .btn-upstox:hover { background: #4a2475; }
-    
-    .btn-download { background: var(--green); color: white; display: none; }
-    .btn-download:hover { background: #059669; }
 
-    .btn-logout { background: transparent; color: var(--muted); border: 1px solid var(--border); display: none; margin-top: 30px; }
-    .btn-logout:hover { background: rgba(239, 68, 68, 0.1); color: var(--red); border-color: var(--red); }
+    /* DASHBOARD LAYOUT */
+    #dashboard-screen { display: none; width: 100vw; height: 100vh; }
+    .sidebar { width: 250px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+    .sidebar-header { padding: 0 20px 30px 20px; font-weight: 800; font-size: 18px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .sidebar-header span { color: var(--accent); }
+    .nav-item { padding: 12px 20px; color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: var(--section); color: var(--text); }
+    .nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border-left-color: var(--accent); }
+    .logout-nav { margin-top: auto; color: var(--red); }
+    .logout-nav:hover { background: rgba(239, 68, 68, 0.1); }
+
+    .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg); }
+    .header-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; margin-top: 0; }
+    
+    /* TAB CONTENT */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* KPI CARDS */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 10px; }
+    .kpi-title { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+    .kpi-value { font-size: 32px; font-weight: 800; font-family: 'Ubuntu Mono', monospace; }
+
+    /* TABLES */
+    .table-container { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: var(--section); padding: 12px 20px; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 15px 20px; border-bottom: 1px solid var(--border); color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: var(--section); }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .badge.pro { background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge.free { background: rgba(161, 161, 170, 0.1); color: var(--muted); border: 1px solid rgba(161, 161, 170, 0.3); }
+    
+    .action-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.2s; margin-right: 5px; }
+    .action-btn:hover { background: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <div class="logo"><span>GC</span> Command Center</div>
-    
-    <div class="status-box" id="status-box">
-        Waiting for authentication...
+<div id="login-screen">
+    <div class="login-card">
+        <div class="logo"><span>GC</span> Command Center</div>
+        <div class="status-box" id="status-box">Waiting for authentication...</div>
+        <button class="btn-google" id="btn-login" onclick="window.handleGoogleLogin()">
+            <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
+            Admin Sign In
+        </button>
+    </div>
+</div>
+
+<div id="dashboard-screen">
+    <div class="sidebar">
+        <div class="sidebar-header"><span>GC</span> Admin</div>
+        <div class="nav-item active" onclick="switchTab('tab-overview', this)">Overview</div>
+        <div class="nav-item" onclick="switchTab('tab-users', this)">User Management</div>
+        <div class="nav-item" onclick="switchTab('tab-trades', this)">Paper Trades</div>
+        <div class="nav-item logout-nav" onclick="window.logoutFirebase()">Log Out Securely</div>
     </div>
 
-    <button class="btn btn-google" id="btn-login" onclick="window.handleGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
-        Admin Sign In
-    </button>
+    <div class="main-content">
+        <div id="tab-overview" class="tab-pane active">
+            <h1 class="header-title">Platform Overview</h1>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Registered Users</div>
+                    <div class="kpi-value" style="color: var(--accent);">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Active Pro Subscriptions</div>
+                    <div class="kpi-value" style="color: var(--green);">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-title">Total Open Trades</div>
+                    <div class="kpi-value" style="color: var(--gold);">--</div>
+                </div>
+            </div>
+        </div>
 
-    <a href="https://api.greekcalculator.in/login" class="btn btn-upstox" id="btn-upstox">1. Authorize Upstox Server</a>
-    
-    <button class="btn btn-download" id="btn-download" onclick="downloadArchive()">2. Download Monthly Data</button>
-    
-    <button class="btn btn-logout" id="btn-logout" onclick="window.logoutFirebase()">Log Out</button>
+        <div id="tab-users" class="tab-pane">
+            <h1 class="header-title">User Management</h1>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Expiry Date</th>
+                            <th>Wallet Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        <tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading users...</td></tr>
+                        <tr>
+                            <td>test.user@gmail.com</td>
+                            <td><span class="badge pro">Pro</span></td>
+                            <td>2026-06-15</td>
+                            <td style="font-family:'Ubuntu Mono';">₹1,250.00</td>
+                            <td>
+                                <button class="action-btn">Add Funds</button>
+                                <button class="action-btn">Edit Tier</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-trades" class="tab-pane">
+            <h1 class="header-title">Global Paper Trades</h1>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Entry</th>
+                            <th>Margin Used</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trade-table-body">
+                        <tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading trades...</td></tr>
+                        <tr>
+                            <td>demo@test.com</td>
+                            <td>NIFTY 22500</td>
+                            <td style="color:var(--green)">BUY CE</td>
+                            <td style="font-family:'Ubuntu Mono';">125.50</td>
+                            <td style="font-family:'Ubuntu Mono';">₹6,275.00</td>
+                            <td><span class="badge" style="background:rgba(245,158,11,0.1); color:var(--gold);">Open</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script type="module">
@@ -81,22 +189,24 @@
       
       // 🔴 Replace with your exact UID to lock out everyone else
       if (user.uid === "VEbfwlnqrDgy6QoFnN6Bf6qWdr72") {
-          statusBox.innerHTML = `<span style="color:var(--green)">Access Granted.</span><br>Welcome, Admin.`;
-          document.getElementById('btn-login').style.display = 'none';
-          document.getElementById('btn-upstox').style.display = 'block';
-          document.getElementById('btn-download').style.display = 'block';
-          document.getElementById('btn-logout').style.display = 'block';
+          // Hide Login, Show Dashboard
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('dashboard-screen').style.display = 'flex';
+          
+          // Trigger the fetch for real data here (Once Python is ready)
+          // loadAdminData(); 
+
       } else {
           statusBox.innerHTML = `<span style="color:var(--red)">Access Denied.</span><br>You are not an administrator.`;
           document.getElementById('btn-login').style.display = 'none';
-          document.getElementById('btn-logout').style.display = 'block';
+          // Force sign out unauthorized users
+          setTimeout(() => signOut(auth), 3000);
       }
     } else {
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('dashboard-screen').style.display = 'none';
       statusBox.innerHTML = `System locked. Please authenticate.`;
       document.getElementById('btn-login').style.display = 'flex';
-      document.getElementById('btn-upstox').style.display = 'none';
-      document.getElementById('btn-download').style.display = 'none';
-      document.getElementById('btn-logout').style.display = 'none';
     }
   });
 
@@ -109,39 +219,15 @@
       signOut(auth);
   };
 
-  window.downloadArchive = async function() {
-      if (!window.currentFirebaseToken) return;
+  // UI TAB SWITCHER
+  window.switchTab = function(tabId, element) {
+      // Remove active class from all tabs and links
+      document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
       
-      const btn = document.getElementById('btn-download');
-      btn.innerText = "Extracting Data...";
-      btn.style.opacity = "0.7";
-      
-      try {
-          const response = await fetch('https://api.greekcalculator.in/api/admin/download-archive', {
-              headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` }
-          });
-          
-          if (!response.ok) throw new Error("Unauthorized or server failed");
-          
-          // Convert the response to a downloadable blob
-          const blob = await response.blob();
-          const downloadUrl = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = downloadUrl;
-          a.download = `Options_Archive_${new Date().toISOString().split('T')[0]}.csv`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          window.URL.revokeObjectURL(downloadUrl);
-          
-          btn.innerText = "Download Successful!";
-          setTimeout(() => { btn.innerText = "2. Download Monthly Data"; btn.style.opacity = "1"; }, 3000);
-          
-      } catch (e) {
-          alert("Download failed: " + e.message);
-          btn.innerText = "2. Download Monthly Data";
-          btn.style.opacity = "1";
-      }
+      // Add active class to clicked
+      document.getElementById(tabId).classList.add('active');
+      element.classList.add('active');
   };
 </script>
 </body>
