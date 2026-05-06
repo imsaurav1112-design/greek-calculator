@@ -73,9 +73,17 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 /* Custom Dropdown Styling */
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
-    display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
-}
-.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    display: none; 
+    position: fixed; /* <-- CHANGED to fixed */
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    padding: 8px 0; 
+    z-index: 10000; /* Boosted z-index to stay above everything */
+    min-width: 140px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    flex-direction: column; 
+}.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .custom-option {
     display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: "Ubuntu Mono", monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
 }
