@@ -425,7 +425,9 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
- import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  const firebaseConfig = {
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  
+  
+  const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
       authDomain: "insideoptionchain.firebaseapp.com",
       projectId: "insideoptionchain",
@@ -483,7 +485,7 @@ initBgAnimation();
         profileBtn.style.display = 'flex';
         profileBtn.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
         
-window.currentFirebaseToken = await user.getIdToken();
+        window.currentFirebaseToken = await user.getIdToken();
         try {
             // 1. CHECK FOR REFERRAL CODE IN URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -500,11 +502,9 @@ window.currentFirebaseToken = await user.getIdToken();
                     },
                     body: JSON.stringify({ code: refCode })
                 });
-                // We don't even need to await the response data here, 
-                // because the next step fetches the updated profile anyway!
             }
             
-            // 3. NOW FETCH THE PROFILE (It will include updated wallets if the referral worked)
+            // 3. NOW FETCH THE PROFILE
             const r = await fetch(`https://api.greekcalculator.in/user-profile`, { 
                 headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
             });
@@ -519,22 +519,13 @@ window.currentFirebaseToken = await user.getIdToken();
             const referralUrl = window.location.origin + window.location.pathname + "?ref=" + refCodeVal;
             document.getElementById('prof-ref-code').value = referralUrl;
             
-            // 🟢 2. FIX THE WALLET: Advanced Parsing
-            // Console log to let you see exactly what the backend is sending!
-            console.log("Database Profile Response:", profile);
-            
-            // Try multiple common keys just in case the backend uses a different name
-            let rawBalance = profile.wallet_balance ?? profile.balance ?? profile.wallet ?? 0;
-            
-            // If the database accidentally sent a string with text (e.g., "₹500" or "500 INR"), 
-            // this regex aggressively strips out everything except the pure numbers and decimals.
-            if (typeof rawBalance === 'string') {
-                rawBalance = rawBalance.replace(/[^0-9.-]+/g, "");
-            }
-            
+            // 🟢 2. WALLET PARSING
+            // Combine both standard wallet and referral wallet if needed, or just show main balance
+            let rawBalance = profile.wallet_balance || 0;
             const walletNum = parseFloat(rawBalance) || 0.00;
             document.getElementById('prof-wallet').innerText = `₹${walletNum.toFixed(2)}`;            
-            // 🟢 3. Update the floating profile icon to use their actual initial!
+            
+            // 🟢 3. Update the floating profile icon
             document.getElementById('profile-btn').innerText = finalName.charAt(0).toUpperCase();
             
             const badge = document.getElementById('prof-tier-badge');
@@ -578,7 +569,7 @@ window.currentFirebaseToken = await user.getIdToken();
             
         } catch(e) { console.error("Profile Fetch Error", e); }
         
-} else {
+    } else {
         window.currentFirebaseToken = null;
         document.getElementById('btn-login').style.display = 'block';
         document.getElementById('profile-btn').style.display = 'none';
@@ -596,128 +587,80 @@ window.currentFirebaseToken = await user.getIdToken();
     }
   });
 
-  // 🟢 NEW: Email Sign Up Logic (For creating dummy test accounts)
-window.handleEmailSignUp = async function() {
-    const email = document.getElementById('test-email').value;
-    const password = document.getElementById('test-password').value;
-    const errDiv = document.getElementById('global-error');
-    errDiv.style.display = 'none';
+  // 🟢 MODAL CONTROLS
+  window.openAuthModal = function() {
+      document.getElementById('auth-overlay').style.display = 'flex';
+  };
+  window.closeAuthModal = function() {
+      document.getElementById('auth-overlay').style.display = 'none';
+  };
 
-    if (!email || password.length < 6) {
-        errDiv.innerText = "Provide a valid email and a password (min 6 chars).";
-        errDiv.style.display = 'block';
-        return;
-    }
+  // 🟢 Email Sign Up Logic
+  window.handleEmailSignUp = async function() {
+      const email = document.getElementById('modal-email').value;
+      const password = document.getElementById('modal-password').value;
+      const errDiv = document.getElementById('modal-error');
+      errDiv.style.display = 'none';
 
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        // Success! onAuthStateChanged will auto-trigger and log them in
-    } catch(err) {
-        console.error(err);
-        errDiv.innerText = err.message.replace("Firebase:", "").trim();
-        errDiv.style.display = 'block';
-    }
-};
-
-// 🟢 NEW: Email Log In Logic (For returning test accounts)
-window.handleEmailLogin = async function() {
-    const email = document.getElementById('test-email').value;
-    const password = document.getElementById('test-password').value;
-    const errDiv = document.getElementById('global-error');
-    errDiv.style.display = 'none';
-
-    if (!email || !password) {
-        errDiv.innerText = "Please enter both email and password.";
-        errDiv.style.display = 'block';
-        return;
-    }
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // Success! onAuthStateChanged will auto-trigger and log them in
-    } catch(err) {
-        console.error(err);
-        errDiv.innerText = err.message.replace("Firebase:", "").trim();
-        errDiv.style.display = 'block';
-    }
-};
-  
-// 🟢 MODAL CONTROLS
-window.openAuthModal = function() {
-    document.getElementById('auth-overlay').style.display = 'flex';
-};
-window.closeAuthModal = function() {
-    document.getElementById('auth-overlay').style.display = 'none';
-};
-
-// 🟢 NEW: Email Sign Up Logic
-window.handleEmailSignUp = async function() {
-    const email = document.getElementById('modal-email').value;
-    const password = document.getElementById('modal-password').value;
-    const errDiv = document.getElementById('modal-error');
-    errDiv.style.display = 'none';
-
-    if (!email || password.length < 6) {
-        errDiv.innerText = "Provide a valid email and a password (min 6 chars).";
-        errDiv.style.display = 'block';
-        return;
-    }
-
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        closeAuthModal(); // Hide modal on success!
-    } catch(err) {
-        errDiv.innerText = err.message.replace("Firebase:", "").trim();
-        errDiv.style.display = 'block';
-    }
-};
-
-// 🟢 NEW: Email Log In Logic
-window.handleEmailLogin = async function() {
-    const email = document.getElementById('modal-email').value;
-    const password = document.getElementById('modal-password').value;
-    const errDiv = document.getElementById('modal-error');
-    errDiv.style.display = 'none';
-
-    if (!email || !password) {
-        errDiv.innerText = "Please enter both email and password.";
-        errDiv.style.display = 'block';
-        return;
-    }
-
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        closeAuthModal(); // Hide modal on success!
-    } catch(err) {
-        errDiv.innerText = err.message.replace("Firebase:", "").trim();
-        errDiv.style.display = 'block';
-    }
-};
-
-// 🟢 REDIRECT: Google Login
-window.handleGoogleLogin = function() {
-    // Instantly forward the user to Google (no await needed, they are leaving the page)
-    signInWithRedirect(auth, googleProvider);
-};
-
-// 🟢 CATCH THE RETURN TRIP
-// This runs immediately when the page reloads after Google sends them back
-getRedirectResult(auth).then((result) => {
-    if (result) {
-        closeAuthModal();
-        console.log("Successfully returned from Google Login!");
-    }
-}).catch((error) => {
-    console.error("Google Redirect Error:", error.message);
-});
-window.startCheckout = async function(planId) {
-      if (!window.currentFirebaseToken) {
-          alert("Please sign in with Google first!");
-          window.handleGoogleLogin();
+      if (!email || password.length < 6) {
+          errDiv.innerText = "Provide a valid email and a password (min 6 chars).";
+          errDiv.style.display = 'block';
           return;
       }
 
-      // 🟢 1. Define the exact costs of your plans
+      try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          closeAuthModal();
+      } catch(err) {
+          errDiv.innerText = err.message.replace("Firebase:", "").trim();
+          errDiv.style.display = 'block';
+      }
+  };
+
+  // 🟢 Email Log In Logic
+  window.handleEmailLogin = async function() {
+      const email = document.getElementById('modal-email').value;
+      const password = document.getElementById('modal-password').value;
+      const errDiv = document.getElementById('modal-error');
+      errDiv.style.display = 'none';
+
+      if (!email || !password) {
+          errDiv.innerText = "Please enter both email and password.";
+          errDiv.style.display = 'block';
+          return;
+      }
+
+      try {
+          await signInWithEmailAndPassword(auth, email, password);
+          closeAuthModal();
+      } catch(err) {
+          errDiv.innerText = err.message.replace("Firebase:", "").trim();
+          errDiv.style.display = 'block';
+      }
+  };
+
+  // 🟢 REDIRECT: Google Login
+  window.handleGoogleLogin = function() {
+      signInWithRedirect(auth, googleProvider);
+  };
+
+  // 🟢 CATCH THE RETURN TRIP
+  getRedirectResult(auth).then((result) => {
+      if (result) {
+          closeAuthModal();
+          console.log("Successfully returned from Google Login!");
+      }
+  }).catch((error) => {
+      console.error("Google Redirect Error:", error.message);
+  });
+
+  window.startCheckout = async function(planId) {
+      if (!window.currentFirebaseToken) {
+          alert("Please sign in first!");
+          openAuthModal();
+          return;
+      }
+
       const planPrices = {
           "1_month": 249,
           "3_months": 599,
@@ -725,13 +668,12 @@ window.startCheckout = async function(planId) {
       };
       const cost = planPrices[planId];
 
-      // 🟢 2. Check the user's current wallet balance securely
       const walletText = document.getElementById('prof-wallet').innerText.replace(/[^0-9.-]+/g, "");
       const walletBalance = parseFloat(walletText) || 0;
 
-      // 🟢 3. The Wallet Intercept Logic
+      // 🟢 The Wallet Intercept Logic
       if (walletBalance >= cost) {
-          const useWallet = confirm(`🎉 You have ₹${walletBalance.toFixed(2)} in your referral wallet! Would you like to use it to buy this plan for ₹${cost}?`);
+          const useWallet = confirm(`🎉 You have ₹${walletBalance.toFixed(2)} in your wallet! Would you like to use it to buy this plan for ₹${cost}?`);
           
           if (useWallet) {
               try {
@@ -748,7 +690,7 @@ window.startCheckout = async function(planId) {
                   if (resp.ok) {
                       alert("Payment Successful using Wallet Balance! Welcome to Pro.");
                       window.location.reload();
-                      return; // 👈 Exits the function so Razorpay doesn't pop up!
+                      return; 
                   } else {
                       alert("Wallet payment failed: " + (data.error || "Unknown Error"));
                       return;
@@ -760,7 +702,7 @@ window.startCheckout = async function(planId) {
           }
       }
 
-      // 🟢 4. Fallback to standard Razorpay if they don't have enough money (or clicked Cancel)
+      // 🟢 Fallback to standard Razorpay
       try {
           const orderResp = await fetch('https://api.greekcalculator.in/create-order', {
               method: 'POST',
