@@ -165,8 +165,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, getIdToken, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
+  import { getAuth, onAuthStateChanged, getIdToken, signOut, GoogleAuthProvider, signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   const firebaseConfig = {
     apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
     authDomain: "insideoptionchain.firebaseapp.com",
@@ -210,9 +209,13 @@
     }
   });
 
-  window.handleGoogleLogin = async function() {
-      try { await signInWithPopup(auth, googleProvider); } 
-      catch(err) { alert(err.message); }
+window.handleGoogleLogin = function() {
+      // Optional: Change button text so the user knows it's working before the page leaves
+      const btn = document.getElementById('btn-login');
+      if (btn) btn.innerText = "Redirecting to Google...";
+      
+      // Fire the redirect
+      signInWithRedirect(auth, googleProvider);
   };
 
   window.logoutFirebase = function() {
