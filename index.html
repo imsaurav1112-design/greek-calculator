@@ -425,7 +425,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
- import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  const firebaseConfig = {
+ import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
       authDomain: "insideoptionchain.firebaseapp.com",
       projectId: "insideoptionchain",
@@ -483,12 +483,29 @@ initBgAnimation();
         profileBtn.style.display = 'flex';
         profileBtn.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
         
-        window.currentFirebaseToken = await user.getIdToken();
+window.currentFirebaseToken = await user.getIdToken();
         try {
+            // 1. CHECK FOR REFERRAL CODE IN URL
             const urlParams = new URLSearchParams(window.location.search);
-            const refCode = urlParams.get('ref') || "";
+            const refCode = urlParams.get('ref');
             
-            const r = await fetch(`https://api.greekcalculator.in/user-profile?ref=${refCode}`, { 
+            // 2. IF THEY HAVE A CODE, PROCESS THE MONEY FIRST
+            if (refCode) {
+                console.log("Applying referral code:", refCode);
+                await fetch('https://api.greekcalculator.in/api/apply-referral', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${window.currentFirebaseToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code: refCode })
+                });
+                // We don't even need to await the response data here, 
+                // because the next step fetches the updated profile anyway!
+            }
+            
+            // 3. NOW FETCH THE PROFILE (It will include updated wallets if the referral worked)
+            const r = await fetch(`https://api.greekcalculator.in/user-profile`, { 
                 headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
             });
             const profile = await r.json();
@@ -677,22 +694,22 @@ window.handleEmailLogin = async function() {
     }
 };
 
-// 🟢 UPDATED: Google Login
-window.handleGoogleLogin = async function() {
-    try {
-        const errDiv = document.getElementById('modal-error');
-        if (errDiv) errDiv.style.display = 'none';
-        
-        await signInWithPopup(auth, googleProvider);
-        closeAuthModal(); // Hide modal on success!
-    } catch(err) {
-        const errDiv = document.getElementById('modal-error');
-        if (errDiv) {
-            errDiv.innerText = err.message.replace("Firebase:", "").trim();
-            errDiv.style.display = 'block';
-        }
+// 🟢 REDIRECT: Google Login
+window.handleGoogleLogin = function() {
+    // Instantly forward the user to Google (no await needed, they are leaving the page)
+    signInWithRedirect(auth, googleProvider);
+};
+
+// 🟢 CATCH THE RETURN TRIP
+// This runs immediately when the page reloads after Google sends them back
+getRedirectResult(auth).then((result) => {
+    if (result) {
+        closeAuthModal();
+        console.log("Successfully returned from Google Login!");
     }
-};  
+}).catch((error) => {
+    console.error("Google Redirect Error:", error.message);
+});
 window.startCheckout = async function(planId) {
       if (!window.currentFirebaseToken) {
           alert("Please sign in with Google first!");
