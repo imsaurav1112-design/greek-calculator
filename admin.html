@@ -57,8 +57,18 @@
     .badge.pro { background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); }
     .badge.free { background: rgba(161, 161, 170, 0.1); color: var(--muted); border: 1px solid rgba(161, 161, 170, 0.3); }
     
-    .action-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; transition: 0.2s; margin-right: 5px; }
-    .action-btn:hover { background: var(--accent); border-color: var(--accent); }
+    .action-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: 0.2s; margin-right: 5px; font-weight: 600;}
+    .action-btn:hover { background: var(--accent); border-color: var(--accent); color: white;}
+
+    /* MODAL STYLES */
+    .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; }
+    .auth-modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+    .auth-close { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--muted); font-size: 24px; cursor: pointer; transition: 0.2s; line-height: 1; }
+    .auth-close:hover { color: var(--red); }
+    .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 14px; }
+    .auth-input:focus { outline: none; border-color: var(--accent); }
+    .btn-primary { background: var(--accent); border: none; color: #fff; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: 0.2s;}
+    .btn-primary:hover { background: #2563eb; }
 </style>
 </head>
 <body>
@@ -79,7 +89,6 @@
         <div class="sidebar-header"><span>GC</span> Admin</div>
         <div class="nav-item active" onclick="switchTab('tab-overview', this)">Overview</div>
         <div class="nav-item" onclick="switchTab('tab-users', this)">User Management</div>
-        <div class="nav-item" onclick="switchTab('tab-trades', this)">Paper Trades</div>
         <div class="nav-item logout-nav" onclick="window.logoutFirebase()">Log Out Securely</div>
     </div>
 
@@ -89,15 +98,11 @@
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-title">Total Registered Users</div>
-                    <div class="kpi-value" style="color: var(--accent);">--</div>
+                    <div class="kpi-value" id="kpi-total" style="color: var(--accent);">--</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-title">Active Pro Subscriptions</div>
-                    <div class="kpi-value" style="color: var(--green);">--</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-title">Total Open Trades</div>
-                    <div class="kpi-value" style="color: var(--gold);">--</div>
+                    <div class="kpi-value" id="kpi-pro" style="color: var(--green);">--</div>
                 </div>
             </div>
         </div>
@@ -112,54 +117,41 @@
                             <th>Status</th>
                             <th>Expiry Date</th>
                             <th>Wallet Balance</th>
+                            <th>Ref Code</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="user-table-body">
-                        <tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading users...</td></tr>
-                        <tr>
-                            <td>test.user@gmail.com</td>
-                            <td><span class="badge pro">Pro</span></td>
-                            <td>2026-06-15</td>
-                            <td style="font-family:'Ubuntu Mono';">₹1,250.00</td>
-                            <td>
-                                <button class="action-btn">Add Funds</button>
-                                <button class="action-btn">Edit Tier</button>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading users...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
+    </div>
+</div>
 
-        <div id="tab-trades" class="tab-pane">
-            <h1 class="header-title">Global Paper Trades</h1>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Symbol</th>
-                            <th>Type</th>
-                            <th>Entry</th>
-                            <th>Margin Used</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="trade-table-body">
-                        <tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading trades...</td></tr>
-                        <tr>
-                            <td>demo@test.com</td>
-                            <td>NIFTY 22500</td>
-                            <td style="color:var(--green)">BUY CE</td>
-                            <td style="font-family:'Ubuntu Mono';">125.50</td>
-                            <td style="font-family:'Ubuntu Mono';">₹6,275.00</td>
-                            <td><span class="badge" style="background:rgba(245,158,11,0.1); color:var(--gold);">Open</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div id="edit-modal" class="auth-overlay">
+    <div class="auth-modal">
+        <button class="auth-close" onclick="closeEditModal()">&times;</button>
+        <h3 style="margin-top:0;">Edit User</h3>
+        <p id="edit-user-email" style="color: var(--accent); font-weight: 600; font-size: 14px; margin-bottom: 20px; word-break: break-all;"></p>
+        
+        <input type="hidden" id="edit-uid">
+        
+        <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px;">Subscription Tier</label>
+        <select id="edit-tier" class="auth-input">
+            <option value="free">Free</option>
+            <option value="pro">Pro</option>
+        </select>
+        
+        <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px;">Wallet Balance (₹)</label>
+        <input type="number" id="edit-wallet" class="auth-input" step="0.01">
+        
+        <label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 5px;">Expiry Date (YYYY-MM-DD HH:MM:SS)</label>
+        <input type="text" id="edit-expiry" class="auth-input" placeholder="e.g. 2026-12-31 23:59:59">
+        
+        <button class="btn-primary" style="width: 100%;" onclick="saveUserChanges()">Save Changes</button>
+        <p id="edit-error" style="color:var(--red); font-size:13px; text-align:center; margin-top:15px; display:none;"></p>
     </div>
 </div>
 
@@ -179,6 +171,7 @@
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
   window.currentFirebaseToken = null; 
+  window.globalUsers = []; // Store fetched users globally
 
   onAuthStateChanged(auth, async (user) => {
     const statusBox = document.getElementById('status-box');
@@ -188,17 +181,12 @@
       
       // 🔴 Replace with your exact UID to lock out everyone else
       if (user.uid === "VEbfwlnqrDgy6QoFnN6Bf6qWdr72") {
-          // Hide Login, Show Dashboard
           document.getElementById('login-screen').style.display = 'none';
           document.getElementById('dashboard-screen').style.display = 'flex';
-          
-          // Trigger the fetch for real data here (Once Python is ready)
-           loadAdminData(); 
-
+          loadAdminData(); 
       } else {
           statusBox.innerHTML = `<span style="color:var(--red)">Access Denied.</span><br>You are not an administrator.`;
           document.getElementById('btn-login').style.display = 'none';
-          // Force sign out unauthorized users
           setTimeout(() => signOut(auth), 3000);
       }
     } else {
@@ -209,12 +197,9 @@
     }
   });
 
-window.handleGoogleLogin = function() {
-      // Optional: Change button text so the user knows it's working before the page leaves
+  window.handleGoogleLogin = function() {
       const btn = document.getElementById('btn-login');
       if (btn) btn.innerText = "Redirecting to Google...";
-      
-      // Fire the redirect
       signInWithRedirect(auth, googleProvider);
   };
 
@@ -222,86 +207,104 @@ window.handleGoogleLogin = function() {
       signOut(auth);
   };
 
-  // UI TAB SWITCHER
   window.switchTab = function(tabId, element) {
-      // Remove active class from all tabs and links
       document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-      
-      // Add active class to clicked
       document.getElementById(tabId).classList.add('active');
       element.classList.add('active');
   };
 
-    // 🟢 FETCH DATA FROM MONGODB
+  // 🟢 FETCH DATA FROM SQLITE
   window.loadAdminData = async function() {
       if (!window.currentFirebaseToken) return;
-      
       const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
       
       try {
-          // 1. Fetch Users
           const userRes = await fetch('https://api.greekcalculator.in/api/admin/all-users', { headers });
           if (userRes.ok) {
               const userData = await userRes.json();
+              window.globalUsers = userData.users; // Save for modal
               const tbody = document.getElementById('user-table-body');
               
-              if (userData.users.length === 0) {
-                  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted);">No users found.</td></tr>`;
+              if (window.globalUsers.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No users found.</td></tr>`;
               } else {
-                  // Update top KPI
-                  document.querySelectorAll('.kpi-value')[0].innerText = userData.users.length;
-                  document.querySelectorAll('.kpi-value')[1].innerText = userData.users.filter(u => u.tier === 'pro').length;
+                  // Update top KPIs
+                  document.getElementById('kpi-total').innerText = window.globalUsers.length;
+                  document.getElementById('kpi-pro').innerText = window.globalUsers.filter(u => u.tier === 'pro').length;
                   
                   // Build Table
-                  tbody.innerHTML = userData.users.map(u => `
+                  tbody.innerHTML = window.globalUsers.map(u => `
                       <tr>
                           <td>${u.email || 'Unknown'}</td>
                           <td><span class="badge ${u.tier === 'pro' ? 'pro' : 'free'}">${u.tier || 'free'}</span></td>
                           <td>${u.expiry || '--'}</td>
                           <td style="font-family:'Ubuntu Mono';">₹${parseFloat(u.wallet_balance || 0).toFixed(2)}</td>
+                          <td style="font-family:'Ubuntu Mono'; color:var(--muted);">${u.referral_code || '--'}</td>
                           <td>
-                              <button class="action-btn">Manage</button>
+                              <button class="action-btn" onclick="openEditModal('${u.uid}')">Edit User</button>
                           </td>
                       </tr>
                   `).join('');
               }
           }
-
-          // 2. Fetch Trades
-          const tradeRes = await fetch('https://api.greekcalculator.in/api/admin/all-trades', { headers });
-          if (tradeRes.ok) {
-              const tradeData = await tradeRes.json();
-              const tbody = document.getElementById('trade-table-body');
-              
-              if (tradeData.trades.length === 0) {
-                  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No trades found.</td></tr>`;
-              } else {
-                  // Update top KPI
-                  document.querySelectorAll('.kpi-value')[2].innerText = tradeData.trades.filter(t => t.status === 'Open').length;
-                  
-                  // Build Table
-                  tbody.innerHTML = tradeData.trades.map(t => {
-                      const isCE = t.type && t.type.includes('CE');
-                      const typeColor = isCE ? 'var(--green)' : 'var(--red)';
-                      const statusColor = t.status === 'Open' ? 'var(--gold)' : 'var(--muted)';
-                      const statusBg = t.status === 'Open' ? 'rgba(245,158,11,0.1)' : 'rgba(161, 161, 170, 0.1)';
-                      
-                      return `
-                      <tr>
-                          <td>${t.user_email || t.uid.substring(0,8)}</td>
-                          <td>${t.sym || ''} ${t.strike || ''}</td>
-                          <td style="color:${typeColor}; font-weight:600;">${t.type || 'N/A'}</td>
-                          <td style="font-family:'Ubuntu Mono';">${parseFloat(t.entry || 0).toFixed(2)}</td>
-                          <td style="font-family:'Ubuntu Mono';">₹${parseFloat(t.required_margin || 0).toLocaleString()}</td>
-                          <td><span class="badge" style="background:${statusBg}; color:${statusColor};">${t.status}</span></td>
-                      </tr>
-                      `;
-                  }).join('');
-              }
-          }
       } catch (err) {
           console.error("Admin Fetch Error:", err);
+      }
+  };
+
+  // 🟢 MODAL LOGIC
+  window.openEditModal = function(uid) {
+      const user = window.globalUsers.find(u => u.uid === uid);
+      if (!user) return;
+
+      document.getElementById('edit-uid').value = user.uid;
+      document.getElementById('edit-user-email').innerText = user.email;
+      document.getElementById('edit-tier').value = user.tier || 'free';
+      document.getElementById('edit-wallet').value = parseFloat(user.wallet_balance || 0).toFixed(2);
+      document.getElementById('edit-expiry').value = user.expiry || '';
+      
+      document.getElementById('edit-error').style.display = 'none';
+      document.getElementById('edit-modal').style.display = 'flex';
+  };
+
+  window.closeEditModal = function() {
+      document.getElementById('edit-modal').style.display = 'none';
+  };
+
+  window.saveUserChanges = async function() {
+      const uid = document.getElementById('edit-uid').value;
+      const tier = document.getElementById('edit-tier').value;
+      const wallet = document.getElementById('edit-wallet').value;
+      const expiry = document.getElementById('edit-expiry').value;
+      const errBox = document.getElementById('edit-error');
+      
+      try {
+          const res = await fetch('https://api.greekcalculator.in/api/admin/update-user', {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${window.currentFirebaseToken}`,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  target_uid: uid,
+                  tier: tier,
+                  wallet_balance: parseFloat(wallet),
+                  expiry: expiry || null
+              })
+          });
+          
+          const data = await res.json();
+          if (res.ok) {
+              closeEditModal();
+              loadAdminData(); // Refresh the table
+          } else {
+              errBox.innerText = data.error || "Failed to update user.";
+              errBox.style.display = 'block';
+          }
+      } catch (err) {
+          errBox.innerText = "Network error. Try again.";
+          errBox.style.display = 'block';
       }
   };
 </script>
