@@ -425,7 +425,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";  
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -639,20 +639,26 @@ initBgAnimation();
       }
   };
 
-  // 🟢 REDIRECT: Google Login
-  window.handleGoogleLogin = function() {
-      signInWithRedirect(auth, googleProvider);
-  };
-
-  // 🟢 CATCH THE RETURN TRIP
-  getRedirectResult(auth).then((result) => {
-      if (result) {
+// 🟢 POPUP: Google Login
+  window.handleGoogleLogin = async function() {
+      try {
+          // Open the secure Google login popup
+          await signInWithPopup(auth, googleProvider);
+          
+          // Once successful, close the modal if it's open
           closeAuthModal();
-          console.log("Successfully returned from Google Login!");
+          console.log("Successfully logged in with Google!");
+      } catch (error) {
+          console.error("Google Popup Error:", error.message);
+          
+          // Optional: Show error in the modal if it fails
+          const errDiv = document.getElementById('modal-error');
+          if (errDiv) {
+              errDiv.innerText = "Login cancelled or failed. Please try again.";
+              errDiv.style.display = 'block';
+          }
       }
-  }).catch((error) => {
-      console.error("Google Redirect Error:", error.message);
-  });
+  };
 
   window.startCheckout = async function(planId) {
       if (!window.currentFirebaseToken) {
