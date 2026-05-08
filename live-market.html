@@ -62,52 +62,6 @@ header select, header button {
 header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
 header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
 
-/* Ticker Tape Styles */
-.ticker-wrap {
-    width: 100%;
-    overflow: hidden;
-    background-color: #09090b;
-    border-bottom: 1px solid var(--border);
-    height: 20px;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.ticker-content {
-    display: inline-block;
-    white-space: nowrap;
-    animation: ticker-scroll 30s linear infinite;
-}
-
-.ticker-content:hover {
-    animation-play-state: paused;
-}
-
-.ticker-item {
-    display: inline-block;
-    padding: 0 1.5rem;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 11px;
-    font-weight: bold;
-    color: var(--muted);
-    line-height: 20px;
-}
-
-.ticker-price {
-    margin-left: 8px;
-}
-
-.tick-up { color: var(--green); }   
-.tick-down { color: var(--red); } 
-
-@keyframes ticker-scroll {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-50%, 0, 0); } 
-}
-
 /* Centered Header Stats */
 .header-center-info {
     position: absolute;
@@ -357,13 +311,6 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 </style>
 </head>
 <body>
-
-<div class="ticker-wrap">
-    <div class="ticker-content" id="live-ticker">
-        <span class="ticker-item">Loading Live Nifty 50...</span>
-    </div>
-</div>
-
 <header>
     <a href="index.html" class="logo"><span>GC</span>Live</a>
 
@@ -641,51 +588,7 @@ function toggleMobileNav() {
         }, { capture: true });
     }
 }
-  
-const TICKER_SYMBOLS = ["NIFTY 50", "RELIANCE", "HDFCBANK", "TCS", "ICICIBANK", "INFY"];
-const tickerPrices = {};
-
-async function fetchTickerData() {
-    try {
-        const r = await fetch(`${UPSTOX_API}/api/ticker-prices`); 
-        if (!r.ok) return;
-        const prices = await r.json();
-        const tickerContainer = document.getElementById('live-ticker');
-        
-        for (const stock of TICKER_SYMBOLS) {
-            if (!prices[stock]) continue;
-            const ltp = prices[stock];
-            const safeId = stock.replace(/\s+/g, '');
-            let itemDiv = document.getElementById(`ticker-${safeId}`);
-            
-            if (!itemDiv) {
-                itemDiv = document.createElement('span');
-                itemDiv.id = `ticker-${safeId}`;
-                itemDiv.className = 'ticker-item';
-                tickerContainer.appendChild(itemDiv);
-                
-                const clone = itemDiv.cloneNode(true);
-                clone.id = `ticker-${safeId}-clone`;
-                tickerContainer.appendChild(clone);
-            }
-
-            let colorClass = "tick-up";
-            if (tickerPrices[stock] && ltp < tickerPrices[stock]) colorClass = "tick-down";
-            tickerPrices[stock] = ltp;
-
-            const htmlContent = `${stock}: <span class="${colorClass}">${ltp.toFixed(2)}</span>`;
-            itemDiv.innerHTML = htmlContent;
-            document.getElementById(`ticker-${safeId}-clone`).innerHTML = htmlContent;
-        }
-        
-        const loader = document.querySelector('.ticker-item');
-        if(loader && loader.innerText.includes("Loading")) loader.remove();
-    } catch (e) {}
-}
-
-setInterval(fetchTickerData, 3000);
-setTimeout(fetchTickerData, 1000); 
-  
+    
 function toggleSettings(event) {
     if(event) event.stopPropagation();
     const panel = document.getElementById('settings-panel');
