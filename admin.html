@@ -121,6 +121,8 @@
                             <th>Status</th>
                             <th>Expiry Date</th>
                             <th>Wallet Balance</th>
+                            <th>Main Wallet</th>
+                            <th>Ref Earnings</th>
                             <th>Ref Code</th>
                             <th>Referred By</th> <th>Actions</th>
                         </tr>
@@ -278,6 +280,7 @@ window.handleGoogleLogin = async function() {
                           <td><span class="badge ${u.tier === 'pro' ? 'pro' : 'free'}">${u.tier || 'free'}</span></td>
                           <td>${u.expiry || '--'}</td>
                           <td style="font-family:'Ubuntu Mono';">₹${parseFloat(u.wallet_balance || 0).toFixed(2)}</td>
+                          <td style="font-family:'Ubuntu Mono'; color: var(--green);">₹${parseFloat(u.referral_wallet || 0).toFixed(2)}</td>
                           <td style="font-family:'Ubuntu Mono'; color:var(--muted);">${u.referral_code || '--'}</td>
                           <td style="font-family:'Ubuntu Mono'; color:var(--gold);">${u.referred_by || '--'}</td> <td>
                               <button class="action-btn" onclick="openEditModal('${u.uid}')">Edit User</button>
