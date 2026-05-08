@@ -143,29 +143,88 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 .profile-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: center; }
 .logout-text { color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; background: none; border: none; }
 .logout-text:hover { color: #f87171; text-decoration: underline; }
-  /* 🟢 AUTH MODAL STYLES */
-.auth-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000;
-    align-items: center; justify-content: center;
-}
-.auth-modal {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 30px; width: 90%; max-width: 400px; position: relative;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-}
-.auth-close {
-    position: absolute; top: 15px; right: 15px; background: transparent; border: none;
-    color: var(--muted); font-size: 24px; cursor: pointer; transition: 0.2s; line-height: 1;
-}
-.auth-close:hover { color: var(--red); }
-.auth-input {
-    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--bg); color: var(--text); margin-bottom: 15px; box-sizing: border-box;
-    font-family: 'Inter', sans-serif; font-size: 14px;
-}
-.auth-input:focus { outline: none; border-color: var(--accent); }
-</style>
+/* 🟢 SPLIT-SCREEN AUTH OVERLAY STYLES */
+  .auth-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #ffffff; z-index: 3000; flex-direction: row; overflow: hidden;
+  }
+  
+  /* Left Panel: Purple Marketing Side */
+  .auth-left {
+      flex: 1; background: linear-gradient(145deg, #a855f7 0%, #7e22ce 100%);
+      color: white; padding: 60px; display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+  }
+  .auth-left::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+  }
+  .auth-badge {
+      background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); padding: 6px 16px;
+      border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex;
+      align-items: center; gap: 8px; margin-bottom: 30px; width: fit-content;
+  }
+  .auth-badge .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; }
+  .auth-left h2 { font-size: 42px; font-weight: 900; line-height: 1.1; margin: 0 0 15px 0; letter-spacing: -1px; }
+  .auth-left p { font-size: 16px; opacity: 0.9; margin-bottom: 40px; max-width: 400px; line-height: 1.5; }
+  .auth-feature-list { display: flex; flex-direction: column; gap: 20px; }
+  .auth-feature { display: flex; align-items: center; gap: 15px; font-size: 15px; font-weight: 500; }
+  .auth-feature-icon { 
+      width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  
+  /* Right Panel: White Form Side */
+  .auth-right {
+      flex: 1; display: flex; flex-direction: column; background: #ffffff;
+      color: #0f172a; padding: 40px; overflow-y: auto; position: relative;
+  }
+  .auth-right-content { max-width: 420px; width: 100%; margin: auto; }
+  
+  .auth-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 40px; font-weight: 800; font-size: 20px; color: #0f172a; }
+  .auth-logo img { width: 32px; height: 32px; }
+  
+  .auth-right h3 { font-size: 28px; font-weight: 800; margin: 0 0 5px 0; color: #0f172a; }
+  .auth-right .subtext { font-size: 14px; color: #64748b; margin-bottom: 30px; }
+  
+  /* Form Elements (Light Mode) */
+  .auth-divider { display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 12px; font-weight: 700; margin: 25px 0; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e2e8f0; }
+  .auth-divider:not(:empty)::before { margin-right: .25em; }
+  .auth-divider:not(:empty)::after { margin-left: .25em; }
+  
+  .input-group { margin-bottom: 15px; text-align: left; }
+  .input-group label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .light-input {
+      width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid #cbd5e1;
+      background: #ffffff; color: #0f172a; font-family: 'Inter', sans-serif; font-size: 14px;
+      box-sizing: border-box; transition: 0.2s;
+  }
+  .light-input:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1); }
+  
+  .btn-submit {
+      width: 100%; padding: 14px; border-radius: 8px; background: #8b5cf6; color: white;
+      font-size: 15px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; margin-top: 10px;
+  }
+  .btn-submit:hover { background: #7e22ce; transform: translateY(-1px); box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2); }
+  
+  .auth-footer-text { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
+  .auth-footer-text a { color: #8b5cf6; font-weight: 700; text-decoration: none; cursor: pointer; }
+  .auth-footer-text a:hover { text-decoration: underline; }
+  
+  .back-to-home {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: transparent; border: 1px solid #e2e8f0; color: #64748b; padding: 8px 16px;
+      border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .back-to-home:hover { background: #f8fafc; color: #0f172a; }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+      .auth-left { display: none; } /* Hide marketing panel on small screens */
+      .auth-right { padding: 20px; }
+  }</style>
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
@@ -329,31 +388,128 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 </div>
 </footer>
 
-  <div id="auth-overlay" class="auth-overlay">
-    <div class="auth-modal">
-        <button class="auth-close" onclick="closeAuthModal()">&times;</button>
-        <h3 style="margin-top:0; text-align:center; font-size: 22px;">Welcome to Pro</h3>
-        
-        <input type="email" id="modal-email" class="auth-input" placeholder="Email (e.g. test@example.com)">
-        <input type="password" id="modal-password" class="auth-input" placeholder="Password (min 6 chars)">
-        
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="btn btn-primary" style="flex: 1;" onclick="window.handleEmailLogin()">Log In</button>
-            <button class="btn" style="flex: 1;" onclick="window.handleEmailSignUp()">Sign Up</button>
+<div id="auth-overlay" class="auth-overlay">
+    
+    <div class="auth-left">
+        <div class="auth-badge">
+            <div class="dot"></div>
+            Join 12,000+ Active Traders
         </div>
         
-        <div style="text-align: center; color: var(--muted); font-size: 12px; margin-bottom: 15px;">OR</div>
+        <h2 id="auth-marketing-heading">Your Edge in<br>Every Trade.</h2>
+        <p id="auth-marketing-sub">India's fastest option chain — blazing fast OI updates, advanced greeks, and AI-powered signals all in one place.</p>
         
-        <button class="btn-google" style="margin:0; width:100%; max-width:100%;" onclick="window.handleGoogleLogin()">
-            <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
-            Continue with Google
-        </button>
-        
-        <p id="modal-error" style="color:var(--red); font-size:13px; text-align:center; margin-top:15px; display:none;"></p>
+        <div class="auth-feature-list">
+            <div class="auth-feature">
+                <div class="auth-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg></div>
+                Blazing fast OI updates — never miss a move
+            </div>
+            <div class="auth-feature">
+                <div class="auth-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg></div>
+                Full greeks — Delta, Gamma, Theta, Vega, IV
+            </div>
+            <div class="auth-feature">
+                <div class="auth-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+                PCR, MaxPain & AI-powered reversal signals
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-right-content">
+            
+            <div class="auth-logo">
+                <span style="color: #8b5cf6;">Greek</span> Calculator
+            </div>
+            
+            <h3 id="auth-form-title">Welcome back</h3>
+            <p id="auth-form-subtitle" class="subtext">Sign in to your trading account</p>
+
+            <button class="btn-google" onclick="window.handleGoogleLogin()">
+                <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
+                Continue with Google
+            </button>
+
+            <div class="auth-divider">OR</div>
+
+            <p id="modal-error" style="color: #ef4444; font-size: 13px; text-align: center; margin-bottom: 15px; display: none; background: #fef2f2; padding: 10px; border-radius: 6px;"></p>
+
+            <div id="signup-extra-fields" style="display: none;">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="modal-name" class="light-input" placeholder="Enter your full name">
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="modal-phone" class="light-input" placeholder="Enter your mobile number">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="modal-email" class="light-input" placeholder="Enter your email address">
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="modal-password" class="light-input" placeholder="Enter your password">
+            </div>
+
+            <button id="auth-submit-btn" class="btn-submit" onclick="window.handleEmailLogin()">Sign In →</button>
+
+            <div class="auth-footer-text" id="auth-switch-text">
+                No account? <a onclick="toggleAuthMode('signup')">Create one free →</a>
+            </div>
+
+        </div>
+
+        <button class="back-to-home" onclick="closeAuthModal()">← Back to Home</button>
     </div>
 </div>
 
 <script>
+  // 🟢 Toggle between Login and Signup modes in the UI
+  window.toggleAuthMode = function(mode) {
+      const title = document.getElementById('auth-form-title');
+      const subtitle = document.getElementById('auth-form-subtitle');
+      const extraFields = document.getElementById('signup-extra-fields');
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const switchText = document.getElementById('auth-switch-text');
+      const errorDiv = document.getElementById('modal-error');
+      
+      const leftHeading = document.getElementById('auth-marketing-heading');
+      
+      errorDiv.style.display = 'none'; // clear errors on switch
+
+      if (mode === 'signup') {
+          title.innerText = "Create Your Account";
+          subtitle.innerText = "Enter your details to get started for free";
+          extraFields.style.display = "block";
+          
+          submitBtn.innerText = "Continue →";
+          submitBtn.onclick = window.handleEmailSignUp; // Points to your existing signup function
+          
+          switchText.innerHTML = `Already have an account? <a onclick="toggleAuthMode('login')">Sign In →</a>`;
+          leftHeading.innerHTML = "Start Trading<br>Smarter Today.";
+      } else {
+          title.innerText = "Welcome back";
+          subtitle.innerText = "Sign in to your trading account";
+          extraFields.style.display = "none";
+          
+          submitBtn.innerText = "Sign In →";
+          submitBtn.onclick = window.handleEmailLogin; // Points to your existing login function
+          
+          switchText.innerHTML = `No account? <a onclick="toggleAuthMode('signup')">Create one free →</a>`;
+          leftHeading.innerHTML = "Your Edge in<br>Every Trade.";
+      }
+  };
+
+  // Reset to Login mode every time the modal opens
+  const originalOpenModal = window.openAuthModal;
+  window.openAuthModal = function() {
+      toggleAuthMode('login'); // Ensure it starts on login
+      document.getElementById('auth-overlay').style.display = 'flex';
+  };
 // 🟢 PROCEDURAL BACKGROUND CANDLESTICK ANIMATION
 function initBgAnimation() {
     const canvas = document.getElementById('bg-canvas');
