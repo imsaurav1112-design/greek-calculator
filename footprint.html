@@ -236,10 +236,14 @@
                 // Fetch Tick Data for Header
                 const tResp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
                 const tData = await tResp.json();
+// 1. Update Spot Price
                 if (tData["NIFTY 50"]) {
                     document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
-                    // Mocking Future price temporarily (spot + premium) until you stream real fut
-                    document.getElementById('hdr-fut').innerText = (tData["NIFTY 50"].ltp + 15).toFixed(2); 
+                }
+                
+                // 2. Update REAL Future Price
+                if (tData["NIFTY FUT"]) {
+                    document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2); 
                 }
 
                 // Fetch Footprint Data
