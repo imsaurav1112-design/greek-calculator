@@ -434,26 +434,26 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         
         <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
 
-<div class="auth-left">
-    <div class="auth-badge"><div class="dot"></div>Join 12k+ Active Users</div>
-    <h2 id="auth-marketing-heading">Analyze the Data.<br>Master the Market.</h2>
-    <div class="auth-feature-list">
-        <div class="auth-feature"><div class="auth-feature-icon">⚡</div>Blazing fast OI updates</div>
-        <div class="auth-feature"><div class="auth-feature-icon">📊</div>Advanced Greeks & AI Insights</div>
-        <div class="auth-feature"><div class="auth-feature-icon">🎯</div>PCR, MaxPain & Reversal Zones</div>
-    </div>
-</div>
+        <div class="auth-left">
+            <div class="auth-badge"><div class="dot"></div>Join 12k+ Active Users</div>
+            <h2 id="auth-marketing-heading">Analyze the Data.<br>Master the Market.</h2>
+            <div class="auth-feature-list">
+                <div class="auth-feature"><div class="auth-feature-icon">⚡</div>Blazing fast OI updates</div>
+                <div class="auth-feature"><div class="auth-feature-icon">📊</div>Advanced Greeks & AI Insights</div>
+                <div class="auth-feature"><div class="auth-feature-icon">🎯</div>PCR, MaxPain & Reversal Zones</div>
+            </div>
+        </div>
 
         <div class="auth-right">
             <div class="auth-right-content">
-                <div style="font-weight: 900; font-size: 22px; margin-bottom: 30px; color: #0f172a;">
+                <div style="font-weight: 900; font-size: 22px; margin-bottom: 30px; color: #0f172a; text-align: center;">
                     <span style="color: var(--accent);">Greek</span> Calculator
                 </div>
 
-                <h3 id="auth-form-title" style="margin:0; font-size: 24px;">Welcome back</h3>
-                <p id="auth-form-subtitle" class="subtext" style="color: #64748b; margin-bottom: 25px;">Sign in to your account</p>
+                <h3 id="auth-form-title" style="margin:0; font-size: 24px; text-align: center;">Welcome back</h3>
+                <p id="auth-form-subtitle" class="subtext" style="color: #64748b; margin-bottom: 25px; text-align: center;">Sign in to your account</p>
 
-                <button class="btn-google" onclick="window.handleGoogleLogin()" style="width:100%; height:45px; border: 1px solid #e2e8f0; background:white; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; font-weight:600;">
+                <button class="btn-google" onclick="window.handleGoogleLogin()">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="18">
                     Continue with Google
                 </button>
@@ -463,7 +463,11 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                 <div id="signup-extra-fields" style="display: none;">
                     <div class="input-group">
                         <label>Full Name</label>
-                        <input type="text" id="modal-name" class="light-input" placeholder="Saurav Yadav">
+                        <input type="text" id="modal-name" class="light-input" placeholder="Enter your full name">
+                    </div>
+                    <div class="input-group">
+                        <label>Mobile Number</label>
+                        <input type="tel" id="modal-phone" class="light-input" placeholder="Enter mobile number">
                     </div>
                 </div>
 
@@ -476,6 +480,8 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                     <label>Password</label>
                     <input type="password" id="modal-password" class="light-input" placeholder="••••••••">
                 </div>
+                
+                <p id="modal-error" style="color: var(--red); font-size: 13px; text-align: center; margin-top: 10px; display: none; font-weight: 600;"></p>
 
                 <button id="auth-submit-btn" class="btn-submit" onclick="window.handleEmailLogin()">Sign In →</button>
 
