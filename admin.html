@@ -263,8 +263,9 @@ window.handleGoogleLogin = async function() {
               window.globalUsers = userData.users; // Save for modal
               const tbody = document.getElementById('user-table-body');
               
+// 🟢 Updated colspan to 7
               if (window.globalUsers.length === 0) {
-                  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted);">No users found.</td></tr>`;
+                  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--muted);">No users found.</td></tr>`;
               } else {
                   // Update top KPIs
                   document.getElementById('kpi-total').innerText = window.globalUsers.length;
@@ -278,7 +279,7 @@ window.handleGoogleLogin = async function() {
                           <td>${u.expiry || '--'}</td>
                           <td style="font-family:'Ubuntu Mono';">₹${parseFloat(u.wallet_balance || 0).toFixed(2)}</td>
                           <td style="font-family:'Ubuntu Mono'; color:var(--muted);">${u.referral_code || '--'}</td>
-                          <td>
+                          <td style="font-family:'Ubuntu Mono'; color:var(--gold);">${u.referred_by || '--'}</td> <td>
                               <button class="action-btn" onclick="openEditModal('${u.uid}')">Edit User</button>
                           </td>
                       </tr>
