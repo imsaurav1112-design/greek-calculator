@@ -242,8 +242,6 @@ td:last-child { border-right: none; }
 .itm-pe { background-color: var(--itm-pe); }
 
 /* 🟢 NEW: Clickable LTP styling */
-.clickable-ltp { cursor: pointer; position: relative; transition: 0.2s; }
-.clickable-ltp:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); }
 
 .max-ce-heat { background-color: var(--red) !important; color: #fff !important; font-weight: 800 !important; }
 .max-pe-heat { background-color: var(--green) !important; color: #fff !important; font-weight: 800 !important; }
@@ -268,15 +266,8 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 .modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
 .modal-header span { color: var(--accent); }
 
-/* Custom Inputs for Paper Trading */
-.order-input { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; font-family: 'Inter', sans-serif; font-size: 14px;}
-.order-input:focus { border-color: var(--accent); box-shadow: 0 0 5px var(--accent-glow); }
+
   /* 🟢 NEW: Completely hide the default browser up/down arrows on number inputs */
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
-    margin: 0; 
-}
 input[type=number] {
     -moz-appearance: textfield; /* Firefox */
 }
@@ -639,11 +630,6 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
                 </div>
             </div>
 
-            <!-- 6. History Button -->
-            <button class="nav-btn" onclick="openHistoryModal()" title="Paper Trading History">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            </button>
-
             <!-- 7. Bottom Spacer & Backtester -->
             <div style="flex:1;"></div>
             <button class="nav-btn" onclick="window.open('backtester', '_blank')" title="Open Backtester">
@@ -793,65 +779,9 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     </div>
 </div>
 
-<!-- 🟢 UPGRADED: Paper Order Ticket Modal -->
-<div class="modal-overlay" id="order-modal" onclick="closeOrderModal(event)">
-    <div class="modal-content" style="max-width: 400px;">
-        <button class="modal-close" onclick="closeOrderModal(event)">✖</button>
-        <h2 class="modal-header">Paper Order <span id="order-title-span">Ticket</span></h2>
-        <div style="display:flex; flex-direction:column; gap:14px; margin-top: 10px;">
-            <input type="hidden" id="order-sym">
-            
-            <label style="font-size:11px; color:var(--muted); font-weight:600;">STRIKE & TYPE
-                <div style="display:flex; gap:10px; margin-top:6px;">
-                    <div style="display:flex; flex:2; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--bg);">
-                        <button type="button" onclick="adjustStrike(-1)" style="background:var(--section); color:var(--text); border:none; border-right:1px solid var(--border); padding:10px 15px; cursor:pointer; font-weight:bold; font-size:16px;">-</button>
-                        <input type="number" id="order-strike" class="order-input" style="flex:1; border:none; border-radius:0; text-align:center; padding:10px 5px; -moz-appearance: textfield; box-shadow:none;">
-                        <button type="button" onclick="adjustStrike(1)" style="background:var(--section); color:var(--text); border:none; border-left:1px solid var(--border); padding:10px 15px; cursor:pointer; font-weight:bold; font-size:16px;">+</button>
-                    </div>
-                    <!-- CHANGED ID HERE to order-opt-type -->
-                    <select id="order-opt-type" class="order-input" style="flex:1;">
-                        <option value="CE">CE</option>
-                        <option value="PE">PE</option>
-                    </select>
-                </div>
-            </label>
 
-            <div style="display:flex; gap:10px;">
-                <!-- ADDED LOTS QUANTITY HERE -->
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">QUANTITY (LOTS)
-                    <input type="number" id="order-qty" value="1" min="1" class="order-input" style="margin-top:6px;">
-                </label>
-                <!-- ADDED MARKET/LIMIT DROPDOWN HERE -->
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">ORDER TYPE
-                    <select id="order-execution-type" class="order-input" style="margin-top:6px;" onchange="toggleMarketLimit()">
-                        <option value="Market">Market</option>
-                        <option value="Limit">Limit</option>
-                    </select>
-                </label>
-            </div>
-            
-            <label style="font-size:11px; color:var(--muted); font-weight:600;">ENTRY PRICE <span id="entry-hint" style="color:var(--accent); font-weight:normal;">(Live LTP)</span>
-                <input type="number" id="order-entry" step="0.05" class="order-input" style="margin-top:6px;" disabled>
-            </label>
-            
-            <div style="display:flex; gap:10px;">
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">STOP LOSS (Opt)
-                    <input type="number" id="order-sl" step="0.05" placeholder="0.00" class="order-input" style="margin-top:6px;">
-                </label>
-                <label style="font-size:11px; color:var(--muted); font-weight:600; flex:1;">TARGET (Opt)
-                    <input type="number" id="order-target" step="0.05" placeholder="0.00" class="order-input" style="margin-top:6px;">
-                </label>
-            </div>
-            
-            <button class="primary-btn" onclick="submitPaperTrade()" style="padding:12px; font-size:14px; border-radius:6px; margin-top:10px; width:100%;">Execute Trade</button>
-        </div>
-    </div>
-</div>
 
-<!-- 🟢 UPGRADED: Paper Trade History Modal -->
-<div class="modal-overlay" id="history-modal" onclick="closeHistoryModal(event)">
-    <div class="modal-content" style="max-width: 900px;">
-        <button class="modal-close" onclick="closeHistoryModal(event)">✖</button>
+
         
         <!-- 🟢 NEW: Title & Balance sitting side-by-side -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
@@ -1699,11 +1629,11 @@ let renderTable = function(rows, sym, data, quiet = false) {
       <td ${tdHeat(ceBg, getHeatCls(Math.abs(r.ce.change_oi), maxCeChg, secCeChg, 'ce'))}>${formatCell(ceChgStr, Math.abs(r.ce.change_oi), maxCeChg, secCeChg)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
       <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
-      <td class="${ceBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'CE', ${r.ce.ltp || 0})">${(r.ce.ltp||0).toFixed(1)}</td>
+      <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
       <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(0)}</td>
       <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike}</td>
       <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(0)}</td>
-      <td class="${peBg} clickable-ltp" style="font-weight:700;" onclick="openOrderModal('${sym}', ${r.strike}, 'PE', ${r.pe.ltp || 0})">${(r.pe.ltp||0).toFixed(1)}</td>
+      <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
       <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
       <td ${tdHeat(peBg, getHeatCls(Math.abs(r.pe.change_oi), maxPeChg, secPeChg, 'pe'))}>${formatCell(peChgStr, Math.abs(r.pe.change_oi), maxPeChg, secPeChg)}</td>
@@ -1758,227 +1688,7 @@ let renderTable = function(rows, sym, data, quiet = false) {
 
 function abs(x) { return x < 0 ? -x : x; }
 
-// ==========================================
-// 🟢 CLOUD PAPER TRADING ENGINE
-// ==========================================
 
-const originalInit = window.initTerminal;
-window.initTerminal = async function() {
-    try {
-        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
-        const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
-        const profile = await r.json();
-        
-        if (profile.paper_balance !== undefined) {
-            const balElement = document.getElementById('ui-paper-bal');
-            if (balElement) balElement.innerText = `₹${profile.paper_balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-        }
-        
-        if (profile.tier !== "pro") {
-            alert("The Live Terminal requires a Pro subscription.");
-            window.location.href = "index.html#pricing";
-            return; 
-        }
-    } catch(e) {}
-    window.loadExpiries(); 
-    setInterval(() => {
-        const expiry = document.getElementById('sel-expiry').value;
-        if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
-            fetchUpstoxChain(true);
-        }
-    }, 1000); 
-}; 
-
-window.resetPaperBalance = async function() {
-    if(!confirm("Are you sure you want to reset your virtual balance to ₹5,00,000? All PnL will be wiped.")) return;
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
-        const r = await fetch(`${UPSTOX_API}/api/paper-trade/reset-balance`, { method: 'POST', headers: headers });
-        const data = await r.json();
-        if(data.status === 'success') {
-            const balElement = document.getElementById('ui-paper-bal');
-            if(balElement) balElement.innerText = `₹5,00,000.00`;
-            alert("Balance Reset to ₹5,00,000");
-        }
-    } catch(e) { alert("Reset failed."); }
-}
-
-window.adjustStrike = function(direction) {
-    const symInput = document.getElementById('order-sym');
-    const sym = symInput ? symInput.value : 'NIFTY';
-    const interval = window.getStrikeInterval ? window.getStrikeInterval(sym) : 50;
-    const strikeInput = document.getElementById('order-strike');
-    if (strikeInput) {
-        let currentVal = parseInt(strikeInput.value, 10) || 0;
-        strikeInput.value = currentVal + (direction * interval);
-    }
-};
-
-window.toggleMarketLimit = function() {
-    const type = document.getElementById('order-execution-type').value;
-    const entryInput = document.getElementById('order-entry');
-    const hint = document.getElementById('entry-hint');
-    if(type === 'Market') {
-        entryInput.disabled = true;
-        hint.innerText = "(Live LTP)";
-    } else {
-        entryInput.disabled = false;
-        hint.innerText = "(Custom Limit)";
-    }
-}
-
-window.openOrderModal = function(sym, strike, type, ltp) {
-    document.getElementById('order-sym').value = sym;
-    document.getElementById('order-strike').value = strike;
-    document.getElementById('order-opt-type').value = type;
-    document.getElementById('order-entry').value = ltp.toFixed(2);
-    document.getElementById('order-execution-type').value = 'Market';
-    document.getElementById('order-sl').value = '';
-    document.getElementById('order-target').value = '';
-    
-    window.toggleMarketLimit();
-    document.getElementById('order-modal').style.display = 'flex';
-}
-
-window.closeOrderModal = function(event) {
-    if (event && event.target.id !== 'order-modal' && !event.target.classList.contains('modal-close')) return;
-    document.getElementById('order-modal').style.display = 'none';
-}
-
-window.submitPaperTrade = async function() {
-    const sym = document.getElementById('order-sym').value;
-    const lotMultiplier = globalData.lot_size || 50; 
-    const lots = parseInt(document.getElementById('order-qty').value) || 1;
-    const totalQty = lots * lotMultiplier;
-
-    const trade = {
-        sym: sym,
-        strike: parseInt(document.getElementById('order-strike').value),
-        type: document.getElementById('order-opt-type').value,
-        order_type: document.getElementById('order-execution-type').value,
-        entry: parseFloat(document.getElementById('order-entry').value),
-        qty: totalQty,
-        sl: document.getElementById('order-sl').value,
-        target: document.getElementById('order-target').value
-    };
-    
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
-        const r = await fetch(`${UPSTOX_API}/api/paper-trade/place`, {
-            method: 'POST', headers: headers, body: JSON.stringify(trade)
-        });
-        const res = await r.json();
-        
-        if (res.error) {
-            alert("Order Failed: " + res.error);
-        } else {
-            const balElement = document.getElementById('ui-paper-bal');
-            if(balElement) balElement.innerText = `₹${res.new_balance.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-            document.getElementById('order-modal').style.display = 'none';
-            alert(`Executed: ${lots} Lot(s) of ${trade.sym} ${trade.strike} ${trade.type}`);
-        }
-    } catch(e) { alert("Network error connecting to broker."); }
-}
-
-window.openHistoryModal = async function() {
-    document.getElementById('history-modal').style.display = 'flex';
-    document.getElementById('open-trades-body').innerHTML = `<tr><td colspan="9" style="text-align:center;">Loading from Cloud...</td></tr>`;
-    
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-        const r = await fetch(`${UPSTOX_API}/api/paper-trade/positions`, { headers });
-        const data = await r.json();
-        
-        if(data.status !== 'success') return;
-
-        const openBody = document.getElementById('open-trades-body');
-        if (data.open.length === 0) {
-            openBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--muted);">No open positions.</td></tr>`;
-        } else {
-            openBody.innerHTML = data.open.map(t => {
-                let liveLtp = t.entry;
-                if (globalRows && globalRows.length > 0) {
-                    const row = globalRows.find(r => r.strike == t.strike);
-                    if (row) liveLtp = t.type === 'CE' ? row.ce.ltp : row.pe.ltp;
-                }
-                const pnl = ((liveLtp - t.entry) * t.qty).toFixed(2);
-                const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-
-                return `
-                <tr>
-                    <td>${t.time}</td>
-                    <td><b>${t.sym} ${t.strike} <span style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'};">${t.type}</span></b></td>
-                    <td>${t.qty}</td>
-                    <td>${t.entry}</td>
-                    <td style="color:var(--accent); font-weight:bold;">${liveLtp}</td>
-                    <td><input type="number" id="mod-sl-${t.id}" value="${t.sl}" style="width:60px; background:var(--bg); color:var(--text); border:1px solid var(--border); padding:2px;"></td>
-                    <td><input type="number" id="mod-tgt-${t.id}" value="${t.target}" style="width:60px; background:var(--bg); color:var(--text); border:1px solid var(--border); padding:2px;"></td>
-                    <td style="color:${pnlColor}; font-weight:bold;">₹${pnl}</td>
-                    <td>
-                        <button onclick="modifyTrade('${t.id}')" style="background:var(--accent); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Update</button>
-                        <button onclick="exitTrade('${t.id}', ${liveLtp})" style="background:var(--red); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">SQR OFF</button>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        const closedBody = document.getElementById('closed-trades-body');
-        if (data.closed.length === 0) {
-            closedBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted);">No closed positions today.</td></tr>`;
-        } else {
-            closedBody.innerHTML = data.closed.map(t => {
-                const pnlColor = t.final_pnl >= 0 ? 'var(--green)' : 'var(--red)';
-                return `
-                <tr>
-                    <td>${t.time}</td>
-                    <td><b>${t.sym} ${t.strike} <span style="color:${t.type === 'CE' ? 'var(--red)' : 'var(--green)'};">${t.type}</span></b></td>
-                    <td>${t.qty}</td>
-                    <td>${t.entry}</td>
-                    <td>${t.exit_price}</td>
-                    <td style="color:${pnlColor}; font-weight:bold;">₹${t.final_pnl.toFixed(2)}</td>
-                </tr>`;
-            }).join('');
-        }
-    } catch(e) { console.error(e); }
-}
-
-window.closeHistoryModal = function(event) {
-    if (event && event.target.id !== 'history-modal' && !event.target.classList.contains('modal-close')) return;
-    document.getElementById('history-modal').style.display = 'none';
-}
-
-window.modifyTrade = async function(id) {
-    const sl = document.getElementById(`mod-sl-${id}`).value;
-    const tgt = document.getElementById(`mod-tgt-${id}`).value;
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
-        await fetch(`${UPSTOX_API}/api/paper-trade/modify`, {
-            method: 'POST', headers: headers, body: JSON.stringify({ id: id, sl: sl, target: tgt })
-        });
-        alert("Order Modified Successfully");
-    } catch(e) { alert("Modification Failed"); }
-}
-
-window.exitTrade = async function(id, currentLtp) {
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}`, 'Content-Type': 'application/json' };
-        const r = await fetch(`${UPSTOX_API}/api/paper-trade/exit`, {
-            method: 'POST', headers: headers, body: JSON.stringify({ id: id, exit_price: currentLtp })
-        });
-        const res = await r.json();
-        if(res.status === 'success') {
-            const balElement = document.getElementById('ui-paper-bal');
-            if (balElement) {
-                let currentBal = parseFloat(balElement.innerText.replace(/[^0-9.-]+/g,""));
-                let newBal = currentBal + res.returned_capital;
-                balElement.innerText = `₹${newBal.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-            }
-            window.openHistoryModal(); 
-        } else {
-            alert(res.error);
-        }
-    } catch(e) { alert("Square Off Failed"); }
-}
 </script>
 
 <script type="module">
