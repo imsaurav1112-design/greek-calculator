@@ -52,8 +52,17 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .hero h1 span { color: var(--accent); }
 .hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
 .hero-buttons { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
-.launch-btn { font-size: 16px; padding: 12px 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; max-width: 350px; }
-
+.launch-btn { 
+    font-size: 16px; 
+    padding: 14px 40px; /* Slightly thicker padding for a premium feel */
+    border-radius: 8px; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    width: fit-content; /* 🟢 THE FIX: Makes the button only as wide as the text */
+    font-weight: 700;
+}
 /* --- FEATURES GRID --- */
 .features { padding: 50px 5%; max-width: 1200px; margin: 0 auto; }
 .section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 10px; text-align: center;}
