@@ -86,10 +86,13 @@
 </div>
 
 <div id="dashboard-screen">
-    <div class="sidebar">
+<div class="sidebar">
         <div class="sidebar-header"><span>GC</span> Admin</div>
         <div class="nav-item active" onclick="switchTab('tab-overview', this)">Overview</div>
         <div class="nav-item" onclick="switchTab('tab-users', this)">User Management</div>
+        
+        <div class="nav-item" onclick="switchTab('tab-history', this)">Historical Data</div>
+        
         <div class="nav-item logout-nav" onclick="window.logoutFirebase()">Log Out Securely</div>
     </div>
 
@@ -124,6 +127,25 @@
                     </thead>
                     <tbody id="user-table-body">
                         <tr><td colspan="6" style="text-align:center; color:var(--muted);">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="tab-history" class="tab-pane">
+            <h1 class="header-title">Historical Data Manager</h1>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Symbol</th>
+                            <th>Expiry</th>
+                            <th>Snapshots</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <tr><td colspan="5" style="text-align:center; color:var(--muted);">Loading history...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -226,12 +248,15 @@ window.handleGoogleLogin = async function() {
       element.classList.add('active');
   };
 
-  // 🟢 FETCH DATA FROM SQLITE
+// 🟢 FETCH DATA FROM SQLITE & DUCKDB
   window.loadAdminData = async function() {
       if (!window.currentFirebaseToken) return;
       const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
       
       try {
+          // ==========================================
+          // 1. FETCH USERS DATA (SQLite)
+          // ==========================================
           const userRes = await fetch('https://api.greekcalculator.in/api/admin/all-users', { headers });
           if (userRes.ok) {
               const userData = await userRes.json();
@@ -255,6 +280,32 @@ window.handleGoogleLogin = async function() {
                           <td style="font-family:'Ubuntu Mono'; color:var(--muted);">${u.referral_code || '--'}</td>
                           <td>
                               <button class="action-btn" onclick="openEditModal('${u.uid}')">Edit User</button>
+                          </td>
+                      </tr>
+                  `).join('');
+              }
+          }
+
+          // ==========================================
+          // 2. FETCH HISTORY SUMMARY (DuckDB)
+          // ==========================================
+          const histRes = await fetch('https://api.greekcalculator.in/api/admin/history-summary', { headers });
+          if (histRes.ok) {
+              const histData = await histRes.json();
+              const tbody = document.getElementById('history-table-body');
+              
+              if (!histData.history || histData.history.length === 0) {
+                  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted);">No historical data recorded yet.</td></tr>`;
+              } else {
+                  tbody.innerHTML = histData.history.map(h => `
+                      <tr>
+                          <td style="font-family:'Ubuntu Mono'; color:var(--accent); font-weight:700;">${h.date}</td>
+                          <td style="font-weight:600;">${h.sym}</td>
+                          <td>${h.exp}</td>
+                          <td style="font-family:'Ubuntu Mono';">${h.records} Ticks</td>
+                          <td>
+                              <button class="action-btn" onclick="downloadHistory('${h.sym}', '${h.exp}', '${h.date}')" style="color:var(--green); border-color:var(--green);">Download JSON</button>
+                              <button class="action-btn" onclick="deleteHistory('${h.sym}', '${h.exp}', '${h.date}')" style="color:var(--red); border-color:var(--red);">Delete</button>
                           </td>
                       </tr>
                   `).join('');
@@ -317,6 +368,71 @@ window.handleGoogleLogin = async function() {
       } catch (err) {
           errBox.innerText = "Network error. Try again.";
           errBox.style.display = 'block';
+      }
+  };
+    // 🟢 NEW: Download History Logic
+  window.downloadHistory = async function(sym, exp, date) {
+      if (!window.currentFirebaseToken) return;
+      
+      // Visual feedback
+      const btn = event.target;
+      const originalText = btn.innerText;
+      btn.innerText = "Zipping...";
+      
+      try {
+          const res = await fetch('https://api.greekcalculator.in/api/admin/history-download', {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${window.currentFirebaseToken}`,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ sym, exp, date })
+          });
+          
+          const data = await res.json();
+          if (res.ok) {
+              // Convert the JSON response into a downloadable file in the browser
+              const blob = new Blob([JSON.stringify(data.data, null, 2)], {type: "application/json"});
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `GC_History_${sym}_${exp}_${date}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+          } else {
+              alert("Download failed: " + data.error);
+          }
+      } catch (err) {
+          alert("Network error.");
+      }
+      btn.innerText = originalText;
+  };
+
+  // 🟢 NEW: Delete History Logic
+  window.deleteHistory = async function(sym, exp, date) {
+      if (!confirm(`Are you absolutely sure you want to permanently delete the data for ${sym} on ${date}? This cannot be undone.`)) return;
+      
+      if (!window.currentFirebaseToken) return;
+      
+      try {
+          const res = await fetch('https://api.greekcalculator.in/api/admin/history-delete', {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${window.currentFirebaseToken}`,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ sym, exp, date })
+          });
+          
+          if (res.ok) {
+              // Reload the table
+              window.loadAdminData();
+          } else {
+              const data = await res.json();
+              alert("Delete failed: " + data.error);
+          }
+      } catch (err) {
+          alert("Network error.");
       }
   };
 </script>
