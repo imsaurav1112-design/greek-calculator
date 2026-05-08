@@ -214,6 +214,33 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 .chart-sidebar .resizer:hover { background: var(--accent); }
 .chart-toolbar { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; padding: 6px 8px; background: #131722; border-bottom: 1px solid #2a2e39; overflow-x: auto; }
 .chart-toolbar::-webkit-scrollbar { height: 0px; }
+  /* 🟢 MODERN CHART TYPE TOGGLE */
+.chart-toggle-group {
+    display: flex;
+    align-items: center;
+    background: #0f111a; /* Dark inset background */
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid #2a2e39;
+}
+.toggle-option {
+    background: transparent;
+    color: #64748b; /* Faded out when inactive */
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+}
+.toggle-option:hover { color: #d1d4dc; }
+.toggle-option.active {
+    background: rgba(59, 130, 246, 0.15); /* Sleek blue glass highlight */
+    color: var(--accent); /* Bright blue icon */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
 
 .chart-btn { background: transparent; color: #b2b5be; border: 1px solid transparent; padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Poppins', sans-serif; transition: 0.15s; white-space: nowrap; }
 .chart-btn:hover { background: #2a2e39; color: #d1d4dc; }
@@ -444,9 +471,18 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <div class="chart-toolbar">
             <div style="width: 1px; height: 20px; background: #2a2e39; margin: 0 4px;"></div>
             
-            <button class="chart-btn" id="btn-tv-type" onclick="toggleTVType()" title="Candle / Line">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">   <path d="M3 17l6-6 4 4 8-8" />   <path d="M17 12v5M21 12v5M17 12h4v5h-4z" /> </svg>
-            </button>
+<div class="chart-toggle-group">
+                <button class="toggle-option active" id="btn-tv-candle" onclick="setTVType('candle')" title="Candlestick Chart">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21v-6M9 9V3M15 21v-2M15 10V3M7 15h4v-6H7v6zM13 19h4v-9h-4v9z"/>
+                    </svg>
+                </button>
+                <button class="toggle-option" id="btn-tv-line" onclick="setTVType('line')" title="Line Chart">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 17 9 11 13 15 21 7"></polyline>
+                    </svg>
+                </button>
+            </div>
             <button class="chart-btn" onclick="refreshTVChart()" title="Reset Scale">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
             </button>
@@ -967,16 +1003,17 @@ function initTVChart() {
     }, 300);
 }
 
-function toggleTVType() {
-    tvIsCandle = !tvIsCandle;
+// 🟢 Modern Segmented Chart Toggle Logic
+function setTVType(type) {
+    tvIsCandle = (type === 'candle');
+    
+    // Apply visibility to the chart lines
     tvCandleSeries.applyOptions({ visible: tvIsCandle });
     tvLineSeries.applyOptions({ visible: !tvIsCandle });
-    const btn = document.getElementById('btn-tv-type');
-    if (tvIsCandle) {
-        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>`;
-    } else {
-        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">   <path d="M3 17l6-6 4 4 8-8" />   <path d="M17 12v5M21 12v5M17 12h4v5h-4z" /> </svg>`;
-    }
+    
+    // Smoothly highlight the active button
+    document.getElementById('btn-tv-candle').classList.toggle('active', tvIsCandle);
+    document.getElementById('btn-tv-line').classList.toggle('active', !tvIsCandle);
 }
 
 function refreshTVChart() { 
@@ -1001,7 +1038,7 @@ function updateRealSpotChart() {
         seenTimes.add(timestamp);
 
         spotData.push({ time: timestamp, value: spotVal });
-        const bucketTime = Math.floor(timestamp / 180) * 180;
+        const bucketTime = Math.floor(timestamp / 300) * 300;
 
         if (!candleMap.has(bucketTime)) {
             candleMap.set(bucketTime, { time: bucketTime, open: spotVal, high: spotVal, low: spotVal, close: spotVal });
@@ -1076,10 +1113,20 @@ function parseTimeToUnix(timeStr) {
     const [time, period] = timeStr.split(' ');
     let [hrs, mins] = time.split(':');
     hrs = parseInt(hrs);
+    
     if (period === 'PM' && hrs !== 12) hrs += 12;
     if (period === 'AM' && hrs === 12) hrs = 0;
-    const baseDate = new Date().toISOString().split('T')[0];
-    const d = new Date(`${baseDate}T${hrs.toString().padStart(2, '0')}:${mins}:00+05:30`);
+    
+    // 🟢 FIX 1: Get the exact local date to prevent midnight UTC rollover bugs
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    // 🟢 FIX 2: Append 'Z' (UTC) instead of '+05:30'. 
+    // This tricks Lightweight Charts into displaying the exact IST hours on the X-Axis!
+    const d = new Date(`${year}-${month}-${day}T${hrs.toString().padStart(2, '0')}:${mins}:00Z`);
+    
     return Math.floor(d.getTime() / 1000); 
 }
 
