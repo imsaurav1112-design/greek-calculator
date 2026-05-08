@@ -47,11 +47,14 @@
     .kpi-title { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
     .kpi-value { font-size: 32px; font-weight: 800; font-family: 'Ubuntu Mono', monospace; }
 
-   /* TABLES */
-    .table-container { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    th { background: var(--section); padding: 12px 20px; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-    td { padding: 15px 20px; border-bottom: 1px solid var(--border); color: var(--text); }
+/* TABLES */
+    .table-container { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; } /* 🟢 Changed to overflow-x: auto so it scrolls instead of squishing */
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; min-width: 800px; } /* 🟢 Forces table to maintain a good width */
+    th { background: var(--section); padding: 12px 10px; color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; } /* 🟢 Reduced padding & stopped wrapping */
+    td { padding: 12px 10px; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; } /* 🟢 Reduced padding & stopped wrapping */
+    
+    /* Optional: If emails are too long, truncate them with an ellipsis (...) */
+    .td-email { max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: var(--section); }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
