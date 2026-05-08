@@ -841,7 +841,7 @@ window.loadExpiries = async function() {
     const currentExpiry = d.expiries[0];
     
     // 🟢 OPTIMIZATION: Populate the dropdown with only this single date
-    menu.innerHTML = `<div class="custom-option" onclick="selectExpiry('${currentExpiry}')">${currentExpiry} (Current)</div>`;
+    menu.innerHTML = `<div class="custom-option" onclick="selectExpiry('${currentExpiry}')">${currentExpiry}</div>`;
     
     if (currentExpiry) {
         selectExpiry(currentExpiry);
