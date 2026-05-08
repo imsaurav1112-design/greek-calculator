@@ -157,8 +157,8 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, getIdToken, signOut, GoogleAuthProvider, signInWithRedirect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, getIdToken, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   const firebaseConfig = {
     apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
     authDomain: "insideoptionchain.firebaseapp.com",
@@ -198,10 +198,21 @@
     }
   });
 
-  window.handleGoogleLogin = function() {
+window.handleGoogleLogin = async function() {
       const btn = document.getElementById('btn-login');
-      if (btn) btn.innerText = "Redirecting to Google...";
-      signInWithRedirect(auth, googleProvider);
+      const statusBox = document.getElementById('status-box');
+      
+      if (btn) btn.innerText = "Opening Google...";
+      statusBox.innerHTML = `Please complete the sign-in in the popup window.`;
+      
+      try {
+          // This opens a secure popup instead of leaving the page!
+          await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+          console.error("Popup Error:", error);
+          statusBox.innerHTML = `<span style="color:var(--red)">Login cancelled or failed. Please try again.</span>`;
+          if (btn) btn.innerText = "Admin Sign In";
+      }
   };
 
   window.logoutFirebase = function() {
