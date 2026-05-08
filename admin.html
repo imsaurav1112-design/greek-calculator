@@ -279,7 +279,7 @@ window.handleGoogleLogin = async function() {
                   // Build Table
                   tbody.innerHTML = window.globalUsers.map(u => `
                       <tr>
-                          <td>${u.email || 'Unknown'}</td>
+                          <td class="td-email" title="${u.email}">${u.email || 'Unknown'}</td>
                           <td><span class="badge ${u.tier === 'pro' ? 'pro' : 'free'}">${u.tier || 'free'}</span></td>
                           <td>${u.expiry || '--'}</td>
                           <td style="font-family:'Ubuntu Mono';">₹${parseFloat(u.wallet_balance || 0).toFixed(2)}</td>
