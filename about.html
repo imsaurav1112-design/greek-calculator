@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us - Greek Calculator</title>
+<link rel="icon" type="image/png" href="optionchain_fevicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #09090b;         
+        --card: #141415;       
+        --border: #27272a;     
+        --text: #f4f4f5;       
+        --muted: #a1a1aa;      
+        --accent: #3b82f6;     
+    }
+    
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: 'Inter', sans-serif; 
+        padding: 40px 5%; 
+        line-height: 1.6; 
+        margin: 0;
+    }
+    
+    a { 
+        color: var(--accent); 
+        text-decoration: none; 
+        transition: 0.2s;
+    }
+    
+    a:hover {
+        color: #60a5fa;
+    }
+    
+    .container { 
+        max-width: 800px; 
+        margin: 0 auto; 
+    }
+    
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 40px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+    }
+    
+    .back-btn {
+        font-size: 16px;
+        color: var(--muted);
+        font-weight: 600;
+    }
+    
+    .back-btn:hover {
+        color: var(--text);
+    }
+
+    .content-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+
+    .content-box h2 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .content-box p {
+        color: var(--muted);
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+    .content-box p:last-child {
+        margin-bottom: 0;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .feature-list li {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .feature-list li strong {
+        color: var(--text);
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header-title">
+        <a href="index.html" class="back-btn">← Back</a> 
+        <span>| About Greek Calculator</span>
+    </div>
+
+    <div class="content-box">
+        <h2>Our Mission</h2>
+        <p>Greek Calculator was engineered to bridge the gap between retail traders and institutional-grade analytics. We believe that understanding the stock market, particularly complex derivatives and option chains, shouldn't require a Wall Street budget or a PhD.</p>
+        <p>Our goal is to democratize quantitative data, empowering retail traders with the mathematical tools needed to navigate the markets with precision and confidence.</p>
+    </div>
+
+    <div class="content-box">
+        <h2>What We Do</h2>
+        <p>We are a premier educational and analytical platform specifically focused on the Indian stock market (NIFTY, BANK NIFTY, FINNIFTY). We provide a robust terminal that visualizes live options data, calculates Greeks in real-time, and backtests historical setups.</p>
+        <p>By translating raw market data into readable, actionable insights, we help traders shift their focus from emotional speculation to statistical probability.</p>
+    </div>
+
+    <div class="content-box">
+        <h2>The Educational Edge</h2>
+        <ul class="feature-list">
+            <li><strong>Data-Driven Approach:</strong> We teach you how to read volatility, open interest, and implied ranges instead of just looking at standard price charts.</li>
+            <li><strong>Advanced Tooling:</strong> Access to institutional concepts like Order Flow (Footprint), historical mapping, and Greek calculations.</li>
+            <li><strong>Community & Growth:</strong> We foster an environment where traders can test strategies, learn from real-time data, and grow their quantitative skill sets.</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
