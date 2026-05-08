@@ -755,9 +755,9 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 </footer>
 
 <!-- Strike Charts Modal -->
-<div class="modal-overlay" id="chart-modal" onclick="closeCharts(event)">
+<div class="modal-overlay" id="chart-modal" onclick="closeStrikeCharts(event)">
     <div class="modal-content">
-        <button class="modal-close" onclick="closeCharts(event)">✖</button>
+        <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
 <div class="charts-container" style="display: flex; flex-direction: column; gap: 16px; height: auto;">
@@ -1010,7 +1010,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// 🟢 UPGRADED: Global Click Listener
 document.addEventListener('click', function(event) {
+    // 1. Check Custom Dropdown Menus
     let clickedInsideMenu = false;
     let clickedOnButton = false;
     document.querySelectorAll('.custom-menu').forEach(menu => {
@@ -1022,6 +1024,18 @@ document.addEventListener('click', function(event) {
         document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+    }
+
+    // 2. Check Settings Panel
+    const settingsPanel = document.getElementById('settings-panel');
+    const settingsBtn = document.getElementById('btn-settings');
+    
+    // If the panel is open, and they clicked outside BOTH the panel and the button
+    if (settingsPanel && settingsPanel.style.display === 'flex') {
+        if (!settingsPanel.contains(event.target) && (!settingsBtn || !settingsBtn.contains(event.target))) {
+            settingsPanel.style.display = 'none';
+            if(settingsBtn) settingsBtn.classList.remove('active');
+        }
     }
 });
 
@@ -1544,6 +1558,19 @@ function showStrikeCharts(strike) {
         });
     }, 100); 
 }
+
+  // 🟢 FIX: Function to close the Strike Charts Modal
+window.closeStrikeCharts = function(event) {
+    // Only close if they clicked the dark overlay or the X button
+    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
+    
+    document.getElementById('chart-modal').style.display = 'none';
+    
+    // Optional: Clean up the charts from memory when closed to save RAM
+    if(tvModalVolChart) { tvModalVolChart.remove(); tvModalVolChart = null; }
+    if(tvModalOiChart) { tvModalOiChart.remove(); tvModalOiChart = null; }
+    if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
+};
 
 function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
