@@ -41,6 +41,17 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .btn:hover { background: var(--section); }
 .btn-primary { background: var(--accent); border: none; color: #fff; }
 .btn-primary:hover { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
+  /* 🟢 High-Contrast Secondary Button (For Log In) */
+.btn-login {
+    background: rgba(255, 255, 255, 0.05); /* Subtle glassy fill */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Bright enough to see the button shape */
+    color: var(--text);
+}
+.btn-login:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4); /* Glows slightly on hover */
+    transform: translateY(-1px);
+}
 
 /* --- Google btn (Used in Modal) --- */
 .btn-google { background: white; color: #0f172a; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px 24px; font-size: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 auto 20px auto; width: 100%; }
@@ -282,7 +293,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     </div>
 
 <div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
-       <button class="nav-btn btn" id="btn-login-nav" onclick="openAuthModal('login')">Log In</button>
+       <button class="nav-btn btn btn-login" id="btn-login-nav" onclick="openAuthModal('login')">Log In</button>
         
         <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
         
