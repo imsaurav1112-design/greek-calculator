@@ -146,36 +146,29 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 /* 🟢 THEMED FLOATING AUTH MODAL STYLES */
   .auth-overlay {
       display: none; 
-      position: fixed; 
-      top: 0; left: 0; 
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.7); 
-      backdrop-filter: blur(8px); 
-      z-index: 3000; 
-      align-items: center; 
-      justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.8); 
+      backdrop-filter: blur(12px); 
+      z-index: 3000; align-items: center; justify-content: center; padding: 20px;
+      /* 🟢 Fade the background in smoothly */
+      animation: overlayFade 0.4s ease forwards;
   }
 
-  .auth-container {
-      display: flex;
-      flex-direction: row;
-      width: 100%;
-      max-width: 950px; 
-      height: 600px;
-      background: #ffffff;
-      border-radius: 20px; 
-      overflow: hidden;
+ .auth-container {
+      display: flex; flex-direction: row; width: 100%; max-width: 950px; height: 600px;
+      background: #ffffff; border-radius: 20px; overflow: hidden;
       box-shadow: 0 0 40px rgba(59, 130, 246, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-      animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      position: relative; /* 🟢 FIX 1: Keeps the Close Button anchored here! */
+      border: 1px solid rgba(255, 255, 255, 0.1); position: relative;
+      /* 🟢 Modern cubic-bezier spring animation */
+      animation: modalModernPop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
-
   @keyframes modalPop {
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes overlayFade {
+      from { opacity: 0; backdrop-filter: blur(0px); }
+      to { opacity: 1; backdrop-filter: blur(12px); }
   }
 
   .auth-left {
@@ -280,7 +273,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     </div>
 
 <div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
-        <button class="nav-btn btn" id="btn-login-nav" onclick="openAuthModal('login')">Log In</button>
+       <button class="nav-btn btn" id="btn-login-nav" onclick="openAuthModal('login')">Log In</button>
         
         <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
         
@@ -318,7 +311,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     <p>Advanced Options Chain visualizer featuring real-time Option chains of <span style="color: var(--accent);">Nifty 50, Sensex, Bank Nifty</span><br><span style="color: #a855f7; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; margin-top: 10px; display: inline-block;">⚡ Powered by Upstox</span></p>
     
 <div class="hero-buttons" id="hero-actions">
-    <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
+<button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
         Join Now →
     </button>
 </div>
@@ -451,8 +444,8 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                 <h3 id="auth-form-title" style="margin:0; font-size: 24px; text-align: center;">Welcome back</h3>
                 <p id="auth-form-subtitle" class="subtext" style="color: #64748b; margin-bottom: 25px; text-align: center;">Sign in to your account</p>
 
-                <button class="btn-google" onclick="window.handleGoogleLogin()">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="18">
+                <button class="btn-google" onclick="window.handleGoogleLogin()" style="width:100%; height:45px; border: 1px solid #e2e8f0; background:white; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; font-weight:600;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     Continue with Google
                 </button>
 
@@ -497,7 +490,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         closeAuthModal();
     }
 };
-  // 🟢 Toggle between Login and Signup modes in the UI
+ // 🟢 Ironclad Mode Switcher (Now includes 'Join Now' text)
   window.toggleAuthMode = function(mode) {
       const title = document.getElementById('auth-form-title');
       const subtitle = document.getElementById('auth-form-subtitle');
@@ -505,40 +498,41 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
       const submitBtn = document.getElementById('auth-submit-btn');
       const switchText = document.getElementById('auth-switch-text');
       const errorDiv = document.getElementById('modal-error');
-      
       const leftHeading = document.getElementById('auth-marketing-heading');
       
-      errorDiv.style.display = 'none'; // clear errors on switch
+      errorDiv.style.display = 'none';
 
       if (mode === 'signup') {
           title.innerText = "Create Your Account";
           subtitle.innerText = "Enter your details to get started for free";
           extraFields.style.display = "block";
           
-          submitBtn.innerText = "Continue →";
-          submitBtn.onclick = window.handleEmailSignUp; // Points to your existing signup function
+          submitBtn.innerText = "Join Now →";
+          submitBtn.onclick = window.handleEmailSignUp;
           
-          switchText.innerHTML = `Already have an account? <a onclick="toggleAuthMode('login')">Sign In →</a>`;
+          switchText.innerHTML = `Already have an account? <a onclick="toggleAuthMode('login')" style="color: var(--accent); cursor:pointer; font-weight:700;">Sign In →</a>`;
           leftHeading.innerHTML = "Start Trading<br>Smarter Today.";
       } else {
           title.innerText = "Welcome back";
-          subtitle.innerText = "Sign in to your trading account";
+          subtitle.innerText = "Sign in to your account";
           extraFields.style.display = "none";
           
           submitBtn.innerText = "Sign In →";
-          submitBtn.onclick = window.handleEmailLogin; // Points to your existing login function
+          submitBtn.onclick = window.handleEmailLogin;
           
-          switchText.innerHTML = `No account? <a onclick="toggleAuthMode('signup')">Create one free →</a>`;
-          leftHeading.innerHTML = "Your Edge in<br>Every Trade.";
+          switchText.innerHTML = `No account? <a onclick="toggleAuthMode('signup')" style="color: var(--accent); cursor:pointer; font-weight:700;">Join Now free →</a>`;
+          leftHeading.innerHTML = "Analyze the Data.<br>Master the Market.";
       }
   };
-
-  // Reset to Login mode every time the modal opens
-  const originalOpenModal = window.openAuthModal;
-// 🟢 Updated to accept a specific mode (login or signup)
-  window.openAuthModal = function(mode = 'login') {
-      toggleAuthMode(mode); // Tell the form which view to build
+// 🟢 Strict Open Function (Forces the mode every single time)
+  window.openAuthModal = function(mode) {
+      // If a mode isn't passed, default to login. Otherwise, strictly use the mode requested.
+      toggleAuthMode(mode || 'login'); 
       document.getElementById('auth-overlay').style.display = 'flex';
+  };
+  
+  window.closeAuthModal = function() { 
+      document.getElementById('auth-overlay').style.display = 'none'; 
   };
 // 🟢 PROCEDURAL BACKGROUND CANDLESTICK ANIMATION
 function initBgAnimation() {
@@ -762,9 +756,8 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('profile-btn').style.display = 'none';
         document.getElementById('profile-panel').style.display = 'none';
         
-        const heroBox = document.getElementById('hero-actions');
+const heroBox = document.getElementById('hero-actions');
         if (heroBox) {
-            // 🟢 Ensure the Hero section draws the new "Get Started" button when logged out!
             heroBox.innerHTML = `
                 <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
                     Join Now →
