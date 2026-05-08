@@ -582,7 +582,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -752,28 +752,47 @@ initBgAnimation();
       document.getElementById('auth-overlay').style.display = 'none';
   };
 
-  // 🟢 Email Sign Up Logic
+  // 🟢 Upgraded Email Sign Up Logic
   window.handleEmailSignUp = async function() {
+      const name = document.getElementById('modal-name').value;
+      const phone = document.getElementById('modal-phone').value;
       const email = document.getElementById('modal-email').value;
       const password = document.getElementById('modal-password').value;
       const errDiv = document.getElementById('modal-error');
       errDiv.style.display = 'none';
 
-      if (!email || password.length < 6) {
-          errDiv.innerText = "Provide a valid email and a password (min 6 chars).";
+      if (!name || !email || password.length < 6) {
+          errDiv.innerText = "Please provide your name, a valid email, and a password (min 6 chars).";
           errDiv.style.display = 'block';
           return;
       }
 
       try {
-          await createUserWithEmailAndPassword(auth, email, password);
+          // 1. Create the account in Firebase
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          
+          // 2. Attach the Name to their Firebase Profile (so the UI floating icon works instantly)
+          await updateProfile(userCredential.user, { displayName: name });
+          
+          // 3. Grab their new ID Badge
+          const token = await userCredential.user.getIdToken();
+          
+          // 4. Send the Name and Phone Number to your SQLite Database!
+          await fetch('https://api.greekcalculator.in/api/update-profile', {
+              method: 'POST',
+              headers: { 
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ name: name, phone: phone })
+          });
+
           closeAuthModal();
       } catch(err) {
           errDiv.innerText = err.message.replace("Firebase:", "").trim();
           errDiv.style.display = 'block';
       }
   };
-
   // 🟢 Email Log In Logic
   window.handleEmailLogin = async function() {
       const email = document.getElementById('modal-email').value;
