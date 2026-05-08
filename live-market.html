@@ -837,12 +837,15 @@ window.loadExpiries = async function() {
         return;
     }
 
-    const limitedExpiries = d.expiries.slice(0, 2);
-    menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
+    // 🟢 OPTIMIZATION: Extract ONLY the very first (current) expiry date
+    const currentExpiry = d.expiries[0];
     
-    if (limitedExpiries.length > 0) {
-        selectExpiry(limitedExpiries[0]);
-        await fetchIntradayHistory(sym, limitedExpiries[0]); 
+    // 🟢 OPTIMIZATION: Populate the dropdown with only this single date
+    menu.innerHTML = `<div class="custom-option" onclick="selectExpiry('${currentExpiry}')">${currentExpiry} (Current)</div>`;
+    
+    if (currentExpiry) {
+        selectExpiry(currentExpiry);
+        await fetchIntradayHistory(sym, currentExpiry); 
         await fetchUpstoxChain(false); 
     }
     clearErr();
@@ -852,7 +855,6 @@ window.loadExpiries = async function() {
       showErr("Server says: " + e.message); 
   }
 }
-
 function getStrikeInterval(symbol) {
   switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'FINNIFTY': return 50; default: return 50; }
 }
