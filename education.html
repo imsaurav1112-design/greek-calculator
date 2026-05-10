@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GC | Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+    :root { 
+        --bg: #09090b; --card: #141415; --section: #202023; --border: #27272a; 
+        --text: #f4f4f5; --muted: #a1a1aa; --accent: #3b82f6; 
+    }
+    
+    body { 
+        margin: 0; background-color: var(--bg); color: var(--text); 
+        font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+    }
+    
+    /* HEADER */
+    header { 
+        height: 52px; background: var(--card); border-bottom: 1px solid var(--border); 
+        display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+        position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-weight: 900; font-size: 18px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 6px;}
+    .logo span { color: var(--accent); }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;}
+    .back-btn:hover { color: var(--text); }
+
+    /* CONTENT LAYOUT */
+    .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-weight: 900; font-size: 32px; margin-bottom: 8px; }
+    p.subtitle { color: var(--muted); margin-bottom: 40px; }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
+    @media(min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    /* CATEGORY CARDS */
+    .category { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .category h2 { font-size: 18px; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+    
+    /* TOPIC LINKS */
+    .topic-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+    .topic-link { 
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--section); padding: 12px 15px; border-radius: 8px; 
+        color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600;
+        border: 1px solid transparent; cursor: pointer; transition: 0.2s;
+    }
+    .topic-link:hover { border-color: rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.05); }
+    .topic-link svg { width: 16px; height: 16px; color: var(--muted); }
+
+    /* --- SLEEK COMING SOON MODAL --- */
+    #modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+        display: flex; justify-content: center; align-items: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100;
+    }
+    #modal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    .modal-box {
+        background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+        padding: 30px; text-align: center; width: 90%; max-width: 320px;
+        transform: translateY(20px); transition: transform 0.3s ease;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    #modal-overlay.active .modal-box { transform: translateY(0); }
+    
+    .modal-icon { width: 48px; height: 48px; background: rgba(59, 130, 246, 0.1); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; }
+    .modal-box h3 { margin: 0 0 10px 0; font-size: 20px; }
+    .modal-box p { color: var(--muted); font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
+    
+    .close-btn {
+        background: var(--text); color: var(--bg); border: none; padding: 10px 20px;
+        border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s;
+    }
+    .close-btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="../index.html" class="logo"><span>Greek</span> Calculator</a>
+    <a href="../index.html" class="back-btn">← Back to Terminal</a>
+</header>
+
+<div class="container">
+    <h1>Terminal Academy</h1>
+    <p class="subtitle">Master orderflow, options chains, and institutional strategies.</p>
+
+    <div class="grid">
+        
+        <div class="category">
+            <h2>🖥️ Terminal Guide</h2>
+            <div class="topic-list">
+                <a class="topic-link coming-soon">How to read the Footprint Chart <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Understanding Max Pain & PCR <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Navigating the Historical Backtester <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>🔰 Beginners</h2>
+            <div class="topic-list">
+                <a class="topic-link coming-soon">What is an Options Chain? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Calls vs. Puts Explained <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">The Basics of Open Interest (OI) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>🧠 Advanced</h2>
+            <div class="topic-list">
+                <a class="topic-link coming-soon">Chart of Accuracy (COA) Shifts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Implied Volatility & The Greeks <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Delta Imbalances in Orderflow <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>♟️ Strategies</h2>
+            <div class="topic-list">
+                <a class="topic-link coming-soon">The VWAP Bounce Strategy <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Trading State of Trend (STT/STB) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a class="topic-link coming-soon">Zero-to-Hero Expiry Setup <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h3>Coming Soon</h3>
+        <p>We are currently writing this guide. Check back soon for deep institutional knowledge.</p>
+        <button class="close-btn" onclick="closeModal()">Got it</button>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('modal-overlay');
+
+    // Find all links with the 'coming-soon' class and intercept their clicks
+    document.querySelectorAll('.coming-soon').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Stop the link from actually changing pages
+            modal.classList.add('active'); // Show the popup
+        });
+    });
+
+    // Function to close the modal
+    function closeModal() {
+        modal.classList.remove('active');
+    }
+
+    // Close the modal if they click anywhere outside the box
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+</script>
+
+</body>
+</html>
