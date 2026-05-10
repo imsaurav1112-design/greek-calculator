@@ -37,8 +37,11 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     display: flex;
     gap: 20px;
     align-items: center;
+    
+    /* 🟢 The Centering Magic */
     position: absolute;
-    left: 1000px; /* Adjust distance from the left edge */
+    left: 50%;
+    transform: translateX(-50%);
 }
 .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
 .nav-links a:hover { color: var(--text); }
