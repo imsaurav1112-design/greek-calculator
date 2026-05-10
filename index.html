@@ -47,21 +47,48 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .nav-links a:hover { color: var(--text); }
 
 .auth-buttons { display: flex; gap: 12px; align-items: center; }
-.btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.btn:hover { background: var(--section); }
-.btn-primary { background: var(--accent); border: none; color: #fff; }
-.btn-primary:hover { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
+.btn { 
+    background: transparent; color: var(--text); padding: 10px 20px; 
+    border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; 
+    font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+  .btn:hover { background: var(--section); }
+.btn-primary { 
+    background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
+    border: 1px solid rgba(59, 130, 246, 0.6); 
+    color: #fff; 
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+  .btn-primary:hover span { transform: translateX(4px); }
+.btn-primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: rgba(96, 165, 250, 0.8);
+}
   /* 🟢 High-Contrast Secondary Button (For Log In) */
 .btn-login {
-    background: rgba(255, 255, 255, 0.05); /* Subtle glassy fill */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Bright enough to see the button shape */
+    background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); /* Subtle top light reflection */
 }
 .btn-login:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.4); /* Glows slightly on hover */
-    transform: translateY(-1px);
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
+  .btn-primary::before {
+    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-25deg); transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+  .btn-primary:hover::before { left: 150%; } /* Triggers the light sweep */
 
 /* --- Google btn (Used in Modal) --- */
 .btn-google { background: white; color: #0f172a; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px 24px; font-size: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 auto 20px auto; width: 100%; }
@@ -74,15 +101,9 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
 .hero-buttons { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
 .launch-btn { 
+    padding: 14px 36px; 
     font-size: 16px; 
-    padding: 14px 40px; /* Slightly thicker padding for a premium feel */
-    border-radius: 8px; 
-    display: inline-flex; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 10px; 
-    width: fit-content; /* 🟢 THE FIX: Makes the button only as wide as the text */
-    font-weight: 700;
+    width: fit-content;
 }
 /* --- FEATURES GRID --- */
 .features { padding: 50px 5%; max-width: 1200px; margin: 0 auto; }
@@ -342,8 +363,8 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     
 <div class="hero-buttons" id="hero-actions">
 <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
-        Join Now →
-    </button>
+    Join Now <span style="transition: transform 0.2s; display: inline-block;">→</span>
+</button>
 </div>
 </section>
 
