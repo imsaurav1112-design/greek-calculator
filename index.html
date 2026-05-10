@@ -195,13 +195,18 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 .logout-text:hover { color: #f87171; text-decoration: underline; }
 
 /* 🟢 THEMED FLOATING AUTH MODAL STYLES */
-  .auth-overlay {
+.auth-overlay {
       display: none; 
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.8); 
-      backdrop-filter: blur(12px); 
+      
+      /* 🟢 THE FIX: Lowered from 0.8 to 0.3 so it's mostly transparent */
+      background: rgba(0, 0, 0, 0.3); 
+      
+      /* 🟢 Increased the blur slightly to compensate for the lighter background */
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px); /* Safari support */
+      
       z-index: 3000; align-items: center; justify-content: center; padding: 20px;
-      /* 🟢 Fade the background in smoothly */
       animation: overlayFade 0.4s ease forwards;
   }
 
@@ -217,11 +222,10 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
   }
-  @keyframes overlayFade {
-      from { opacity: 0; backdrop-filter: blur(0px); }
-      to { opacity: 1; backdrop-filter: blur(12px); }
+ @keyframes overlayFade {
+      from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+      to { opacity: 1; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
   }
-
   .auth-left {
       flex: 1.2;
       background: linear-gradient(135deg, #1e40af 0%, var(--accent) 100%);
@@ -357,7 +361,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 </header>
 
 <section class="hero">
-    <div class="section-title">Advanced Market Data Research</div>
+    <div class="section-title">Empowering Vision with Data Clarity</div>
     <h1>Analyze the Data<br>Master the <span>Market</span></h1>
     <p>Advanced Options Chain visualizer featuring real-time Option chains of <span style="color: var(--accent);">Nifty 50, Sensex, Bank Nifty</span><br><span style="color: #a855f7; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; margin-top: 10px; display: inline-block;">⚡ Powered by Upstox</span></p>
     
