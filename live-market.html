@@ -234,9 +234,25 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 .modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
 .modal-header span { color: var(--accent); }
 
-.charts-container { display: flex; justify-content: space-between; gap: 20px; height: 300px;}
-.chart-box { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; position: relative; }
+.charts-container { 
+    display: flex; 
+    flex-direction: row; /* Forces horizontal alignment */
+    justify-content: space-between; 
+    gap: 20px; 
+    width: 100%;
+}
 
+.chart-box { 
+    flex: 1; /* Makes all three share the space equally */
+    aspect-ratio: 1 / 1; /* 🟢 Forces perfect squares */
+    height: auto !important; /* Overrides the old fixed heights */
+    background: var(--bg); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    padding: 12px; 
+    display: flex;
+    flex-direction: column;
+}
 .chart-sidebar { position: relative; width: 0px; height: 100%; background: #131722; border-left: 1px solid #2a2e39; display: flex; flex-direction: column; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; flex-shrink: 0; }
 .chart-sidebar.open { width: 340px; }
 .chart-sidebar .resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; background: transparent; z-index: 50; transition: background 0.2s; }
@@ -352,8 +368,8 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     .chart-sidebar.open { transform: translateX(0); }
     .chart-sidebar .resizer { display: none; } 
-    .charts-container { flex-direction: column; height: auto; gap: 10px; }
-    .chart-box { height: 250px; }
+    .charts-container { flex-direction: column; }
+    .chart-box { aspect-ratio: auto; height: 250px !important; }
     .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
     
     footer { height: auto !important; padding: 6px 10px !important; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
@@ -602,28 +618,28 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
         <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
         
-        <div class="charts-container" style="display: flex; flex-direction: column; gap: 16px; height: auto;">
-            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-                    TRADED VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
-                </div>
-                <div id="tv-modal-vol" style="flex: 1; width: 100%; position: relative;"></div>
-            </div>
-            
-            <div class="chart-box" style="display: flex; flex-direction: column; height: 190px;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-                    OI (<span style="color:#ef4444">CE</span>/<span style="color:#10b981">PE</span>) VS PRICE (<span style="color:#f59e0b">CE</span>/<span style="color:#3b82f6">PE</span>)
-                </div>
-                <div id="tv-modal-oi" style="flex: 1; width: 100%; position: relative;"></div>
-            </div>
-
-            <div class="chart-box" style="display: flex; flex-direction: column; height: 160px;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-                    INTRADAY OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
-                </div>
-                <div id="tv-modal-oi-chg" style="flex: 1; width: 100%; position: relative;"></div>
-            </div>
+<div class="charts-container">
+    <div class="chart-box">
+        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+            VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
         </div>
+        <div id="tv-modal-vol" style="flex: 1; width: 100%; position: relative;"></div>
+    </div>
+    
+    <div class="chart-box">
+        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+            OPEN INTEREST (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        </div>
+        <div id="tv-modal-oi" style="flex: 1; width: 100%; position: relative;"></div>
+    </div>
+
+    <div class="chart-box">
+        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
+            OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        </div>
+        <div id="tv-modal-oi-chg" style="flex: 1; width: 100%; position: relative;"></div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -1170,18 +1186,35 @@ function createInstChart(containerId) {
     container.innerHTML = ''; 
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 300,
-        height: container.clientHeight || 150,
-        layout: { background: { type: 'solid', color: '#131722' }, textColor: '#d1d4dc', fontFamily: "'Trebuchet MS', Roboto, Ubuntu, sans-serif" },
-        grid: { vertLines: { color: 'rgba(42, 46, 57, 0.5)' }, horzLines: { color: 'rgba(42, 46, 57, 0.5)' } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        height: container.clientHeight || 300,
+        layout: { background: { type: 'solid', color: '#131722' }, textColor: '#d1d4dc', fontFamily: "'IBM Plex Sans', sans-serif" },
+        
+        // 🟢 Cleaner look: Hide the grid lines
+        grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
+        
+        crosshair: { mode: LightweightCharts.CrosshairMode.Magnet },
         rightPriceScale: { borderColor: '#2b2b43' },
-        timeScale: { borderColor: '#2b2b43', timeVisible: true, secondsVisible: false }
+        
+        timeScale: { 
+            borderColor: '#2b2b43', 
+            timeVisible: true, 
+            secondsVisible: false,
+            fixLeftEdge: true,  // 🟢 Locks the chart to exactly 9:15
+            fixRightEdge: true  // 🟢 Locks the chart to exactly 3:30
+        },
+        
+        // 🟢 Disable heavy interactivity
+        handleScroll: false, // Stops user from dragging the chart left/right
+        handleScale: false   // Stops user from zooming in/out
     });
 
     let isDisposed = false;
     const observer = new ResizeObserver(entries => {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
-        try { chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); } catch(e) {}
+        try { 
+            chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
+            chart.timeScale().fitContent(); // 🟢 Forces data to fit the square perfectly
+        } catch(e) {}
     });
     observer.observe(container);
 
