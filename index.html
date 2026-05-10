@@ -33,7 +33,13 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .logo { font-weight: 800; font-size: 25px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px;}
 .logo span { color: var(--accent); }
 
-.nav-links { display: flex; gap: 20px; align-items: center; }
+.nav-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    position: absolute;
+    left: 20px; /* Adjust distance from the left edge */
+}
 .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
 .nav-links a:hover { color: var(--text); }
 
