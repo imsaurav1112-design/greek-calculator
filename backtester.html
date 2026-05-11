@@ -221,9 +221,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .footer-left b { color: var(--text); font-weight: 600; }
 .footer-left .highlight { color: var(--accent); }
 .footer-right { display: flex; align-items: center; gap: 15px; }
-.live-clock { font-family: "Ubuntu Mono", monospace; font-size: 12px; font-weight: 600; color: var(--text); }
-.status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+.live-clock { order: 3; font-size: 11px; color: var(--muted); }.status-indicator { order: 2; margin: 0 !important; }.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
 /* 🟢 BACKTEST PLAYBACK CONTROLS */
 .playback-controls { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border); }
@@ -467,18 +465,47 @@ header {
     .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
     .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
     /* 6. Ultra-Compact Footer */
-    footer { 
-        height: auto; 
-        padding: 8px 10px; 
-        flex-direction: column; 
-        gap: 6px; 
-        font-size: 10px;
-        z-index: 95;
+footer { 
+        height: 32px !important; /* Forces a tiny footprint */
+        padding: 0 12px !important; 
+        flex-direction: row !important; /* Forces a single line */
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important; /* Makes it swipeable if screen is tiny */
+        overflow-y: hidden !important;
+        justify-content: flex-start !important;
+        gap: 16px !important; 
+        font-size: 11px; 
+        z-index: 95; 
+        -webkit-overflow-scrolling: touch;
     }
-    .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  footer::-webkit-scrollbar { display: none; } /* Hides the scrollbar */
+    .footer-left { 
+        width: auto !important; 
+        justify-content: flex-start !important;
+        border-bottom: none !important; 
+        padding-bottom: 0 !important; 
+        gap: 12px !important;
+        flex-shrink: 0;
+    }
     .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: none; } /* Hide dividers to save space */
-    .footer-right { width: 100%; justify-content: space-between; }
+    .footer-left .divider { display: block !important; height: 12px !important; }
+    .footer-right { 
+        width: auto !important; 
+        display: flex !important; 
+        justify-content: flex-start !important; 
+        align-items: center; 
+        margin-top: 0 !important; 
+        gap: 12px !important;
+        flex-shrink: 0;
+    }
+  .mobile-market-stats { 
+        display: flex !important; align-items: center; gap: 12px !important; 
+        font-family: 'IBM Plex Sans', monospace; font-size: 11px; color: var(--muted); order: 1; 
+    }
+    .mobile-market-stats b { color: var(--accent); }
+    
+    /* Hide the word "Ready/Live" to save space, keep the colored dot! */
+    #chain-status { display: none !important; }
 }
 </style>
 </head>
