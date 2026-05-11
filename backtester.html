@@ -1039,7 +1039,7 @@ async function fetchBacktestData() {
     
     if (backtestPlayInterval) toggleBacktestPlay();
 
-try {
+    try {
         const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
         const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
         
@@ -1055,6 +1055,9 @@ try {
             return;
         }
 
+        // 🟢 Sort mathematically by Time so 9:15 AM comes before 1:15 PM
+        data.sort((a, b) => parseTimeToUnix(a.time) - parseTimeToUnix(b.time));
+
         backtestSnapshots = data.map(snap => {
             return {
                 timestamp: snap.time,
@@ -1069,13 +1072,7 @@ try {
             };
         });
 
-  // 🟢 POPULATE THE DROPDOWN SELECTOR
-        const timeSelector = document.getElementById('play-time-display');
-        timeSelector.innerHTML = backtestSnapshots.map((snap, idx) => 
-            `<option value="${idx}">${snap.timestamp}</option>`
-        ).join('');
-
-        // 🟢 THE FIX: Jump directly to the time the user selected on the clock!
+        // 🟢 Jump directly to the time the user selected on the clock
         const selectedTimeStr = document.getElementById('sel-time').value; 
         const targetUnix = parseTimeToUnix(selectedTimeStr);
         
@@ -1087,8 +1084,8 @@ try {
             }
         }
         backtestCurrentIndex = bestIdx;
-        
-        // Populate the footer time dropdown
+
+        // 🟢 POPULATE THE DROPDOWN SELECTOR (Only declared ONCE!)
         const timeSelector = document.getElementById('play-time-display');
         timeSelector.innerHTML = backtestSnapshots.map((snap, idx) => 
             `<option value="${idx}">${snap.timestamp}</option>`
