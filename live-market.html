@@ -1011,18 +1011,35 @@ function createInstChart(containerId) {
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 300,
         height: container.clientHeight || 300,
-        layout: { background: { type: 'solid', color: '#131722' }, textColor: '#d1d4dc', fontFamily: "'IBM Plex Sans', sans-serif" },
         
-        // 🟢 Cleaner look: Hide the grid lines
-        grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
+        // 🟢 1. Sleeker, softer text color for the axis labels
+        layout: { 
+            background: { type: 'solid', color: '#131722' }, 
+            textColor: '#71717a', 
+            fontFamily: "'IBM Plex Sans', sans-serif" 
+        },
         
-        crosshair: { mode: LightweightCharts.CrosshairMode.Magnet },
-        rightPriceScale: { borderColor: '#2b2b43' },
+        // 🟢 2. No grid lines
+        grid: { 
+            vertLines: { visible: false }, 
+            horzLines: { visible: false } 
+        }, 
         
-        // 🟢 THE FIX: Compress massive numbers on the Y-Axis natively!
+        // 🟢 3. Softer crosshair lines so they don't overpower the sleek axis
+        crosshair: { 
+            mode: LightweightCharts.CrosshairMode.Magnet,
+            vertLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 },
+            horzLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 }
+        },
+        
+        // 🟢 4. THE MAGIC: Hide the hard border line and add breathing room!
+        rightPriceScale: { 
+            borderVisible: false, 
+            scaleMargins: { top: 0.1, bottom: 0.1 } 
+        },
+        
         localization: {
             priceFormatter: price => {
-                // Formats large numbers compactly into standard Indian scales (T, L, Cr)
                 return new Intl.NumberFormat('en-IN', { 
                     notation: "compact", 
                     compactDisplay: "short", 
@@ -1031,15 +1048,15 @@ function createInstChart(containerId) {
             }
         },
         
+        // 🟢 5. Hide the X-axis border line to match the Y-axis
         timeScale: { 
-            borderColor: '#2b2b43', 
+            borderVisible: false, 
             timeVisible: true, 
             secondsVisible: false,
-            fixLeftEdge: true,  // Locks the chart to exactly 9:15
-            fixRightEdge: true  // Locks the chart to exactly 3:30
+            fixLeftEdge: true,  
+            fixRightEdge: true  
         },
         
-        // 🟢 Disable heavy interactivity
         handleScroll: false, 
         handleScale: false   
     });
@@ -1049,7 +1066,7 @@ function createInstChart(containerId) {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
         try { 
             chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
-            chart.timeScale().fitContent(); // Forces data to fit the square perfectly
+            chart.timeScale().fitContent(); 
         } catch(e) {}
     });
     observer.observe(container);
