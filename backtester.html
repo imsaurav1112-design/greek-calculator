@@ -456,14 +456,22 @@ header {
         margin: 0 auto; /* Keeps it centered */
     }
   /* 🟢 MOBILE HAMBURGER MENU STYLES */
-    .nav-content { display: none; flex-direction: column; gap: 16px; }
+    .nav-content { display: none !important; flex-direction: column; gap: 16px; width: 100%; }
     .left-nav {
         width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0;
         display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; 
-        left: 0; background: var(--card); transition: height 0.3s ease; overflow: hidden; z-index: 100;
+        left: 0; background: var(--card); overflow: hidden; z-index: 100;
+        border: 1px solid var(--border); border-left: none;
     }
-    .left-nav.menu-open { height: auto !important; padding-bottom: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .left-nav.menu-open .nav-content { display: flex; }
+    .left-nav.menu-open { 
+        height: max-content !important; 
+        padding-bottom: 12px !important; 
+        box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important; 
+        overflow: visible !important; 
+    }
+    .left-nav.menu-open .nav-content { 
+        display: flex !important; 
+    }
     .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
     .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
     /* 6. Ultra-Compact Footer */
@@ -552,7 +560,7 @@ header {
 
 <div class="workspace">
 <div class="left-nav" id="left-nav">
-        <button class="nav-btn mobile-menu-toggle" onclick="toggleMobileNav()" title="Menu">
+        <button class="nav-btn mobile-menu-toggle" onclick="toggleMobileNav(event)" title="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -728,25 +736,24 @@ header {
 
 <script>
 
-  // 🟢 MOBILE NAV TOGGLE LOGIC (Globally Accessible)
-window.toggleMobileNav = function() {
+// 🟢 BULLETPROOF MOBILE NAV TOGGLE
+window.toggleMobileNav = function(event) {
+    if(event) event.stopPropagation(); // Prevents the phantom instant-close bug!
+    
     const nav = document.getElementById('left-nav');
-    if (!nav) return; // Failsafe
+    if (!nav) return; 
     
     nav.classList.toggle('menu-open');
     
-    // Automatically close the menu if the user taps outside of it
     if (nav.classList.contains('menu-open')) {
         document.addEventListener('click', function closeMenu(e) {
-            // Check if the click was outside the nav menu and not on the toggle button itself
-            if (!nav.contains(e.target) && !e.target.closest('.mobile-menu-toggle')) {
+            if (!nav.contains(e.target)) {
                 nav.classList.remove('menu-open');
                 document.removeEventListener('click', closeMenu);
             }
         }, { capture: true });
     }
-};
-  
+};  
 // 🟢 CLOUD URL
 const BACKTEST_API = 'https://api.greekcalculator.in';
 
