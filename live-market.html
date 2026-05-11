@@ -478,10 +478,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
                 <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
-                ```
-
-Now, when you click that blue hex icon, the right panel will slide out showing you the live R1/R2/S1/S2 levels and the perfectly formatted change logs! Make sure to apply this to `backtester.html` as well if the button went missing there too.
-                <div class="settings-panel" id="settings-panel">
+                    <div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
                     <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
                     <label class="settings-row">Audio Alerts <input type="checkbox" id="audio-cb" onchange="toggleAudio()"></label>
