@@ -243,6 +243,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .modal-content { 
     background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
     max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+    box-sizing: border-box; /* 🟢 FIX: Stops padding from breaking the width */
 }
 .modal-content::-webkit-scrollbar { width: 6px; }
 .modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
@@ -252,22 +253,25 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .modal-header span { color: var(--accent); }
 .charts-container { 
     display: flex; 
-    flex-direction: row; /* Forces horizontal alignment */
+    flex-direction: row; 
     justify-content: space-between; 
     gap: 20px; 
     width: 100%;
+    box-sizing: border-box; /* 🟢 FIX */
 }
 
 .chart-box { 
-    flex: 1; /* Makes all three share the space equally */
-    aspect-ratio: 1 / 1; /* 🟢 Forces perfect squares */
-    height: auto !important; /* Overrides the old fixed heights */
+    flex: 1; 
+    aspect-ratio: 1 / 1; 
+    height: auto !important; 
     background: var(--bg); 
     border: 1px solid var(--border); 
     border-radius: 8px; 
     padding: 12px; 
     display: flex;
     flex-direction: column;
+    box-sizing: border-box; /* 🟢 FIX */
+    overflow: hidden; /* 🟢 FIX: Locks the canvas strictly inside the box */
 }
   /* 🟢 TIME PICKER CLOCK UI */
 .time-picker-menu { cursor: default; }
@@ -390,32 +394,30 @@ header {
     
     .chart-sidebar .resizer { display: none; } 
     .charts-container { 
-    display: flex; 
-    flex-direction: row; 
-    justify-content: space-between; 
-    gap: 20px; 
-    width: 100%;
-    box-sizing: border-box; /* 🟢 FIX */
-}
-    .chart-box { 
-    flex: 1; 
-    aspect-ratio: 1 / 1; 
-    height: auto !important; 
-    background: var(--bg); 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    padding: 12px; 
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box; /* 🟢 FIX */
-    overflow: hidden; /* 🟢 FIX: Locks the canvas strictly inside the box */
-}
+        display: flex !important;
+        flex-direction: column !important; 
+        gap: 15px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+   .chart-box { 
+        width: 100% !important; 
+        max-width: 100% !important;
+        aspect-ratio: auto !important; 
+        height: 280px !important; 
+        flex: none !important; 
+        box-sizing: border-box !important;
+        overflow: hidden !important; /* 🟢 FIX */
+    }
 
-    .modal-content { 
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
-    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-    box-sizing: border-box; /* 🟢 FIX: Stops padding from breaking the width */
-}
+   .modal-content { 
+        width: 95% !important; 
+        padding: 15px !important; 
+        max-height: 90vh !important; 
+        overflow-y: auto !important;
+        box-sizing: border-box !important; /* 🟢 FIX */
+        margin: 0 auto; /* Keeps it centered */
+    }
     /* 6. Ultra-Compact Footer */
     footer { 
         height: auto; 
