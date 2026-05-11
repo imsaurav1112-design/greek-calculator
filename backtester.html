@@ -1081,14 +1081,6 @@ function renderBacktestSnapshot() {
         syncBacktestChartData();
     }
 }
-    
-    renderTable(globalRows, globalSym, snap, true);
-    updateMarketIntelligence(coaData);
-    
-    if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
-        syncBacktestChartData();
-    }
-}
 
 function backtestStep(direction) {
     if (backtestSnapshots.length === 0) return;
