@@ -972,12 +972,11 @@ async function fetchUpstoxChain(quiet = false) {
         });
     }
 
-renderTable(globalRows, sym, data, quiet); 
-    updateKeyLevels(data.chain, data.coa); // 🟢 Feeds data directly into your new UI!
-    } else {
-        lastChartSymbol = sym;
-    }
+    // 🟢 CLEANED UP: No more heavy charts, just the table and the Key Levels UI!
+    renderTable(globalRows, sym, data, quiet); 
+    updateKeyLevels(data.chain, data.coa);
 
+  // 🟢 THIS WAS THE MISSING CATCH BLOCK:
   } catch (e) {
     if(!quiet) showErr("Server says: " + e.message);
     setStatus('error', 'Auth Failed');
