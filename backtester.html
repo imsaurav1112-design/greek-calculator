@@ -104,6 +104,20 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
+ .modal-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
+  
 /* Settings Panel logic */
 .settings-panel {
     display: none; 
@@ -329,6 +343,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .tp-num:hover { background: rgba(59, 130, 246, 0.3); }
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
+  .modal-toggle-btn { font-size: 11px; padding: 8px; }
     
   header::after {
         content: '';
