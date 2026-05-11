@@ -425,21 +425,46 @@
         document.getElementById('st-orl').innerText = sessionStats.orLow;
     }
 
-    // --- CORE RENDERING ENGINE ---
+// --- CORE RENDERING ENGINE ---
     function renderCanvas() {
         ctx.clearRect(0, 0, width, height);
-        const timeKeys = Object.keys(latestDataCache).sort();
-        if (timeKeys.length === 0) return;
         
-        // 🟢 THEME LOGIC INJECTED HERE
         const isLight = document.body.classList.contains('light-theme');
         document.getElementById('chart-container').style.background = isLight ? '#f8fafc' : '#0c0c0f';
 
+        const timeKeys = Object.keys(latestDataCache).sort();
+        
+        // 🟢 THE FAILSAFE: If there is no data, show a message instead of a blank void!
+        if (timeKeys.length === 0) {
+            ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
+            ctx.font = "600 14px 'Inter'";
+            ctx.textAlign = "center";
+            ctx.fillText("Waiting for Footprint Data... (Check Market Hours or Futures Token)", width / 2, height / 2);
+            return;
+        }
+
         let minPrice = Infinity, maxPrice = -Infinity;
+        
+        // 🟢 PREVENT NaN CRASHES: Auto-calculate High/Low if backend is still building the candle
         timeKeys.forEach(t => {
-            if (latestDataCache[t].high > maxPrice) maxPrice = latestDataCache[t].high;
-            if (latestDataCache[t].low < minPrice) minPrice = latestDataCache[t].low;
+            const candle = latestDataCache[t];
+            let cHigh = candle.high;
+            let cLow = candle.low;
+            
+            if (cHigh === undefined || cLow === undefined) {
+                const prices = Object.keys(candle.volumes || {}).map(Number);
+                if (prices.length > 0) {
+                    cHigh = Math.max(...prices);
+                    cLow = Math.min(...prices);
+                }
+            }
+
+            if (cHigh !== undefined && cHigh > maxPrice) maxPrice = cHigh;
+            if (cLow !== undefined && cLow < minPrice) minPrice = cLow;
         });
+
+        // If data is fully corrupted, stop rendering
+        if (minPrice === Infinity) return;
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
