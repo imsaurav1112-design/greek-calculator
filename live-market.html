@@ -1211,24 +1211,19 @@ function showStrikeCharts(strike) {
         ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
         tvModalVolChart.timeScale().fitContent();
 
-        // --- DRAW OPEN INTEREST CHART ---
+       // --- DRAW OPEN INTEREST CHART ---
         if (tvModalOiChart) tvModalOiChart.remove();
         
-        // Pass the dual-axis directly into the constructor to prevent mobile canvas shifting
+        // 🟢 Back to a standard, ultra-stable single right axis!
         tvModalOiChart = createInstChart('tv-modal-oi', {
-            leftPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } }, 
-            rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } } 
+            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, minimumWidth: 50 } 
         });
         
-        const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
-        const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
-        const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
-        const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
+        // Draw only the CE and PE Open Interest lines (defaults to the right axis)
+        const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         
         ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
-        ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
-        tvModalOiChart.timeScale().fitContent();
-
 // --- DRAW OI CHANGE CHART ---
         if (tvModalOiChgChart) tvModalOiChgChart.remove();
         tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
