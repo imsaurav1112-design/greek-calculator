@@ -457,13 +457,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
             </svg>
         </button>
 
-        <div class="nav-content" id="nav-content">
+<div class="nav-content" id="nav-content">
             <button class="nav-btn" onclick="window.location.href='/'" title="Return to Home">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </button>
-
-            <button class="nav-btn" onclick="toggleChartSidebar()" title="Chart" style="color: var(--gold);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            
+            <button class="nav-btn" onclick="toggleIntelPanel()" title="Quick View" style="color: var(--accent);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </button>
 
             <a href="/footprint" target="_blank" class="nav-btn" title="Launch Orderflow (Beta)" style="color: var(--accent); display: flex; align-items: center; justify-content: center; text-decoration: none;">
@@ -478,6 +478,9 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
                 <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
+                ```
+
+Now, when you click that blue hex icon, the right panel will slide out showing you the live R1/R2/S1/S2 levels and the perfectly formatted change logs! Make sure to apply this to `backtester.html` as well if the button went missing there too.
                 <div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
                     <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
