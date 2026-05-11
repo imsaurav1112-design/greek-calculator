@@ -48,11 +48,11 @@ body {
     height: 100dvh; 
     width: 100vw;
     overflow: hidden; 
-    /* 2. DISABLE TEXT SELECTION (HIGHLIGHTING) */
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none;    /* Firefox */
-    -ms-user-select: none;     /* IE10+/Edge */
-    user-select: none;         /* Standard */
+    /* DISABLE TEXT SELECTION */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* --- SLEEK HEADER --- */
@@ -68,7 +68,6 @@ header select, header button, header input[type="date"] {
     background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; outline: none; flex-shrink: 0;
 }
 
-/* Fix for date picker icon on dark mode */
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
 .light-theme input[type="date"]::-webkit-calendar-picker-indicator { filter: none; }
 
@@ -79,74 +78,80 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .custom-dropdown-wrapper { position: relative; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
     display: none; 
-    position: fixed; /* <-- CHANGED to fixed */
+    position: fixed; 
     background: var(--card); 
     border: 1px solid var(--border); 
     border-radius: 8px; 
     padding: 8px 0; 
-    z-index: 10000; /* Boosted z-index to stay above everything */
+    z-index: 10000; 
     min-width: 140px; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     flex-direction: column; 
-}.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+}
+.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .custom-option {
     display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: "Ubuntu Mono", monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
 }
 .custom-option:hover { background: var(--section); color: var(--text); }
 .custom-option input { margin: 0; accent-color: var(--accent); }
 
-/* --- MAIN WORKSPACE --- */
+/* 🟢 DESKTOP MENU STYLES (Compact Tool Dock) */
+.mobile-menu-toggle { display: none; }
+
 .left-nav {
-    width: 52px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 20; position: relative;
+    width: 52px; 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-left: none; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 16px 0; 
+    gap: 16px; 
+    flex-shrink: 0; 
+    z-index: 20; 
+    position: relative;
+    height: max-content; 
+    border-radius: 0 16px 16px 0; 
+    margin-top: 16px; 
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.15); 
+}
+
+.light-theme .left-nav { box-shadow: 4px 4px 20px rgba(0,0,0,0.05); }
+
+.nav-content { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    width: 100%; 
+    align-items: center; 
 }
 
 .nav-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; position: relative; }
 .nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
- .modal-toggle-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-family: 'Poppins', sans-serif;
-}
-  
 /* Settings Panel logic */
 .settings-panel {
     display: none; 
     position: absolute; 
     left: 60px; 
-    top: -50px; /* Shifts it up slightly so it doesn't hit the bottom */
+    top: -50px; 
     background: var(--card); 
     border: 1px solid var(--border); 
     border-radius: 8px; 
     width: 190px; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
     flex-direction: column; 
-    z-index: 9999; /* Boosted z-index */
-    
-    /* 🟢 THE SCROLL ENFORCERS */
-    max-height: 65vh !important; /* Safe height to prevent workspace clipping */
+    z-index: 9999; 
+    max-height: 65vh !important; 
     overflow-y: auto !important; 
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch; 
 }
-
-/* 🟢 Stops the browser from squishing the rows to avoid scrolling */
-.settings-panel > * {
-    flex-shrink: 0 !important;
-}
-
+.settings-panel > * { flex-shrink: 0 !important; }
 .settings-panel::-webkit-scrollbar { width: 5px; }
 .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
-
 .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .settings-header { padding: 10px 16px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--section); }
 .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.15s;}
@@ -154,22 +159,8 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .settings-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
 .settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
 
-.workspace { 
-    flex: 1; 
-    display: flex; 
-    overflow: hidden; 
-    position: relative; 
-    background: var(--bg); 
-    min-height: 0; 
-}
-
-.table-wrapper { 
-    flex: 1; 
-    overflow: auto; 
-    position: relative; 
-    -webkit-overflow-scrolling: touch; 
-    min-height: 0; 
-}
+.workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); min-height: 0; }
+.table-wrapper { flex: 1; overflow: auto; position: relative; -webkit-overflow-scrolling: touch; min-height: 0; }
 table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Sans', sans-serif; table-layout: auto; font-variant-numeric: tabular-nums; }
 th { background: rgba(0, 0, 0, 0.3); padding: 10px 4px; color: #fafafc; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); font-weight: 700; font-size: 11px; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px;}
 .light-theme th { background-color: var(--red); color: var(--text); }
@@ -205,20 +196,6 @@ td.strike-cell { color: var(--text); font-weight: 700; background: #1e293b !impo
 .light-theme td.strike-cell { background: #f1f5f9 !important; color: var(--text) !important; }
 td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
 
-/* 🟢 TRADINGVIEW CHART SIDEBAR */
-.chart-sidebar { position: relative; width: 0px; height: 100%; background: #131722; border-left: 1px solid #2a2e39; display: flex; flex-direction: column; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; flex-shrink: 0; }
-.chart-sidebar.open { width: 340px; }
-.chart-sidebar .resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; background: transparent; z-index: 50; transition: background 0.2s; }
-.chart-sidebar .resizer:hover { background: var(--accent); }
-.chart-toolbar { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; padding: 6px 8px; background: #131722; border-bottom: 1px solid #2a2e39; overflow-x: auto; }
-.chart-toolbar::-webkit-scrollbar { height: 0px; }
-
-.chart-btn { background: transparent; color: #b2b5be; border: 1px solid transparent; padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Poppins', sans-serif; transition: 0.15s; white-space: nowrap; }
-.chart-btn:hover { background: #2a2e39; color: #d1d4dc; }
-.chart-btn.active { color: #2962FF; background: rgba(41, 98, 255, 0.1); }
-select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2e39; }
-#tv-chart { flex-grow: 1; width: 100%; position: relative; }
-
 /* 🟢 RIGHT SIDEBAR (MARKET INTELLIGENCE) */
 .right-sidebar { width: 320px; background: var(--card); border-left: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: background-color 0.3s; }
 .intel-section { padding: 18px; border-bottom: 1px solid var(--border); }
@@ -229,7 +206,7 @@ select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2
 .history-table th { background: transparent; padding: 6px 0; border: none; text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); position: static; font-weight: 600;}
 .history-table td { padding: 8px 0; border: none; border-bottom: 1px solid rgba(150,150,150,0.1); text-align: left; color: var(--text);}
 
-/* --- SLEEK FOOTER --- */
+/* --- SLEEK FOOTER (DESKTOP) --- */
 footer { height: 48px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; flex-shrink: 0; font-size: 11px; transition: background-color 0.3s; }
 .footer-left { display: flex; align-items: center; gap: 15px; font-family: "Ubuntu Mono", monospace; color: var(--muted); }
 .footer-left b { color: var(--text); font-weight: 600; }
@@ -246,35 +223,31 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     border: 1px solid transparent; 
     color: var(--muted); 
     cursor: pointer; 
-    width: 34px;           /* Fixed size for perfect circles */
+    width: 34px;           
     height: 34px; 
-    border-radius: 50%;    /* Pill/Circle shape is more modern */
+    border-radius: 50%;    
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Premium easing curve */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
 }
-
 .play-btn:hover { 
     color: var(--text); 
-    background: var(--section); /* Subtle background highlight */
+    background: var(--section); 
     border: 1px solid var(--border);
-    transform: translateY(-1px); /* Slight floating lift */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow */
+    transform: translateY(-1px); 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
 }
-  /* 🟢 Tactile "Click" Effect */
 .play-btn:active {
-    transform: translateY(1px) scale(0.92); /* Gives a physical 'press' feeling */
+    transform: translateY(1px) scale(0.92); 
     box-shadow: none;
     background: var(--border);
 }
-
-/* 🟢 The 'Playing' State */
 .play-btn.active { 
     color: var(--accent); 
-    background: rgba(59, 130, 246, 0.15); /* Sleek blue glass tint */
+    background: rgba(59, 130, 246, 0.15); 
     border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 15px var(--accent-glow); /* Soft outer glow */
+    box-shadow: 0 0 15px var(--accent-glow); 
 }
 .play-time-display { 
     font-family: "Ubuntu Mono", monospace; 
@@ -285,46 +258,34 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     text-align: center; min-width: 80px; display: inline-block;
 }
 
-  /* 🟢 DESKTOP MENU STYLES */
-.mobile-menu-toggle { display: none; }
-.nav-content { display: flex; flex-direction: column; gap: 16px; width: 100%; align-items: center; flex: 1; }
-  
 /* Modal Overlay Styling */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { 
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
-    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-    box-sizing: border-box; /* 🟢 FIX: Stops padding from breaking the width */
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 800px; padding: 20px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 16px; 
+    height: 85vh; 
+    box-sizing: border-box; 
 }
-.modal-content::-webkit-scrollbar { width: 6px; }
-.modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
 .modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
 .modal-close:hover { color: var(--red); transform: scale(1.1); }
 .modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
 .modal-header span { color: var(--accent); }
-.charts-container { 
-    display: flex; 
-    flex-direction: row; 
-    justify-content: space-between; 
-    gap: 20px; 
-    width: 100%;
-    box-sizing: border-box; /* 🟢 FIX */
-}
 
-.chart-box { 
+.modal-chart-area {
     flex: 1; 
-    aspect-ratio: 1 / 1; 
-    height: auto !important; 
-    background: var(--bg); 
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    padding: 12px; 
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box; /* 🟢 FIX */
-    overflow: hidden; /* 🟢 FIX: Locks the canvas strictly inside the box */
+    position: relative;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
 }
-  /* 🟢 TIME PICKER CLOCK UI */
+.tab-chart { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
+
+.modal-toggles { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px; gap: 4px; }
+.modal-toggle-btn { flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif; }
+.modal-toggle-btn.active { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+
+/* 🟢 TIME PICKER CLOCK UI */
 .time-picker-menu { cursor: default; }
 .tp-header { display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; font-family: "Ubuntu Mono", monospace; color: var(--muted); margin-bottom: 20px; gap: 4px; }
 .tp-header span { cursor: pointer; transition: 0.2s; padding: 0 4px; border-radius: 6px; }
@@ -341,209 +302,73 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .tp-hand::after { content: ''; position: absolute; top: -14px; left: -13px; width: 28px; height: 28px; background: var(--accent); border-radius: 50%; opacity: 0.8; }
 .tp-num { position: absolute; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 50%; transform: translate(-50%, -50%); transition: 0.2s; z-index: 8; }
 .tp-num:hover { background: rgba(59, 130, 246, 0.3); }
+
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
-  .modal-toggle-btn { font-size: 11px; padding: 8px; }
-    
-  header::after {
-        content: '';
-        display: block;
-        min-width: 15px;
-        flex-shrink: 0;
-    }
-header { 
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important; 
-        overflow-x: auto !important; /* Forces horizontal scroll */
-        overflow-y: visible !important; 
-        width: 100vw !important; 
-        height: 40px !important; 
-        padding: 0 16px !important; 
-        align-items: center !important; 
-        gap: 12px !important; 
-        z-index: 1000 !important; 
-        position: sticky !important;
-        top: 0;
+  header::after { content: ''; display: block; min-width: 15px; flex-shrink: 0; }
+  header { 
+        display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; 
+        overflow-x: auto !important; overflow-y: visible !important; width: 100vw !important; 
+        height: 40px !important; padding: 0 16px !important; align-items: center !important; 
+        gap: 12px !important; z-index: 1000 !important; position: sticky !important; top: 0; 
         -webkit-overflow-scrolling: touch;
     }
- header > * {
-        flex-shrink: 0 !important; /* Prevents dropdowns from squishing */
-    }
-   header::-webkit-scrollbar { display: none; }
- header > *:last-child {
-        padding-right: 20px !important;
-    }
+  header > * { flex-shrink: 0 !important; }
+  header::-webkit-scrollbar { display: none; }
+  header > *:last-child { padding-right: 20px !important; }
   
-    header button, header select, .custom-dropdown-wrapper button { 
-        font-size: 11px !important; 
-        padding: 2px 10px !important; /* Reduced vertical padding from 6px to 4px */
-        pointer-events: auto !important; 
-        min-width: 0 !important; 
-        width: max-content !important; 
+  header button, header select, .custom-dropdown-wrapper button { 
+        font-size: 11px !important; padding: 2px 10px !important; pointer-events: auto !important; min-width: 0 !important; width: max-content !important; 
     }
- .custom-menu {
-        position: fixed !important; /* Fixed escapes the overflow container */
-        z-index: 99999 !important; /* Forces it above EVERYTHING */
-        margin: 0 !important;
-        min-width: 140px !important;
-        background: var(--card) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 8px !important;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
-        /* Notice we removed top/left - JavaScript will handle exact placement! */
+  .custom-menu {
+        position: fixed !important; z-index: 99999 !important; margin: 0 !important; min-width: 140px !important; background: var(--card) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
     }
- .custom-option { 
-        padding: 12px 16px !important; 
-        font-size: 13px !important;
-        border-bottom: 1px solid var(--border);
-    }
-.custom-dropdown-wrapper {
-        position: static !important; 
-    }
- .custom-option:last-child {
-        border-bottom: none;
-    }
-  
-    .logo { 
-        font-size: 14px; 
-        padding-right: 8px; 
-        border-right: 1px solid var(--border);
-    }
+  .custom-option { padding: 12px 16px !important; font-size: 13px !important; border-bottom: 1px solid var(--border); }
+  .custom-dropdown-wrapper { position: static !important; }
+  .custom-option:last-child { border-bottom: none; }
+  .logo { font-size: 14px; padding-right: 8px; border-right: 1px solid var(--border); }
         
-/* Settings Panel logic */
-.settings-panel { 
-        position: fixed !important; 
-        left: 50px !important; /* Spawns exactly to the right of the 40px nav bar */
-        top: 65px !important;  /* Aligns perfectly with the top of the nav bar */
-        bottom: auto !important; 
-        width: 220px !important; 
-        max-height: calc(100vh - 80px) !important; /* Prevents it from going off-screen */
-        overflow-y: auto !important; 
-        overflow-x: hidden !important; 
-        -webkit-overflow-scrolling: touch !important; 
-        z-index: 9999 !important; 
+  .settings-panel { 
+        position: fixed !important; left: 50px !important; top: 65px !important; bottom: auto !important; width: 220px !important; max-height: calc(100vh - 80px) !important; overflow-y: auto !important; overflow-x: hidden !important; -webkit-overflow-scrolling: touch !important; z-index: 9999 !important; 
     }
-/* 🟢 Sleek custom scrollbar for the settings menu */
-.settings-panel::-webkit-scrollbar { width: 5px; }
-.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
 
-.light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }    /* 4. Table Strict Constraints */
-  
-    table { min-width: 850px; } 
-   th, td { 
-    font-size: 10px; /* Bumped up for legibility */
-    padding: 4px 1px; 
-    white-space: nowrap; 
-    /* Inherit the plain-zero font from the main table CSS instead of JetBrains */
-    font-family: inherit; 
-    text-align: center; 
-}
+  table { min-width: 850px; } 
+  th, td { font-size: 10px; padding: 4px 1px; white-space: nowrap; font-family: inherit; text-align: center; }
 
-    /* 🟢 Smooth slide-in animation for mobile charts */
-    .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .chart-sidebar.open { transform: translateX(0); }
+  .modal-content { width: 95% !important; padding: 15px !important; height: 90vh !important; margin: 0 auto; }
+  .modal-toggle-btn { font-size: 11px; padding: 8px; }
+
+  /* Mobile Nav Wrap */
+  .nav-content { display: none !important; flex-direction: column; gap: 16px; width: 100%; }
+  .left-nav {
+        width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; left: 0; background: var(--card); transition: height 0.3s ease; overflow: hidden; z-index: 100; border: 1px solid var(--border); border-left: none;
+    }
+  .left-nav.menu-open { 
+        height: max-content !important; padding-bottom: 12px !important; box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important; overflow: visible !important; 
+    }
+  .left-nav.menu-open .nav-content { display: flex !important; }
+  .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
+  .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
     
-    .chart-sidebar .resizer { display: none; } 
-    .charts-container { 
-        display: flex !important;
-        flex-direction: column !important; 
-        gap: 15px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+  /* Centered Mobile Footer */
+  footer { 
+        height: 52px !important; padding: 0 12px !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow: hidden !important; position: relative !important; align-items: center !important; z-index: 95; border-top: 1px solid var(--border) !important;
     }
-   .chart-box { 
-        width: 100% !important; 
-        max-width: 100% !important;
-        aspect-ratio: auto !important; 
-        height: 280px !important; 
-        flex: none !important; 
-        box-sizing: border-box !important;
-        overflow: hidden !important; /* 🟢 FIX */
-    }
-
-   .modal-content { 
-        width: 95% !important; 
-        padding: 15px !important; 
-        max-height: 90vh !important; 
-        overflow-y: auto !important;
-        box-sizing: border-box !important; /* 🟢 FIX */
-        margin: 0 auto; /* Keeps it centered */
-    }
-  /* 🟢 MOBILE HAMBURGER MENU STYLES */
-    .nav-content { display: none !important; flex-direction: column; gap: 16px; width: 100%; }
-    .left-nav {
-        width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0;
-        display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; 
-        left: 0; background: var(--card); transition: height 0.3s ease; overflow: hidden; z-index: 100;
-    }
-    .left-nav.menu-open { 
-        height: max-content !important; 
-        padding-bottom: 12px !important; 
-        box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important; 
-        overflow: visible !important; 
-    }
-    .left-nav.menu-open .nav-content { 
-        display: flex !important; 
-    }
-    .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
-    .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
-    /* 6. Ultra-Compact Footer */
-footer { 
-        height: 52px !important; /* Bumped up from 42px to fit larger buttons */
-        padding: 0 12px !important; 
-        flex-direction: row !important; 
-        flex-wrap: nowrap !important;
-        overflow: hidden !important; /* NO SCROLLING */
-        justify-content: space-between !important; 
-        align-items: center !important;
-        z-index: 95; 
-        border-top: 1px solid var(--border) !important;
-    }
-.footer-left { 
-        width: auto !important; 
-        justify-content: flex-start !important;
-        border-bottom: none !important; 
-        padding-bottom: 0 !important; 
-        gap: 8px !important;
-        font-size: 11px !important; /* Bumped up slightly for readability */
+  .footer-left { 
+        width: auto !important; justify-content: flex-start !important; border-bottom: none !important; padding-bottom: 0 !important; gap: 8px !important; font-size: 10px !important; opacity: 0.8;
     }
   .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: block !important; height: 14px !important; margin: 0 !important; }
-    .footer-right { 
-        display: none !important; 
+  .footer-left .divider { display: block !important; height: 14px !important; margin: 0 !important; }
+  .footer-right { display: none !important; }
+
+  .playback-controls {
+        position: absolute !important; left: 50% !important; transform: translateX(-50%) !important; background: var(--bg) !important; border: none !important; padding: 0 8px !important; gap: 8px !important; display: flex !important; align-items: center !important;
     }
+  .play-btn { width: 38px !important; height: 38px !important; }
+  .play-btn svg { width: 18px; height: 18px; }
+  #btn-play svg { transform: translateX(1px); } 
+  .play-time-display { font-size: 12px !important; padding: 4px 8px !important; min-width: 65px !important; text-align: center; background: transparent !important; border: 1px solid var(--border) !important; }
 }
- /* 2. Playback Controls (🟢 PINNED TO EXACT CENTER) */
-    .playback-controls {
-        position: absolute !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        background: var(--bg) !important; /* Solid background to prevent text overlap on tiny phones */
-        border: none !important;
-        padding: 0 8px !important;
-        gap: 8px !important; 
-        display: flex !important;
-        align-items: center !important;
-    }
-    
-    .play-btn {
-        width: 38px !important; 
-        height: 38px !important;
-    }
-    
-    /* 🟢 Optical Centering for the Play Triangle */
-    .play-btn svg { width: 18px; height: 18px; }
-    #btn-play svg { transform: translateX(1px); } /* Shifts the triangle slightly right so it looks perfectly centered! */
-    
-    .play-time-display {
-        font-size: 12px !important;
-        padding: 4px 8px !important;
-        min-width: 65px !important;
-        text-align: center;
-        background: transparent !important;
-        border: 1px solid var(--border) !important;
-    }
 </style>
 </head>
 <body>
@@ -551,7 +376,6 @@ footer {
 <header>
     <a class="logo"><span>GC</span> Backtester</a>
     
-    <!-- Index Selection -->
     <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)">
             NIFTY 50 <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
@@ -564,7 +388,6 @@ footer {
     </div>
     <input type="hidden" id="sel-symbol" value="NIFTY">
     
-    <!-- Expiry Selection -->
     <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
         <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)">
             Expiry <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
@@ -575,7 +398,6 @@ footer {
     </div>
     <input type="hidden" id="sel-expiry" value="">
 
-    <!-- Date Selection -->
     <div class="custom-dropdown-wrapper" id="date-dropdown-wrapper">
         <button id="btn-date" onclick="toggleMenu('date-menu', event)">
             Date <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
@@ -586,7 +408,6 @@ footer {
     </div>
     <input type="hidden" id="sel-date" value="">
 
-    <!-- Load Action -->
     <div class="custom-dropdown-wrapper" id="time-dropdown-wrapper">
         <button id="btn-time" class="primary-btn" onclick="openTimePicker(event)" style="display: flex; align-items: center; gap: 6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -615,7 +436,7 @@ footer {
 <div id="error-bar" style="display:none; background: rgba(239, 68, 68, 0.9); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; width: 100%; z-index: 50; flex-shrink: 0;"></div>
 
 <div class="workspace">
-<div class="left-nav" id="left-nav">
+    <div class="left-nav" id="left-nav">
         <button class="nav-btn mobile-menu-toggle" onclick="toggleMobileNav(event)" title="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -639,12 +460,8 @@ footer {
                 </button>
                 <div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
-                    <label class="settings-row">
-                        Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()">
-                    </label>
-                    <label class="settings-row">
-                        Flip Strikes <input type="checkbox" id="flip-cb" onchange="toggleTableFlip()">
-                    </label>
+                    <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
+                    <label class="settings-row">Flip Strikes <input type="checkbox" id="flip-cb" onchange="toggleTableFlip()"></label>
                     <label class="settings-row" style="cursor: default;">
                         Strikes (±)
                         <select id="strike-count" class="settings-select" onchange="updateStrikeCount()">
@@ -655,7 +472,6 @@ footer {
                             <option value="all">All</option>
                         </select>
                     </label>
-                    
                     <div class="settings-header">Show Greeks</div>
                     <label class="settings-row">Delta (Δ) <input type="checkbox" class="greek-cb" value="delta" onchange="reRenderTable()"></label>
                     <label class="settings-row">Theta (Θ) <input type="checkbox" class="greek-cb" value="theta" onchange="reRenderTable()"></label>
@@ -663,8 +479,6 @@ footer {
                     <label class="settings-row">Gamma (Γ) <input type="checkbox" class="greek-cb" value="gamma" onchange="reRenderTable()"></label>
                 </div>
             </div>
-            
-            <div style="flex:1;"></div>
         </div>
     </div>
 
@@ -683,7 +497,7 @@ footer {
         </table>
     </div>
 
-<div class="right-sidebar" id="intel-panel">
+    <div class="right-sidebar" id="intel-panel">
         <div class="intel-section" style="background: var(--bg); display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
                 <div class="intel-header">
@@ -702,7 +516,7 @@ footer {
             </div>
         </div>
 
-<div class="intel-section">
+        <div class="intel-section">
             <div class="intel-header">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                 Key Market Levels
@@ -742,12 +556,12 @@ footer {
     </div>
 
     <div class="playback-controls" id="playback-controls">
-<button class="play-btn" onclick="backtestStep(-1)" title="Step Back">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="19 20 9 12 19 4 19 20"></polygon>
-        <line x1="5" y1="19" x2="5" y2="5"></line>
-    </svg>
-</button>
+        <button class="play-btn" onclick="backtestStep(-1)" title="Step Back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5"></line>
+            </svg>
+        </button>
         
         <button class="play-btn" id="btn-play" onclick="toggleBacktestPlay()" title="Auto Play">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -757,7 +571,7 @@ footer {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
         </button>
         
-<span class="play-time-display" id="play-time-display">--:--:--</span>
+        <span class="play-time-display" id="play-time-display">--:--:--</span>
     </div>
 
     <div class="footer-right">
@@ -791,11 +605,9 @@ footer {
 </div>
 
 <script>
-
 // 🟢 BULLETPROOF MOBILE NAV TOGGLE
 window.toggleMobileNav = function(event) {
-    if(event) event.stopPropagation(); // Prevents the phantom instant-close bug!
-    
+    if(event) event.stopPropagation();
     const nav = document.getElementById('left-nav');
     if (!nav) return; 
     
@@ -810,7 +622,7 @@ window.toggleMobileNav = function(event) {
         }, { capture: true });
     }
 };  
-// 🟢 CLOUD URL
+
 const BACKTEST_API = 'https://api.greekcalculator.in';
 
 let globalRows = [];
@@ -819,21 +631,16 @@ let globalData = {};
 let isFlipped = false; 
 let strikeLimit = 20; 
 
-// 🟢 BACKTEST VARIABLES
 let backtestSnapshots = [];
 let backtestCurrentIndex = 0;
 let backtestPlayInterval = null;
 
-// 🟢 CHART VARIABLES
 let tvModalVolChart = null;
 let tvModalOiChart = null;
 let tvModalOiChgChart = null;
-let tvChartInst, tvCandleSeries, tvLineSeries;
-let tvIsCandle = true; // Default to candles
-let activePriceLines = []; 
+let tvChartInst = null;
 
-// 🟢 SETTINGS MENU LOGIC
-function toggleSettings(event) {
+window.toggleSettings = function(event) {
     if(event) event.stopPropagation();
     const panel = document.getElementById('settings-panel');
     const btn = document.getElementById('btn-settings');
@@ -846,30 +653,28 @@ function toggleSettings(event) {
         panel.style.display = 'flex';
         btn.classList.add('active');
     }
-}
+};
 
-function toggleTheme() {
+window.toggleTheme = function() {
     document.body.classList.toggle('light-theme');
     const isLight = document.body.classList.contains('light-theme');
     localStorage.setItem('owl-theme', isLight ? 'light' : 'dark');
-}
+};
 
-function updateStrikeCount() {
+window.updateStrikeCount = function() {
     const val = document.getElementById('strike-count').value;
     strikeLimit = val === 'all' ? 'all' : parseInt(val, 10);
     localStorage.setItem('owl-strikes', val);
     reRenderTable();
-}
+};
 
-function toggleTableFlip() {
+window.toggleTableFlip = function() {
     isFlipped = !isFlipped;
     document.getElementById('flip-cb').checked = isFlipped;
     if (globalRows.length > 0) reRenderTable(); 
-}
+};
 
-// Memory setup
 document.addEventListener('DOMContentLoaded', () => {
-    // Set default date to today
     const today = new Date();
     document.getElementById('sel-date').value = today.toISOString().split('T')[0];
 
@@ -884,90 +689,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Close menus when clicking outside
-// 🟢 CLOSE MENUS WHEN TOUCHING OUTSIDE
 document.addEventListener('click', function(event) {
     let clickedInsideMenu = false;
     let clickedOnButton = false;
 
-    // Check if the tap was inside an open menu
     document.querySelectorAll('.custom-menu').forEach(menu => {
         if (menu.contains(event.target)) clickedInsideMenu = true;
     });
+    if (event.target.closest('.custom-dropdown-wrapper')) clickedOnButton = true;
 
-    // Check if the tap was on one of the dropdown buttons
-    if (event.target.closest('.custom-dropdown-wrapper')) {
-        clickedOnButton = true;
-    }
-
-    // If the tap was outside of both the menu AND the buttons, close everything!
     if (!clickedInsideMenu && !clickedOnButton) {
         document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-        
-        // Unlock header scroll
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'auto', 'important');
     }
 });
 
-// 🟢 SMART DROPDOWN TOGGLE LOGIC
-function toggleMenu(menuId, event) {
+window.toggleMenu = function(menuId, event) {
     if (event) event.stopPropagation();
-    
     const menu = document.getElementById(menuId);
-    const btn = event.currentTarget; // The specific button you just tapped
+    const btn = event.currentTarget;
     const isVisible = menu.style.display === 'flex';
-    
-    // 1. Hide all open menus first
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
     
     if (!isVisible) {
-        // 2. Get the exact coordinates of the button on the screen
         const rect = btn.getBoundingClientRect();
-        
-        // 3. Stick the menu exactly below the button
         menu.style.display = 'flex';
-        menu.style.top = (rect.bottom + 5) + 'px'; // 5px gap below the button
-        
-        // 4. Prevent the menu from going off the right side of the screen
+        menu.style.top = (rect.bottom + 5) + 'px';
         const menuWidth = menu.offsetWidth || 140;
         if (rect.left + menuWidth > window.innerWidth) {
             menu.style.left = (window.innerWidth - menuWidth - 10) + 'px';
         } else {
             menu.style.left = rect.left + 'px';
         }
-        
-        // 5. Lock header scroll so your finger doesn't slide the header by accident
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'hidden', 'important');
-        
     } else {
-        // Unlock header scroll if closing
         const header = document.querySelector('header');
         if (header) header.style.setProperty('overflow-x', 'auto', 'important');
     }
-}
+};
 
-function selectSymbol(val, text) {
+window.selectSymbol = function(val, text) {
     document.getElementById('sel-symbol').value = val;
-    document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
     window.loadExpiries();
-}
+};
 
-function selectExpiry(val) {
+window.selectExpiry = function(val) {
     document.getElementById('sel-expiry').value = val;
-    document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>';
     document.getElementById('expiry-menu').style.display = 'none';
-    
     window.loadAvailableDates(); 
-}
+};
 
-function selectDate(val) {
+window.selectDate = function(val) {
     document.getElementById('sel-date').value = val;
-    document.getElementById('btn-date').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('btn-date').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>';
     document.getElementById('date-menu').style.display = 'none';
-}
+};
 
 window.loadExpiries = async function() {
   if (!window.currentFirebaseToken) { 
@@ -987,15 +768,12 @@ window.loadExpiries = async function() {
 
   try {
     const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-    // 🟢 Explicitly tell the server this is the backtester
     const r = await fetch(`${BACKTEST_API}/expiry-dates?symbol=${sym}&source=backtester`, { headers });
-    
     if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
     
     const d = await r.json();
     if (d.error) { showErr(d.error); return; }
 
-    // 🟢 THE FIX: If MongoDB returns 0 saved expiries, handle it gracefully
     if (!d.expiries || d.expiries.length === 0) {
         menu.innerHTML = `<div class="custom-option">No Data Saved</div>`; 
         btn.innerHTML = 'No Data <span style="font-size: 10px; color: var(--muted);">▾</span>';
@@ -1006,18 +784,14 @@ window.loadExpiries = async function() {
 
     const limitedExpiries = d.expiries.slice(0, 5); 
     menu.innerHTML = limitedExpiries.map((e) => `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`).join('');
-    
-    // Auto-select the first available expiry to trigger the Date loading
-    if (limitedExpiries.length > 0) {
-        selectExpiry(limitedExpiries[0]);
-    }
+    if (limitedExpiries.length > 0) selectExpiry(limitedExpiries[0]);
     clearErr();
   } catch(e) { 
       menu.innerHTML = `<div class="custom-option">Failed</div>`; 
       btn.innerHTML = 'Error ▾'; 
       showErr(e.message); 
   }
-}
+};
 
 window.loadAvailableDates = async function() {
   const sym = document.getElementById('sel-symbol').value;
@@ -1046,59 +820,23 @@ window.loadAvailableDates = async function() {
     }
 
     menu.innerHTML = d.dates.map((date) => `<div class="custom-option" onclick="selectDate('${date}')">${date}</div>`).join('');
-    
-    if (d.dates.length > 0) {
-        selectDate(d.dates[0]);
-    }
+    if (d.dates.length > 0) selectDate(d.dates[0]);
     clearErr();
   } catch(e) { 
       menu.innerHTML = `<div class="custom-option">Failed</div>`; btn.innerHTML = 'Failed ▾'; showErr(e.message); 
   }
-}
+};
 
-// CLOCK
 function updateClock() {
   const now = new Date();
   document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
 }
 setInterval(updateClock, 1000); updateClock();
 
-// 🟢 DRAG RESIZER LOGIC
-document.addEventListener("DOMContentLoaded", () => {
-    const resizer = document.getElementById('chart-resizer');
-    const sidebar = document.getElementById('chart-sidebar');
-    let isResizing = false;
-
-    if (resizer && sidebar) {
-        resizer.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            isResizing = true;
-            sidebar.style.transition = 'none'; 
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isResizing) return;
-            const containerRight = document.body.clientWidth; 
-            const newWidth = containerRight - e.clientX;
-            if (newWidth > 200 && newWidth < window.innerWidth * 0.8) {
-                sidebar.style.width = newWidth + 'px';
-            }
-        });
-
-        window.addEventListener('mouseup', () => {
-            if (isResizing) {
-                isResizing = false;
-                sidebar.style.transition = 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                if(tvChartInst) tvChartInst.timeScale().scrollToRealTime();
-            }
-        });
-    }
-});
-
-function toggleIntelPanel() {
+window.toggleIntelPanel = function() {
     const panel = document.getElementById('intel-panel');
     panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
-}
+};
 
 function fmtN(n, dec) { return n == null || isNaN(n) ? '—' : Number(n).toLocaleString('en-IN', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }); }
 
@@ -1121,14 +859,11 @@ function setStatus(statusType, msg) {
     }
 }
 
-// 🟢 FIXED: Crash-Proof Error Handlers
 function showErr(msg) { 
     const e = document.getElementById('error-bar'); 
     if (e) {
         e.textContent = msg; 
         e.style.display = 'block'; 
-    } else {
-        console.error("Backtest Error:", msg);
     }
     setStatus('error', 'Error');
 }
@@ -1138,333 +873,13 @@ function clearErr() {
     if (e) e.style.display = 'none'; 
 }
 
-async function fetchBacktestData() {
-    const sym = document.getElementById('sel-symbol').value;
-    const expiry = document.getElementById('sel-expiry').value;
-    const date = document.getElementById('sel-date').value;
-
-    if (!sym || !expiry || !date) {
-        showErr("Please select a Symbol, Expiry, and Date.");
-        return;
-    }
-    
-    if (!window.currentFirebaseToken) return; 
-
-    setStatus('loading', 'Fetching');
-    clearErr();
-    
-    if (backtestPlayInterval) toggleBacktestPlay();
-
-    try {
-        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-        const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
-        
-        if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
-        
-        let data = await r.json();
-        if (data.error) throw new Error(data.error);
-        
-        if (!data || data.length === 0) {
-            showErr("No data found for this date. Check if market was open.");
-            document.getElementById('oc-body').innerHTML = `<tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">No archive found for this date/expiry combination.</td></tr>`;
-            setStatus('error', 'No Data');
-            return;
-        }
-
-        // 🟢 Sort mathematically by Time so 9:15 AM comes before 1:15 PM
-        data.sort((a, b) => parseTimeToUnix(a.time) - parseTimeToUnix(b.time));
-
-       // 🟢 THE FIX: Parse DuckDB Strings into Real Objects & Inject RPL/SPL Prices!
-        backtestSnapshots = data.map(snap => {
-            
-            let parsedCoa = null;
-            if (snap.coa) {
-                try {
-                    // Force the raw database string into a real JavaScript Object
-                    parsedCoa = typeof snap.coa === 'string' ? JSON.parse(snap.coa) : snap.coa;
-                } catch(e) {}
-            }
-
-            return {
-                timestamp: snap.time,
-                symbol: sym,
-                spot: snap.rows.length > 0 ? (snap.rows.find(r => r.ceLTP > 100 && r.peLTP > 100)?.strike || snap.rows[0].strike) : 0, 
-                chain: snap.rows.map(r => ({
-                    strike: r.strike,
-                    ce_prz: r.ce_prz || 0, // 🟢 Required so R1/R2 calculate perfectly!
-                    pe_prz: r.pe_prz || 0, // 🟢 Required so S1/S2 calculate perfectly!
-                    ce: { ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, iv: 0 },
-                    pe: { ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, iv: 0 }
-                })),
-                coa: parsedCoa 
-            };
-        });
-
-        // 🟢 Jump directly to the time the user selected on the clock
-        const selectedTimeStr = document.getElementById('sel-time').value; 
-        const targetUnix = parseTimeToUnix(selectedTimeStr);
-        
-        let bestIdx = 0;
-        for (let i = 0; i < backtestSnapshots.length; i++) {
-            if (parseTimeToUnix(backtestSnapshots[i].timestamp) >= targetUnix) {
-                bestIdx = i;
-                break;
-            }
-        }
-        backtestCurrentIndex = bestIdx;
-
-        renderBacktestSnapshot();
-        
-    } catch (err) {
-        showErr(err.message);
-        setStatus('error', 'Fetch Failed');
-    }
-}
-
-// 🟢 BACKTEST PLAYBACK ENGINE
-function renderBacktestSnapshot() {
-    if (backtestSnapshots.length === 0) return;
-    
-    const snap = backtestSnapshots[backtestCurrentIndex];
-    globalRows = snap.chain;
-    globalSym = snap.symbol;
-    document.getElementById('inp-spot').value = snap.spot || 0;
-    
-    try { 
-        // 🟢 Inject the exact timestamp string into the footer badge
-        document.getElementById('play-time-display').innerText = snap.timestamp; 
-    } catch(e){}
-    
-    // 🟢 Status Bar Update
-    setStatus('backtest', backtestPlayInterval ? 'Playing' : 'Paused');
-    
-    // 🟢 Safe Market Intelligence Fallback
-    let coaData = snap.coa;
-    if (!coaData) {
-         coaData = {
-             scenario_id: "?",
-             scenario_desc: "Data playback in progress.",
-             support: { strike: 0, state: "N/A", target_strike: 0 },
-             resistance: { strike: 0, state: "N/A", target_strike: 0 },
-             s2: 0, r2: 0, logs: []
-         };
-    }
-    
-    renderTable(globalRows, globalSym, snap, true);
-    updateMarketIntelligence(coaData);
-    updateKeyLevels(globalRows, coaData); // 🟢 THIS IS THE MISSING LINK! Feeds the R1/R2/S1/S2 UI!
-}
-
-function backtestStep(direction) {
-    if (backtestSnapshots.length === 0) return;
-    backtestCurrentIndex += direction;
-    if (backtestCurrentIndex < 0) backtestCurrentIndex = 0;
-    if (backtestCurrentIndex >= backtestSnapshots.length) {
-        backtestCurrentIndex = backtestSnapshots.length - 1;
-        if (backtestPlayInterval) toggleBacktestPlay();
-    }
-    renderBacktestSnapshot();
-}
-
-window.toggleBacktestPlay = function() {
-    // 🟢 FAILSAFE: Don't do anything if there's no data loaded yet
-    if (!backtestSnapshots || backtestSnapshots.length === 0) return;
-
-    const btn = document.getElementById('btn-play');
-    
-    if (backtestPlayInterval) {
-        // --- PAUSE ---
-        clearInterval(backtestPlayInterval);
-        backtestPlayInterval = null;
-        btn.classList.remove('active');
-        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
-    } else {
-        // --- PLAY ---
-        // If we are at the very end of the day, reset to 9:15 AM instantly
-        if (backtestCurrentIndex >= backtestSnapshots.length - 1) {
-            backtestCurrentIndex = 0; 
-            renderBacktestSnapshot(); // Update the screen & dropdown instantly
-        } 
-        
-        btn.classList.add('active');
-        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
-        
-        // Start the engine
-        backtestPlayInterval = setInterval(() => { 
-            backtestStep(1); 
-        }, 1500); 
-    }
-};
-
-  // 🟢 JUMP TO SPECIFIC TIME FROM DROPDOWN
-window.jumpToBacktestTime = function(index) {
-    backtestCurrentIndex = parseInt(index);
-    if (backtestPlayInterval) toggleBacktestPlay(); // Pause playback if it was running
-    renderBacktestSnapshot();
-};
-
-// 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
-function updateMarketIntelligence(coa) {
-    if (!coa) return;
-    document.getElementById('coa-scenario').innerText = `Scenario #${coa.scenario_id || "?"}`;
-    document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing market...";
-    
-    function formatState(side) {
-        if(!side) return '--';
-        let stateStr = side.state || 'N/A';
-        if (stateStr === 'Strong') return `Strong @ ${side.strike}`;
-        return `${side.strike} ${stateStr} @ ${side.target_strike}`;
-    }
-    
-    document.getElementById('coa-sup-state').innerText = formatState(coa.support);
-    document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
-    
-    // 🟢 FIXED LOG HISTORY PARSER (No Audio Crash)
-    const logBody = document.getElementById('coa-logs-body');
-    if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
-
-        logBody.innerHTML = coa.logs.map(log => {
-            let time = "--:--";
-            let msg = "";
-            
-            // Handle if backend sends pure strings OR dictionaries
-            if (typeof log === 'string') {
-                const parts = log.split(' - ');
-                if (parts.length >= 2) {
-                    time = parts[0];
-                    msg = parts.slice(1).join(' - ');
-                } else {
-                    msg = log;
-                }
-            } else if (log.time && log.msg) {
-                time = log.time;
-                msg = log.msg;
-            }
-
-            // Dynamic Color Coding
-            let msgColor = 'var(--text)';
-            const lowerMsg = msg.toLowerCase();
-            if (lowerMsg.includes('bullish') || lowerMsg.includes('top') || lowerMsg.includes('support')) msgColor = 'var(--green)';
-            if (lowerMsg.includes('bearish') || lowerMsg.includes('bottom') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
-            if (lowerMsg.includes('challenger') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
-            
-            return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
-        }).join('');
-    } else {
-        logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
-    }
-}
-
-// 🟢 NEW: Key Levels Calculator
-function updateKeyLevels(chainData, coaData) {
-    try {
-        if (!chainData || !coaData || !coaData.resistance || !coaData.support) return;
-
-        const resStrike = coaData.resistance.strike;
-        const supStrike = coaData.support.strike;
-        const resRow = chainData.find(r => r.strike === resStrike);
-        const supRow = chainData.find(r => r.strike === supStrike);
-
-        if (!resRow || !supRow) return;
-
-        const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike; // R1
-        const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike; // S1
-        const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
-
-        let eorPlus1Val = eorVal + step;  // R2
-        let eosMinus1Val = eosVal - step; // S2
-        
-        const nextResRow = chainData.find(r => r.strike === (resStrike + step));
-        const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
-
-        if (nextResRow && nextResRow.ce_prz > 0) eorPlus1Val = nextResRow.ce_prz;
-        if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
-
-        document.getElementById('val-r2').innerText = eorPlus1Val.toFixed(1);
-        document.getElementById('val-r1').innerText = eorVal.toFixed(1);
-        document.getElementById('val-s1').innerText = eosVal.toFixed(1);
-        document.getElementById('val-s2').innerText = eosMinus1Val.toFixed(1);
-    } catch(e) {}
-}
-
-// 🟢 CHART LOGIC
-function toggleChartSidebar() {
-    const sidebar = document.getElementById('chart-sidebar');
-    sidebar.classList.toggle('open');
-    if (sidebar.classList.contains('open')) {
-        if (!tvChartInst) initTVChart();
-        else syncBacktestChartData(); 
-    }
-}
-
-function initTVChart() {
-    const container = document.getElementById('tv-chart');
-    
-    setTimeout(() => {
-tvChartInst = LightweightCharts.createChart(container, {
-            width: container.clientWidth || 340,
-            height: container.clientHeight || 500,
-            layout: { 
-                background: { type: 'solid', color: '#131722' }, 
-                textColor: '#b2b5be', 
-                fontFamily: "'Poppins', sans-serif" 
-            },
-            // 🟢 NEW: Enable the background watermark to show the time!
-            watermark: {
-                color: 'rgba(255, 255, 255, 0.1)',
-                visible: true,
-                text: 'Waiting for Data...',
-                fontSize: 24,
-                horzAlign: 'center',
-                vertAlign: 'bottom',
-            },
-            grid: { vertLines: { color: 'rgba(42, 46, 57, 0.4)' }, horzLines: { color: 'rgba(42, 46, 57, 0.4)' } },
-            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-            rightPriceScale: { borderColor: '#2a2e39', autoScale: true }, 
-            timeScale: { borderColor: '#2a2e39', timeVisible: true }
-        });
-
-        tvLineSeries = tvChartInst.addLineSeries({ color: '#2962FF', lineWidth: 2 });
-        tvLineSeries.applyOptions({ visible: false }); 
-        
-        tvCandleSeries = tvChartInst.addCandlestickSeries({ 
-            upColor: '#26a69a', downColor: '#ef5350', 
-            borderVisible: true, borderColor: '#26a69a',
-            borderUpColor: '#26a69a', borderDownColor: '#ef5350',
-            wickUpColor: '#26a69a', wickDownColor: '#ef5350' 
-        });
-
-        if (backtestSnapshots.length > 0) syncBacktestChartData();
-
-        new ResizeObserver(entries => {
-            if (entries.length === 0 || entries[0].target !== container) return;
-            tvChartInst.applyOptions({ width: container.clientWidth, height: container.clientHeight });
-        }).observe(container);
-    }, 300);
-}
-
-function toggleTVType() {
-    tvIsCandle = !tvIsCandle;
-    tvCandleSeries.applyOptions({ visible: tvIsCandle });
-    tvLineSeries.applyOptions({ visible: !tvIsCandle });
-    
-    const btn = document.getElementById('btn-tv-type');
-    if (tvIsCandle) {
-        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>`;
-    } else {
-        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21V10M15 21V4M9 10H5v6h4M15 4h-4v10h4"></path></svg>`;
-    }
-    syncBacktestChartData(); 
-}
+window.reRenderTable = function() { if (globalRows.length > 0) renderTable(globalRows, globalSym, {}, true); };
 
 function abs(x) { return x < 0 ? -x : x; }
 function getStrikeInterval(symbol) {
   switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
 }
 
-function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, {}, true); }
-
-// 🟢 TABLE RENDER ENGINE
 let renderTable = function(rows, sym, data, quiet = false) {
   let spot = parseFloat(document.getElementById('inp-spot').value) || 0;
   const interval = getStrikeInterval(sym);
@@ -1611,8 +1026,7 @@ let renderTable = function(rows, sym, data, quiet = false) {
   }
 }
 
-// 🟢 MODAL UI HELPERS
-// 🟢 ROBUST TIME PARSER (Fixes TradingView gaps)
+// 🟢 ROBUST TIME PARSER
 function parseTimeToUnix(timeStr) {
     if (!timeStr) return 0;
     const [time, period] = timeStr.split(' ');
@@ -1633,67 +1047,40 @@ function parseTimeToUnix(timeStr) {
     return Math.floor(d.getTime() / 1000); 
 }
 
-function createInstChart(containerId) {
+// 🟢 CHART CONSTRUCTOR
+function createInstChart(containerId, extraOptions = {}) {
     const container = document.getElementById(containerId);
     container.innerHTML = ''; 
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 300,
         height: container.clientHeight || 300,
-        
-        // 🟢 1. Sleeker, softer text color for the axis labels
         layout: { 
             background: { type: 'solid', color: '#131722' }, 
             textColor: '#71717a', 
             fontFamily: "'IBM Plex Sans', sans-serif" 
         },
-        
-        // 🟢 2. No grid lines
-        grid: { 
-            vertLines: { visible: false }, 
-            horzLines: { visible: false } 
-        }, 
-        
-        // 🟢 3. Softer crosshair lines so they don't overpower the sleek axis
+        grid: { vertLines: { visible: false }, horzLines: { visible: false } }, 
         crosshair: { 
             mode: LightweightCharts.CrosshairMode.Magnet,
             vertLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 },
             horzLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 }
         },
-        
-        // 🟢 4. THE MAGIC: Hide the hard border line and add breathing room!
-        rightPriceScale: { 
-            borderVisible: false, 
-            scaleMargins: { top: 0.1, bottom: 0.1 } 
-        },
-        
+        rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
         localization: {
             priceFormatter: price => {
-                return new Intl.NumberFormat('en-IN', { 
-                    notation: "compact", 
-                    compactDisplay: "short", 
-                    maximumFractionDigits: 1 
-                }).format(price);
+                return new Intl.NumberFormat('en-IN', { notation: "compact", compactDisplay: "short", maximumFractionDigits: 1 }).format(price);
             }
         },
-        
-        // 🟢 5. Hide the X-axis border line to match the Y-axis
-        timeScale: { 
-            borderVisible: false, 
-            timeVisible: true, 
-            secondsVisible: false,
-            fixLeftEdge: true,  
-            fixRightEdge: true  
-        },
-        
-        handleScroll: false, 
-        handleScale: false   
+        timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false, fixLeftEdge: true, fixRightEdge: true },
+        handleScroll: false, handleScale: false,
+        ...extraOptions 
     });
 
     let isDisposed = false;
     const observer = new ResizeObserver(entries => {
-        if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
+        if (isDisposed || !container.clientWidth || !container.clientHeight) return;
         try { 
-            chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
+            chart.applyOptions({ width: container.clientWidth, height: container.clientHeight }); 
             chart.timeScale().fitContent(); 
         } catch(e) {}
     });
@@ -1707,7 +1094,39 @@ function createInstChart(containerId) {
     };
     return chart;
 }
-// 🟢 SYNCHRONIZED BACKTESTER CHART LOGIC
+
+// 🟢 TAB SWITCHER LOGIC
+function switchModalChart(targetId) {
+    document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+        if (btn.dataset.target === targetId) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    const charts = [
+        { id: 'tv-modal-vol', inst: tvModalVolChart },
+        { id: 'tv-modal-oi', inst: tvModalOiChart },
+        { id: 'tv-modal-oi-chg', inst: tvModalOiChgChart }
+    ];
+
+    charts.forEach(c => {
+        const div = document.getElementById(c.id);
+        if (!div) return;
+        
+        if (c.id === targetId) {
+            div.style.display = 'block'; 
+            if (c.inst) {
+                setTimeout(() => {
+                    c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
+                    c.inst.timeScale().fitContent();
+                }, 20);
+            }
+        } else {
+            div.style.display = 'none'; 
+        }
+    });
+}
+window.switchModalChart = switchModalChart;
+
 window.closeStrikeCharts = function(event) {
     if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
     document.getElementById('chart-modal').style.display = 'none';
@@ -1716,61 +1135,22 @@ window.closeStrikeCharts = function(event) {
     if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
 };
 
-  // 🟢 THE TAB SWITCHER (Globally Accessible)
-window.switchModalChart = function(targetId) {
-    // 1. Highlight the correct button
-    document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
-        if (btn.dataset.target === targetId) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
-
-    // 2. Map charts to their IDs
-    const charts = [
-        { id: 'tv-modal-vol', inst: tvModalVolChart },
-        { id: 'tv-modal-oi', inst: tvModalOiChart },
-        { id: 'tv-modal-oi-chg', inst: tvModalOiChgChart }
-    ];
-
-    // 3. Hide all charts except the requested one
-    charts.forEach(c => {
-        const div = document.getElementById(c.id);
-        if (!div) return;
-        
-        if (c.id === targetId) {
-            div.style.display = 'block'; // Reveal the div
-            // 4. Force Lightweight Charts to recalculate canvas size now that it is visible
-            if (c.inst) {
-                setTimeout(() => {
-                    c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
-                    c.inst.timeScale().fitContent();
-                }, 20);
-            }
-        } else {
-            div.style.display = 'none'; // Hide the div
-        }
-    });
-};
-
-function showStrikeCharts(strike) {
+window.showStrikeCharts = function(strike) {
     if (backtestSnapshots.length === 0) return;
     
-    // 1. Show the modal immediately
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    // 2. 🟢 Wait 50ms for CSS flexbox to snap open on mobile
     setTimeout(() => {
         const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
         const ceOiChgData = [], peOiChgData = [];
         const seenTimes = new Set();
         let lastValidTime = 0;
 
-        // 🟢 Loop through backtest history up to current playhead
         for (let i = 0; i <= backtestCurrentIndex; i++) {
             let snap = backtestSnapshots[i];
             let t = parseTimeToUnix(snap.timestamp);
             
-            // Failsafe for missing timestamps in DB
             if (isNaN(t) || t <= lastValidTime) t = lastValidTime + 60;
             lastValidTime = t;
 
@@ -1797,70 +1177,216 @@ function showStrikeCharts(strike) {
             rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, minimumWidth: 50 } 
         };
 
-        // --- DRAW VOLUME CHART ---
         if (tvModalVolChart) tvModalVolChart.remove();
         tvModalVolChart = createInstChart('tv-modal-vol', chartOptions);
         const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
 
-        // --- DRAW OPEN INTEREST CHART ---
         if (tvModalOiChart) tvModalOiChart.remove();
         tvModalOiChart = createInstChart('tv-modal-oi', chartOptions);
         const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
 
-        // --- DRAW OI CHANGE CHART ---
         if (tvModalOiChgChart) tvModalOiChgChart.remove();
         tvModalOiChgChart = createInstChart('tv-modal-oi-chg', chartOptions);
         const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
 
-        // 🟢 THE MAGIC: Activate the Volume tab by default and resize everything!
-        switchModalChart('tv-modal-vol');
+        window.switchModalChart('tv-modal-vol');
 
     }, 50); 
-}
-</script>
+};
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+async function fetchBacktestData() {
+    const sym = document.getElementById('sel-symbol').value;
+    const expiry = document.getElementById('sel-expiry').value;
+    const date = document.getElementById('sel-date').value;
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
-    authDomain: "insideoptionchain.firebaseapp.com",
-    projectId: "insideoptionchain",
-    storageBucket: "insideoptionchain.firebasestorage.app",
-    messagingSenderId: "112098245685",
-    appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
-  };
+    if (!sym || !expiry || !date) { showErr("Please select a Symbol, Expiry, and Date."); return; }
+    if (!window.currentFirebaseToken) return; 
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  window.currentFirebaseToken = null; 
+    setStatus('loading', 'Fetching');
+    clearErr();
+    if (backtestPlayInterval) toggleBacktestPlay();
 
-  // 🟢 WATCHER: Grabs your secure token so the page can load
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // FIX: Call getIdToken directly on the user object
-      window.currentFirebaseToken = await user.getIdToken();
-      console.log("✅ Firebase Auth Synced! Token acquired.");
-      
-      // Safety check to ensure the function exists before calling it
-      if (typeof window.loadExpiries === "function") {
-          window.loadExpiries(); 
-      }
-      
-    } else {
-      // Kick them out if not logged in
-      console.error("No user found. Redirecting to login...");
-      window.location.href = "/";
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+        const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
+        if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+        
+        let data = await r.json();
+        if (data.error) throw new Error(data.error);
+        if (!data || data.length === 0) {
+            showErr("No data found for this date. Check if market was open.");
+            document.getElementById('oc-body').innerHTML = `<tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">No archive found for this date/expiry combination.</td></tr>`;
+            setStatus('error', 'No Data');
+            return;
+        }
+
+        data.sort((a, b) => parseTimeToUnix(a.time) - parseTimeToUnix(b.time));
+
+        backtestSnapshots = data.map(snap => {
+            let parsedCoa = null;
+            if (snap.coa) {
+                try { parsedCoa = typeof snap.coa === 'string' ? JSON.parse(snap.coa) : snap.coa; } catch(e) {}
+            }
+            return {
+                timestamp: snap.time,
+                symbol: sym,
+                spot: snap.rows.length > 0 ? (snap.rows.find(r => r.ceLTP > 100 && r.peLTP > 100)?.strike || snap.rows[0].strike) : 0, 
+                chain: snap.rows.map(r => ({
+                    strike: r.strike,
+                    ce_prz: r.ce_prz || 0, pe_prz: r.pe_prz || 0,
+                    ce: { ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, iv: 0 },
+                    pe: { ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, iv: 0 }
+                })),
+                coa: parsedCoa 
+            };
+        });
+
+        const selectedTimeStr = document.getElementById('sel-time').value; 
+        const targetUnix = parseTimeToUnix(selectedTimeStr);
+        let bestIdx = 0;
+        for (let i = 0; i < backtestSnapshots.length; i++) {
+            if (parseTimeToUnix(backtestSnapshots[i].timestamp) >= targetUnix) {
+                bestIdx = i; break;
+            }
+        }
+        backtestCurrentIndex = bestIdx;
+        renderBacktestSnapshot();
+    } catch (err) {
+        showErr(err.message);
+        setStatus('error', 'Fetch Failed');
     }
-  });
-  // 🟢 INTERACTIVE CLOCK UI LOGIC
+}
+
+function renderBacktestSnapshot() {
+    if (backtestSnapshots.length === 0) return;
+    const snap = backtestSnapshots[backtestCurrentIndex];
+    globalRows = snap.chain;
+    globalSym = snap.symbol;
+    document.getElementById('inp-spot').value = snap.spot || 0;
+    
+    try { document.getElementById('play-time-display').innerText = snap.timestamp; } catch(e){}
+    setStatus('backtest', backtestPlayInterval ? 'Playing' : 'Paused');
+    
+    let coaData = snap.coa;
+    if (!coaData) {
+         coaData = {
+             scenario_id: "?", scenario_desc: "Data playback in progress.",
+             support: { strike: 0, state: "N/A", target_strike: 0 },
+             resistance: { strike: 0, state: "N/A", target_strike: 0 },
+             s2: 0, r2: 0, logs: []
+         };
+    }
+    
+    renderTable(globalRows, globalSym, snap, true);
+    updateMarketIntelligence(coaData);
+    updateKeyLevels(globalRows, coaData);
+}
+
+window.backtestStep = function(direction) {
+    if (backtestSnapshots.length === 0) return;
+    backtestCurrentIndex += direction;
+    if (backtestCurrentIndex < 0) backtestCurrentIndex = 0;
+    if (backtestCurrentIndex >= backtestSnapshots.length) {
+        backtestCurrentIndex = backtestSnapshots.length - 1;
+        if (backtestPlayInterval) toggleBacktestPlay();
+    }
+    renderBacktestSnapshot();
+};
+
+window.toggleBacktestPlay = function() {
+    if (!backtestSnapshots || backtestSnapshots.length === 0) return;
+    const btn = document.getElementById('btn-play');
+    
+    if (backtestPlayInterval) {
+        clearInterval(backtestPlayInterval);
+        backtestPlayInterval = null;
+        btn.classList.remove('active');
+        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+    } else {
+        if (backtestCurrentIndex >= backtestSnapshots.length - 1) {
+            backtestCurrentIndex = 0; 
+            renderBacktestSnapshot(); 
+        } 
+        btn.classList.add('active');
+        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+        backtestPlayInterval = setInterval(() => { backtestStep(1); }, 1500); 
+    }
+};
+
+function updateMarketIntelligence(coa) {
+    if (!coa) return;
+    document.getElementById('coa-scenario').innerText = `Scenario #${coa.scenario_id || "?"}`;
+    document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing market...";
+    
+    function formatState(side) {
+        if(!side) return '--';
+        let stateStr = side.state || 'N/A';
+        if (stateStr === 'Strong') return `Strong @ ${side.strike}`;
+        return `${side.strike} ${stateStr} @ ${side.target_strike}`;
+    }
+    document.getElementById('coa-sup-state').innerText = formatState(coa.support);
+    document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
+    
+    const logBody = document.getElementById('coa-logs-body');
+    if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
+        logBody.innerHTML = coa.logs.map(log => {
+            let time = "--:--"; let msg = "";
+            if (typeof log === 'string') {
+                const parts = log.split(' - ');
+                if (parts.length >= 2) { time = parts[0]; msg = parts.slice(1).join(' - '); } else { msg = log; }
+            } else if (log.time && log.msg) {
+                time = log.time; msg = log.msg;
+            }
+
+            let msgColor = 'var(--text)';
+            const lowerMsg = msg.toLowerCase();
+            if (lowerMsg.includes('bullish') || lowerMsg.includes('top') || lowerMsg.includes('support')) msgColor = 'var(--green)';
+            if (lowerMsg.includes('bearish') || lowerMsg.includes('bottom') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
+            if (lowerMsg.includes('challenger') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
+            
+            return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
+        }).join('');
+    } else {
+        logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
+    }
+}
+
+function updateKeyLevels(chainData, coaData) {
+    try {
+        if (!chainData || !coaData || !coaData.resistance || !coaData.support) return;
+        const resStrike = coaData.resistance.strike;
+        const supStrike = coaData.support.strike;
+        const resRow = chainData.find(r => r.strike === resStrike);
+        const supRow = chainData.find(r => r.strike === supStrike);
+        if (!resRow || !supRow) return;
+
+        const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike; 
+        const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike; 
+        const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
+
+        let eorPlus1Val = eorVal + step;  
+        let eosMinus1Val = eosVal - step; 
+        
+        const nextResRow = chainData.find(r => r.strike === (resStrike + step));
+        const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
+
+        if (nextResRow && nextResRow.ce_prz > 0) eorPlus1Val = nextResRow.ce_prz;
+        if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
+
+        document.getElementById('val-r2').innerText = eorPlus1Val.toFixed(1);
+        document.getElementById('val-r1').innerText = eorVal.toFixed(1);
+        document.getElementById('val-s1').innerText = eosVal.toFixed(1);
+        document.getElementById('val-s2').innerText = eosMinus1Val.toFixed(1);
+    } catch(e) {}
+}
+
+// 🟢 INTERACTIVE CLOCK UI LOGIC
 let tpMode = 'hour'; 
 let tpHour = 9;
 let tpMinute = 15;
@@ -1888,19 +1414,16 @@ window.setTpAmPm = function(val) {
 function renderClock() {
     const container = document.getElementById('tp-numbers');
     container.innerHTML = '';
-    const radius = 90; // Distance from center
+    const radius = 90; 
     const items = 12; 
     const angleStep = 360 / items;
     
     for (let i = 1; i <= items; i++) {
-        // Switch between 1-12 (hours) and 0-55 (minutes)
         let val = tpMode === 'hour' ? i : (i === 12 ? 0 : i * 5);
         let displayVal = val.toString().padStart(2, '0');
-        
-        // Trigonometry to place numbers in a circle
         let angle = (i * angleStep) - 90; 
         let rad = angle * (Math.PI / 180);
-        let x = 110 + radius * Math.cos(rad); // 110 is center of 220px clock
+        let x = 110 + radius * Math.cos(rad); 
         let y = 110 + radius * Math.sin(rad);
         
         let div = document.createElement('div');
@@ -1913,7 +1436,7 @@ function renderClock() {
             e.stopPropagation();
             if (tpMode === 'hour') {
                 tpHour = val;
-                setTpMode('minute'); // Auto-switch to minutes mode
+                setTpMode('minute');
             } else {
                 tpMinute = val;
             }
@@ -1938,16 +1461,46 @@ function updateTimeDisplay() {
     let mStr = tpMinute.toString().padStart(2, '0');
     document.getElementById('tp-hour').innerText = hStr;
     document.getElementById('tp-minute').innerText = mStr;
-    
     const timeStr = `${hStr}:${mStr} ${tpAmPm}`;
     document.getElementById('sel-time').value = timeStr;
     document.getElementById('btn-time-text').innerText = timeStr;
 }
 
 window.executeFetchAndJump = function() {
-    document.getElementById('time-picker-menu').style.display = 'none'; // Close clock
-    fetchBacktestData(); // Fetch the DB!
+    document.getElementById('time-picker-menu').style.display = 'none';
+    fetchBacktestData();
 };
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
+    authDomain: "insideoptionchain.firebaseapp.com",
+    projectId: "insideoptionchain",
+    storageBucket: "insideoptionchain.firebasestorage.app",
+    messagingSenderId: "112098245685",
+    appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  window.currentFirebaseToken = null; 
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window.currentFirebaseToken = await user.getIdToken();
+      console.log("✅ Firebase Auth Synced! Token acquired.");
+      if (typeof window.loadExpiries === "function") {
+          window.loadExpiries(); 
+      }
+    } else {
+      console.error("No user found. Redirecting to login...");
+      window.location.href = "/";
+    }
+  });
 </script>
 </body>
 </html>
