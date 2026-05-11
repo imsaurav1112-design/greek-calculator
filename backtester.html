@@ -727,6 +727,26 @@ header {
 </div>
 
 <script>
+
+  // 🟢 MOBILE NAV TOGGLE LOGIC (Globally Accessible)
+window.toggleMobileNav = function() {
+    const nav = document.getElementById('left-nav');
+    if (!nav) return; // Failsafe
+    
+    nav.classList.toggle('menu-open');
+    
+    // Automatically close the menu if the user taps outside of it
+    if (nav.classList.contains('menu-open')) {
+        document.addEventListener('click', function closeMenu(e) {
+            // Check if the click was outside the nav menu and not on the toggle button itself
+            if (!nav.contains(e.target) && !e.target.closest('.mobile-menu-toggle')) {
+                nav.classList.remove('menu-open');
+                document.removeEventListener('click', closeMenu);
+            }
+        }, { capture: true });
+    }
+};
+  
 // 🟢 CLOUD URL
 const BACKTEST_API = 'https://api.greekcalculator.in';
 
@@ -1822,21 +1842,6 @@ window.executeFetchAndJump = function() {
     document.getElementById('time-picker-menu').style.display = 'none'; // Close clock
     fetchBacktestData(); // Fetch the DB!
 };
-  // 🟢 MOBILE NAV TOGGLE LOGIC
-function toggleMobileNav() {
-    const nav = document.getElementById('left-nav');
-    nav.classList.toggle('menu-open');
-    
-    // Automatically close the menu if the user taps outside of it
-    if (nav.classList.contains('menu-open')) {
-        document.addEventListener('click', function closeMenu(e) {
-            if (!nav.contains(e.target)) {
-                nav.classList.remove('menu-open');
-                document.removeEventListener('click', closeMenu);
-            }
-        }, { capture: true });
-    }
-}
 </script>
 </body>
 </html>
