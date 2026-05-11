@@ -366,9 +366,21 @@ header {
     .chart-sidebar.open { transform: translateX(0); }
     
     .chart-sidebar .resizer { display: none; } 
-    .charts-container { flex-direction: column; }
-    .chart-box { aspect-ratio: auto; height: 250px !important; }
-}
+    .charts-container { 
+        display: flex !important;
+        flex-direction: column !important; /* 🟢 Forces them to stack vertically */
+        gap: 15px !important;
+        width: 100% !important;
+    }
+    .chart-box { 
+        width: 100% !important; /* 🟢 Forces full width */
+        max-width: 100% !important;
+        aspect-ratio: auto !important; /* Kills the square ratio on mobile */
+        height: 280px !important; 
+        flex: none !important; /* 🟢 Stops them from trying to share horizontal space */
+        box-sizing: border-box;
+    }
+
     .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
     
     /* 6. Ultra-Compact Footer */
