@@ -390,22 +390,32 @@ header {
     
     .chart-sidebar .resizer { display: none; } 
     .charts-container { 
-        display: flex !important;
-        flex-direction: column !important; /* 🟢 Forces them to stack vertically */
-        gap: 15px !important;
-        width: 100% !important;
-    }
+    display: flex; 
+    flex-direction: row; 
+    justify-content: space-between; 
+    gap: 20px; 
+    width: 100%;
+    box-sizing: border-box; /* 🟢 FIX */
+}
     .chart-box { 
-        width: 100% !important; /* 🟢 Forces full width */
-        max-width: 100% !important;
-        aspect-ratio: auto !important; /* Kills the square ratio on mobile */
-        height: 280px !important; 
-        flex: none !important; /* 🟢 Stops them from trying to share horizontal space */
-        box-sizing: border-box;
-    }
+    flex: 1; 
+    aspect-ratio: 1 / 1; 
+    height: auto !important; 
+    background: var(--bg); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    padding: 12px; 
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* 🟢 FIX */
+    overflow: hidden; /* 🟢 FIX: Locks the canvas strictly inside the box */
+}
 
-    .modal-content { width: 95%; padding: 15px; max-height: 90vh; overflow-y: auto;}
-    
+    .modal-content { 
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
+    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
+    box-sizing: border-box; /* 🟢 FIX: Stops padding from breaking the width */
+}
     /* 6. Ultra-Compact Footer */
     footer { 
         height: auto; 
