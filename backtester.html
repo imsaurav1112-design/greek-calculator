@@ -949,10 +949,21 @@ function fmtN(n, dec) { return n == null || isNaN(n) ? '—' : Number(n).toLocal
 
 function setStatus(statusType, msg) { 
     document.getElementById('chain-status').innerText = msg; 
-    document.getElementById('status-dot').style.background = statusType === 'live' ? 'var(--green)' : statusType === 'loading' ? 'var(--accent)' : statusType === 'backtest' ? 'var(--accent)' : 'var(--red)'; 
-    if(statusType === 'live' || statusType === 'backtest') document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
-    else if (statusType === 'loading') document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.5)';
-    else document.getElementById('status-dot').style.boxShadow = 'none';
+    const dot = document.getElementById('status-dot');
+    
+    if (statusType === 'live' || msg === 'Playing') {
+        dot.style.background = 'var(--green)';
+        dot.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+    } else if (msg === 'Paused') {
+        dot.style.background = 'var(--gold)';
+        dot.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.5)';
+    } else if (statusType === 'loading') {
+        dot.style.background = 'var(--accent)';
+        dot.style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.5)';
+    } else {
+        dot.style.background = 'var(--red)';
+        dot.style.boxShadow = 'none';
+    }
 }
 
 // 🟢 FIXED: Crash-Proof Error Handlers
@@ -1043,13 +1054,17 @@ function renderBacktestSnapshot() {
     globalSym = snap.symbol;
     document.getElementById('inp-spot').value = snap.spot || 0;
     
-   try { 
+    try { 
         // 🟢 Set the dropdown to match the current frame being played
         document.getElementById('play-time-display').value = backtestCurrentIndex; 
     } catch(e){}
     
+    // 🟢 Status Bar Update
+    setStatus('backtest', backtestPlayInterval ? 'Playing' : 'Paused');
+    
+    // 🟢 Safe Market Intelligence Fallback (Fixed syntax here)
     let coaData = snap.coa;
-    if(!coaData) {
+    if (!coaData) {
          coaData = {
              scenario_id: "?",
              scenario_desc: "Data playback in progress.",
@@ -1058,6 +1073,14 @@ function renderBacktestSnapshot() {
              s2: 0, r2: 0, logs: []
          };
     }
+    
+    renderTable(globalRows, globalSym, snap, true);
+    updateMarketIntelligence(coaData);
+    
+    if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
+        syncBacktestChartData();
+    }
+}
     
     renderTable(globalRows, globalSym, snap, true);
     updateMarketIntelligence(coaData);
@@ -1106,6 +1129,13 @@ window.toggleBacktestPlay = function() {
             backtestStep(1); 
         }, 1500); 
     }
+};
+
+  // 🟢 JUMP TO SPECIFIC TIME FROM DROPDOWN
+window.jumpToBacktestTime = function(index) {
+    backtestCurrentIndex = parseInt(index);
+    if (backtestPlayInterval) toggleBacktestPlay(); // Pause playback if it was running
+    renderBacktestSnapshot();
 };
 
 // 🟢 MARKET INTELLIGENCE LOGIC
