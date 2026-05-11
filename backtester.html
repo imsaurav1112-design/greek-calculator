@@ -1716,6 +1716,41 @@ window.closeStrikeCharts = function(event) {
     if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
 };
 
+  // 🟢 THE TAB SWITCHER (Globally Accessible)
+window.switchModalChart = function(targetId) {
+    // 1. Highlight the correct button
+    document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+        if (btn.dataset.target === targetId) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    // 2. Map charts to their IDs
+    const charts = [
+        { id: 'tv-modal-vol', inst: tvModalVolChart },
+        { id: 'tv-modal-oi', inst: tvModalOiChart },
+        { id: 'tv-modal-oi-chg', inst: tvModalOiChgChart }
+    ];
+
+    // 3. Hide all charts except the requested one
+    charts.forEach(c => {
+        const div = document.getElementById(c.id);
+        if (!div) return;
+        
+        if (c.id === targetId) {
+            div.style.display = 'block'; // Reveal the div
+            // 4. Force Lightweight Charts to recalculate canvas size now that it is visible
+            if (c.inst) {
+                setTimeout(() => {
+                    c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
+                    c.inst.timeScale().fitContent();
+                }, 20);
+            }
+        } else {
+            div.style.display = 'none'; // Hide the div
+        }
+    });
+};
+
 function showStrikeCharts(strike) {
     if (backtestSnapshots.length === 0) return;
     
