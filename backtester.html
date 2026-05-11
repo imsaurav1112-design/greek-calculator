@@ -1078,7 +1078,7 @@ function renderBacktestSnapshot() {
     globalSym = snap.symbol;
     document.getElementById('inp-spot').value = snap.spot || 0;
     
-   try { 
+    try { 
         // 🟢 Inject the exact timestamp string into the footer badge
         document.getElementById('play-time-display').innerText = snap.timestamp; 
     } catch(e){}
@@ -1086,7 +1086,7 @@ function renderBacktestSnapshot() {
     // 🟢 Status Bar Update
     setStatus('backtest', backtestPlayInterval ? 'Playing' : 'Paused');
     
-    // 🟢 Safe Market Intelligence Fallback (Fixed syntax here)
+    // 🟢 Safe Market Intelligence Fallback
     let coaData = snap.coa;
     if (!coaData) {
          coaData = {
@@ -1100,10 +1100,7 @@ function renderBacktestSnapshot() {
     
     renderTable(globalRows, globalSym, snap, true);
     updateMarketIntelligence(coaData);
-    
-    if (tvChartInst && document.getElementById('chart-sidebar').classList.contains('open')) {
-        syncBacktestChartData();
-    }
+    updateKeyLevels(globalRows, coaData); // 🟢 THIS IS THE MISSING LINK! Feeds the R1/R2/S1/S2 UI!
 }
 
 function backtestStep(direction) {
