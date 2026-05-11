@@ -1108,6 +1108,7 @@ function showStrikeCharts(strike) {
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
+    // 🟢 Outer Timeout: Lets the modal slide in before crunching data
     setTimeout(() => {
         const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
         const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];   
@@ -1136,49 +1137,45 @@ function showStrikeCharts(strike) {
         const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
-        tvModalVolChart.timeScale().fitContent();
 
         if (tvModalOiChart) tvModalOiChart.remove();
         tvModalOiChart = createInstChart('tv-modal-oi');
         tvModalOiChart.applyOptions({ leftPriceScale: { visible: true, borderColor: '#27272a' }, rightPriceScale: { visible: true, borderColor: '#27272a' } });
-
         const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
         const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
         const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
         const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
-
         ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
         ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
-        tvModalOiChart.timeScale().fitContent();
 
         if (tvModalOiChgChart) tvModalOiChgChart.remove();
         tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
         const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
-        tvModalOiChgChart.timeScale().fitContent();
 
-       // 🟢 THE FIX: Wait exactly 50ms for the modal to open, then snap the charts to fit perfectly!
-    setTimeout(() => {
-        const volDiv = document.getElementById('tv-modal-vol');
-        const oiDiv = document.getElementById('tv-modal-oi');
-        const oiChgDiv = document.getElementById('tv-modal-oi-chg');
-        
-        if(tvModalVolChart && volDiv) {
-            tvModalVolChart.applyOptions({ width: volDiv.clientWidth, height: volDiv.clientHeight });
-            tvModalVolChart.timeScale().fitContent();
-        }
-        if(tvModalOiChart && oiDiv) {
-            tvModalOiChart.applyOptions({ width: oiDiv.clientWidth, height: oiDiv.clientHeight });
-            tvModalOiChart.timeScale().fitContent();
-        }
-        if(tvModalOiChgChart && oiChgDiv) {
-            tvModalOiChgChart.applyOptions({ width: oiChgDiv.clientWidth, height: oiChgDiv.clientHeight });
-            tvModalOiChgChart.timeScale().fitContent();
-        }
-    }, 50);
+        // 🟢 Inner Timeout: Waits for the newly built charts to settle into their flexboxes, then snaps them to perfect width!
+        setTimeout(() => {
+            const volDiv = document.getElementById('tv-modal-vol');
+            const oiDiv = document.getElementById('tv-modal-oi');
+            const oiChgDiv = document.getElementById('tv-modal-oi-chg');
+            
+            if(tvModalVolChart && volDiv) {
+                tvModalVolChart.applyOptions({ width: volDiv.clientWidth, height: volDiv.clientHeight });
+                tvModalVolChart.timeScale().fitContent();
+            }
+            if(tvModalOiChart && oiDiv) {
+                tvModalOiChart.applyOptions({ width: oiDiv.clientWidth, height: oiDiv.clientHeight });
+                tvModalOiChart.timeScale().fitContent();
+            }
+            if(tvModalOiChgChart && oiChgDiv) {
+                tvModalOiChgChart.applyOptions({ width: oiChgDiv.clientWidth, height: oiChgDiv.clientHeight });
+                tvModalOiChgChart.timeScale().fitContent();
+            }
+        }, 50);
+
+    }, 100); // <-- This is the missing bracket that broke it!
 }
-
 function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
 // 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
