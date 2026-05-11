@@ -1078,87 +1078,17 @@ function createInstChart(containerId, extraOptions = {}) {
     });
     observer.observe(container);
 
-    const originalRemove = chart.remove.bind(chart);
+const originalRemove = chart.remove.bind(chart);
     chart.remove = function() {
         isDisposed = true;
         observer.disconnect();
         originalRemove();      
     };
     return chart;
-}
-  const container = document.getElementById(containerId);
-    container.innerHTML = ''; 
-    const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth || 300,
-        height: container.clientHeight || 300,
-        
-        // 🟢 1. Sleeker, softer text color for the axis labels
-        layout: { 
-            background: { type: 'solid', color: '#131722' }, 
-            textColor: '#71717a', 
-            fontFamily: "'IBM Plex Sans', sans-serif" 
-        },
-        
-        // 🟢 2. No grid lines
-        grid: { 
-            vertLines: { visible: false }, 
-            horzLines: { visible: false } 
-        }, 
-        
-        // 🟢 3. Softer crosshair lines so they don't overpower the sleek axis
-        crosshair: { 
-            mode: LightweightCharts.CrosshairMode.Magnet,
-            vertLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 },
-            horzLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 }
-        },
-        
-        // 🟢 4. THE MAGIC: Hide the hard border line and add breathing room!
-        rightPriceScale: { 
-            borderVisible: false, 
-            scaleMargins: { top: 0.1, bottom: 0.1 } 
-        },
-        
-        localization: {
-            priceFormatter: price => {
-                return new Intl.NumberFormat('en-IN', { 
-                    notation: "compact", 
-                    compactDisplay: "short", 
-                    maximumFractionDigits: 1 
-                }).format(price);
-            }
-        },
-        
-        // 🟢 5. Hide the X-axis border line to match the Y-axis
-        timeScale: { 
-            borderVisible: false, 
-            timeVisible: true, 
-            secondsVisible: false,
-            fixLeftEdge: true,  
-            fixRightEdge: true  
-        },
-        
-        handleScroll: false, 
-        handleScale: false   
-    });
+} // <-- This is the bracket from your snippet above
 
-    let isDisposed = false;
-    const observer = new ResizeObserver(entries => {
-        if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
-        try { 
-            chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
-            chart.timeScale().fitContent(); 
-        } catch(e) {}
-    });
-    observer.observe(container);
+// 👇 PASTE THE NEW CODE EXACTLY HERE 👇
 
-    const originalRemove = chart.remove.bind(chart);
-    chart.remove = function() {
-        isDisposed = true;
-        observer.disconnect();
-        originalRemove();      
-    };
-    return chart;
-}
 window.closeStrikeCharts = function(event) {
     if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
     document.getElementById('chart-modal').style.display = 'none';
@@ -1170,7 +1100,7 @@ window.closeStrikeCharts = function(event) {
 function showStrikeCharts(strike) {
     if (!liveHistory || liveHistory.length === 0) {
         alert("No historical data available yet. Please wait for the next fetch.");
-        return;
+        return; // Because this is safely inside the function, it will no longer throw the "Illegal return" error!
     }
     
     document.getElementById('chart-modal').style.display = 'flex';
@@ -1210,7 +1140,7 @@ function showStrikeCharts(strike) {
         // --- DRAW OPEN INTEREST CHART ---
         if (tvModalOiChart) tvModalOiChart.remove();
         
-        // 🟢 THE FIX: Pass the left/right axes into the constructor so the canvas doesn't glitch!
+        // Pass the dual-axis directly into the constructor to prevent mobile canvas shifting
         tvModalOiChart = createInstChart('tv-modal-oi', {
             leftPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } }, 
             rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } } 
@@ -1233,7 +1163,7 @@ function showStrikeCharts(strike) {
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
         tvModalOiChgChart.timeScale().fitContent();
 
-        // 🟢 Final fallback to ensure absolute centering on mobile
+        // Final fallback to ensure absolute centering on mobile
         setTimeout(() => {
             [
                 { chart: tvModalVolChart, id: 'tv-modal-vol' },
@@ -1249,8 +1179,7 @@ function showStrikeCharts(strike) {
         }, 50);
 
     }, 100); 
-}
-  
+}  
   function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
 // 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
