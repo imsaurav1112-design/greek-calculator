@@ -503,9 +503,6 @@ header {
         </button>
 
         <!-- 🟢 3. PERMANENT Chart Button (Icon Only) -->
-        <button class="nav-btn" onclick="toggleChartSidebar()" title="Chart" style="color: var(--gold);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-        </button>
         
         <!-- 4. Settings Menu -->
         <div style="position: relative;" id="settings-wrapper">
@@ -557,25 +554,6 @@ header {
         </table>
     </div>
 
-    <div class="chart-sidebar" id="chart-sidebar">
-        <div class="resizer" id="chart-resizer"></div>
-<div class="chart-toolbar">
-            <!-- 🟢 REPLACED DROPDOWN WITH STATIC 5M BADGE -->
-            <div style="background: rgba(41, 98, 255, 0.1); color: #2962FF; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap;">5 MIN CHART</div>
-            
-            <div style="width: 1px; height: 20px; background: #2a2e39; margin: 0 4px;"></div>
-            
-            <button class="chart-btn" id="btn-tv-type" onclick="toggleTVType()" title="Candle / Line">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"></polyline></svg>
-            </button>
-            <button class="chart-btn" onclick="refreshTVChart()" title="Reset Scale">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-            </button>
-            <button class="chart-btn" onclick="toggleChartSidebar()" style="margin-left:auto; color:var(--red);" title="Close Chart">✖</button>
-        </div>
-        <div id="tv-chart"></div>
-    </div>
-
 <div class="right-sidebar" id="intel-panel">
         <div class="intel-section" style="background: var(--bg); display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
@@ -595,13 +573,17 @@ header {
             </div>
         </div>
 
-        <div class="intel-section">
+<div class="intel-section">
             <div class="intel-header">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                Intraday Range
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                Key Market Levels
             </div>
-            <div class="intel-value" id="coa-range">0.00 - 0.00</div>
-            <div style="font-size: 11px; color: var(--muted);">S2 to R2 Boundaries</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: 'Ubuntu Mono', monospace; font-size: 14px; font-weight: 700;">
+                <div style="color: #ff8a65; display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">R2 (Ext)</span><span id="val-r2">--</span></div>
+                <div style="color: var(--red); display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">R1 (Res)</span><span id="val-r1">--</span></div>
+                <div style="color: var(--green); display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">S1 (Sup)</span><span id="val-s1">--</span></div>
+                <div style="color: #80cbc4; display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">S2 (Ext)</span><span id="val-s2">--</span></div>
+            </div>
         </div>
         
         <div class="intel-section" style="flex: 1; display: flex; flex-direction: column; border-bottom: none;">
@@ -1172,13 +1154,11 @@ window.jumpToBacktestTime = function(index) {
     renderBacktestSnapshot();
 };
 
-// 🟢 MARKET INTELLIGENCE LOGIC
+// 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
 function updateMarketIntelligence(coa) {
     if (!coa) return;
-    
-    const scId = coa.scenario_id || "?";
-    document.getElementById('coa-scenario').innerText = `Scenario #${scId}`;
-    document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing historical data...";
+    document.getElementById('coa-scenario').innerText = `Scenario #${coa.scenario_id || "?"}`;
+    document.getElementById('coa-desc').innerText = coa.scenario_desc || "Analyzing market...";
     
     function formatState(side) {
         if(!side) return '--';
@@ -1190,33 +1170,78 @@ function updateMarketIntelligence(coa) {
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
     
-    const s2_val = coa.s2 !== undefined ? coa.s2 : 0;
-    const r2_val = coa.r2 !== undefined ? coa.r2 : 0;
-    
-    document.getElementById('coa-range').innerText = `${s2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})} - ${r2_val.toLocaleString('en-IN', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
-    
+    // 🟢 FIXED LOG HISTORY PARSER
     const logBody = document.getElementById('coa-logs-body');
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
+        
+        // Alert Sound Trigger Fix
+        const latestLog = coa.logs[0];
+        const currentSig = typeof latestLog === 'string' ? latestLog : JSON.stringify(latestLog);
+        if (lastLogSignature !== "" && currentSig !== lastLogSignature) playAlertSound();
+        lastLogSignature = currentSig;
+
         logBody.innerHTML = coa.logs.map(log => {
+            let time = "--:--";
+            let msg = "";
+            
+            // Handle if backend sends pure strings OR dictionaries
             if (typeof log === 'string') {
                 const parts = log.split(' - ');
                 if (parts.length >= 2) {
-                    const time = parts[0];
-                    const msg = parts.slice(1).join(' - ');
-                    
-                    let msgColor = 'var(--text)';
-                    if (msg.includes('Bullish') || msg.includes('Top')) msgColor = 'var(--green)';
-                    if (msg.includes('Bearish') || msg.includes('Bottom')) msgColor = 'var(--red)';
-                    if (msg.includes('Active Challenger')) msgColor = 'var(--gold)';
-                    
-                    return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
+                    time = parts[0];
+                    msg = parts.slice(1).join(' - ');
+                } else {
+                    msg = log;
                 }
+            } else if (log.time && log.msg) {
+                time = log.time;
+                msg = log.msg;
             }
-            return ''; 
+
+            // Dynamic Color Coding
+            let msgColor = 'var(--text)';
+            const lowerMsg = msg.toLowerCase();
+            if (lowerMsg.includes('bullish') || lowerMsg.includes('top') || lowerMsg.includes('support')) msgColor = 'var(--green)';
+            if (lowerMsg.includes('bearish') || lowerMsg.includes('bottom') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
+            if (lowerMsg.includes('challenger') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
+            
+            return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
         }).join('');
     } else {
         logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
     }
+}
+
+// 🟢 NEW: Key Levels Calculator
+function updateKeyLevels(chainData, coaData) {
+    try {
+        if (!chainData || !coaData || !coaData.resistance || !coaData.support) return;
+
+        const resStrike = coaData.resistance.strike;
+        const supStrike = coaData.support.strike;
+        const resRow = chainData.find(r => r.strike === resStrike);
+        const supRow = chainData.find(r => r.strike === supStrike);
+
+        if (!resRow || !supRow) return;
+
+        const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike; // R1
+        const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike; // S1
+        const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
+
+        let eorPlus1Val = eorVal + step;  // R2
+        let eosMinus1Val = eosVal - step; // S2
+        
+        const nextResRow = chainData.find(r => r.strike === (resStrike + step));
+        const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
+
+        if (nextResRow && nextResRow.ce_prz > 0) eorPlus1Val = nextResRow.ce_prz;
+        if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
+
+        document.getElementById('val-r2').innerText = eorPlus1Val.toFixed(1);
+        document.getElementById('val-r1').innerText = eorVal.toFixed(1);
+        document.getElementById('val-s1').innerText = eosVal.toFixed(1);
+        document.getElementById('val-s2').innerText = eosMinus1Val.toFixed(1);
+    } catch(e) {}
 }
 
 // 🟢 CHART LOGIC
