@@ -224,9 +224,12 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { 
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px; width: 90%; max-width: 1000px; padding: 24px; position: relative; box-shadow: 0 15px 50px rgba(0,0,0,0.9); display: flex; flex-direction: column; gap: 20px; 
-    max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; 
-    box-sizing: border-box; /* 🟢 FIX: Stops padding from breaking the width */
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; 
+    width: 90%; max-width: 800px; padding: 20px; position: relative; 
+    box-shadow: 0 15px 50px rgba(0,0,0,0.9); 
+    display: flex; flex-direction: column; gap: 16px; 
+    height: 85vh; /* Forces the modal to be tall */
+    box-sizing: border-box;
 }
 .modal-content::-webkit-scrollbar { width: 6px; }
 .modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
@@ -242,6 +245,53 @@ td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: va
     gap: 20px; 
     width: 100%;
     box-sizing: border-box; /* 🟢 FIX */
+}
+  .modal-chart-area {
+    flex: 1; /* Automatically takes up all remaining space in the modal */
+    position: relative;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tab-chart {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+}
+
+.modal-toggles {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.modal-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.modal-toggle-btn.active {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .modal-content { width: 95% !important; padding: 15px !important; height: 90vh !important; }
+    .modal-toggle-btn { font-size: 11px; padding: 8px; }
 }
 
 .chart-box { 
@@ -616,30 +666,19 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 <div class="modal-overlay" id="chart-modal" onclick="closeStrikeCharts(event)">
     <div class="modal-content">
         <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
-        <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
+        <h2 class="modal-header">Strike: <span id="modal-strike-title">--</span></h2>
         
-<div class="charts-container">
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        <div class="modal-chart-area">
+            <div id="tv-modal-vol" class="tab-chart" style="display: block;"></div>
+            <div id="tv-modal-oi" class="tab-chart" style="display: none;"></div>
+            <div id="tv-modal-oi-chg" class="tab-chart" style="display: none;"></div>
         </div>
-        <div id="tv-modal-vol" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
-    
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            OPEN INTEREST (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
-        </div>
-        <div id="tv-modal-oi" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
 
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        <div class="modal-toggles">
+            <button class="modal-toggle-btn active" data-target="tv-modal-vol" onclick="switchModalChart('tv-modal-vol')">Volume</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi" onclick="switchModalChart('tv-modal-oi')">Open Interest</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi-chg" onclick="switchModalChart('tv-modal-oi-chg')">OI Change</button>
         </div>
-        <div id="tv-modal-oi-chg" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
-</div>
     </div>
 </div>
 
@@ -1097,6 +1136,41 @@ window.closeStrikeCharts = function(event) {
     if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
 };
 
+  // 🟢 THE TAB SWITCHER
+window.switchModalChart = function(targetId) {
+    // 1. Highlight the correct button
+    document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+        if (btn.dataset.target === targetId) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    // 2. Map charts to their IDs
+    const charts = [
+        { id: 'tv-modal-vol', inst: tvModalVolChart },
+        { id: 'tv-modal-oi', inst: tvModalOiChart },
+        { id: 'tv-modal-oi-chg', inst: tvModalOiChgChart }
+    ];
+
+    // 3. Hide all charts except the requested one
+    charts.forEach(c => {
+        const div = document.getElementById(c.id);
+        if (!div) return;
+        
+        if (c.id === targetId) {
+            div.style.display = 'block'; // Reveal the div
+            // 4. Force Lightweight Charts to recalculate canvas size now that it is visible
+            if (c.inst) {
+                setTimeout(() => {
+                    c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
+                    c.inst.timeScale().fitContent();
+                }, 20);
+            }
+        } else {
+            div.style.display = 'none'; // Hide the div
+        }
+    });
+};
+
 function showStrikeCharts(strike) {
     if (!liveHistory || liveHistory.length === 0) {
         alert("No historical data available yet. Please wait for the next fetch.");
@@ -1155,31 +1229,18 @@ function showStrikeCharts(strike) {
         ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
         tvModalOiChart.timeScale().fitContent();
 
-        // --- DRAW OI CHANGE CHART ---
+// --- DRAW OI CHANGE CHART ---
         if (tvModalOiChgChart) tvModalOiChgChart.remove();
         tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
         const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
-        tvModalOiChgChart.timeScale().fitContent();
 
-        // Final fallback to ensure absolute centering on mobile
-        setTimeout(() => {
-            [
-                { chart: tvModalVolChart, id: 'tv-modal-vol' },
-                { chart: tvModalOiChart, id: 'tv-modal-oi' },
-                { chart: tvModalOiChgChart, id: 'tv-modal-oi-chg' }
-            ].forEach(({ chart, id }) => {
-                const div = document.getElementById(id);
-                if (chart && div && div.clientWidth > 0) {
-                    chart.applyOptions({ width: div.clientWidth, height: div.clientHeight });
-                    chart.timeScale().fitContent();
-                }
-            });
-        }, 50);
+        // 🟢 THE MAGIC: Activate the Volume tab by default and resize everything!
+        switchModalChart('tv-modal-vol');
 
-    }, 100); 
-}  
+    }, 50); 
+}
   function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
 // 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
