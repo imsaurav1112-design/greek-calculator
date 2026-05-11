@@ -1158,15 +1158,25 @@ function showStrikeCharts(strike) {
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
         tvModalOiChgChart.timeScale().fitContent();
 
-        requestAnimationFrame(() => {
-            const volDiv = document.getElementById('tv-modal-vol');
-            const oiDiv = document.getElementById('tv-modal-oi');
-            const oiChgDiv = document.getElementById('tv-modal-oi-chg');
-            if(tvModalVolChart && volDiv) tvModalVolChart.resize(volDiv.clientWidth, volDiv.clientHeight);
-            if(tvModalOiChart && oiDiv) tvModalOiChart.resize(oiDiv.clientWidth, oiDiv.clientHeight);
-            if(tvModalOiChgChart && oiChgDiv) tvModalOiChgChart.resize(oiChgDiv.clientWidth, oiChgDiv.clientHeight);
-        });
-    }, 100); 
+       // 🟢 THE FIX: Wait exactly 50ms for the modal to open, then snap the charts to fit perfectly!
+    setTimeout(() => {
+        const volDiv = document.getElementById('tv-modal-vol');
+        const oiDiv = document.getElementById('tv-modal-oi');
+        const oiChgDiv = document.getElementById('tv-modal-oi-chg');
+        
+        if(tvModalVolChart && volDiv) {
+            tvModalVolChart.applyOptions({ width: volDiv.clientWidth, height: volDiv.clientHeight });
+            tvModalVolChart.timeScale().fitContent();
+        }
+        if(tvModalOiChart && oiDiv) {
+            tvModalOiChart.applyOptions({ width: oiDiv.clientWidth, height: oiDiv.clientHeight });
+            tvModalOiChart.timeScale().fitContent();
+        }
+        if(tvModalOiChgChart && oiChgDiv) {
+            tvModalOiChgChart.applyOptions({ width: oiChgDiv.clientWidth, height: oiChgDiv.clientHeight });
+            tvModalOiChgChart.timeScale().fitContent();
+        }
+    }, 50);
 }
 
 function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
