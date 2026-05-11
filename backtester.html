@@ -651,33 +651,22 @@ header {
     <input type="number" id="inp-spot" style="display:none;">
 </footer>
 
-<div class="modal-overlay" id="chart-modal" onclick="closeCharts(event)">
+<div class="modal-overlay" id="chart-modal" onclick="closeStrikeCharts(event)">
     <div class="modal-content">
-        <button class="modal-close" onclick="closeCharts(event)">✖</button>
-        <h2 class="modal-header">Strike Analysis: <span id="modal-strike-title">--</span></h2>
+        <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
+        <h2 class="modal-header">Strike: <span id="modal-strike-title">--</span></h2>
         
-<div class="charts-container">
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            VOLUME (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        <div class="modal-chart-area">
+            <div id="tv-modal-vol" class="tab-chart" style="display: block;"></div>
+            <div id="tv-modal-oi" class="tab-chart" style="display: none;"></div>
+            <div id="tv-modal-oi-chg" class="tab-chart" style="display: none;"></div>
         </div>
-        <div id="tv-modal-vol" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
-    
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            OPEN INTEREST (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
-        </div>
-        <div id="tv-modal-oi" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
 
-    <div class="chart-box">
-        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 5px;">
-            OI CHANGE (<span style="color:#ef4444">CE</span> vs <span style="color:#10b981">PE</span>)
+        <div class="modal-toggles">
+            <button class="modal-toggle-btn active" data-target="tv-modal-vol" onclick="switchModalChart('tv-modal-vol')">Volume</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi" onclick="switchModalChart('tv-modal-oi')">Open Interest</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi-chg" onclick="switchModalChart('tv-modal-oi-chg')">OI Change</button>
         </div>
-        <div id="tv-modal-oi-chg" style="flex: 1; width: 100%; position: relative;"></div>
-    </div>
-</div>
     </div>
 </div>
 
@@ -1626,17 +1615,20 @@ function showStrikeCharts(strike) {
     ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
     tvModalVolChart.timeScale().fitContent();
 
-    if (tvModalOiChart) tvModalOiChart.remove();
-    tvModalOiChart = createInstChart('tv-modal-oi');
-    tvModalOiChart.applyOptions({ leftPriceScale: { visible: true, borderColor: '#27272a' }, rightPriceScale: { visible: true, borderColor: '#27272a' } });
-    const ceOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#ef4444', lineWidth: 2 });
-    const peOiSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'left', color: '#10b981', lineWidth: 2 });
-    const ceLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#f59e0b', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
-    const peLtpSeries = tvModalOiChart.addLineSeries({ priceScaleId: 'right', color: '#3b82f6', lineWidth: 2, lineStyle: LightweightCharts.LineStyle.Dashed }); 
-    ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
-    ceLtpSeries.setData(ceLtpData); peLtpSeries.setData(peLtpData);
-    tvModalOiChart.timeScale().fitContent();
-
+    // --- DRAW OPEN INTEREST CHART ---
+        if (tvModalOiChart) tvModalOiChart.remove();
+        
+        // 🟢 Back to a standard, ultra-stable single right axis!
+        tvModalOiChart = createInstChart('tv-modal-oi', {
+            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, minimumWidth: 50 } 
+        });
+        
+        // Draw only the CE and PE Open Interest lines (defaults to the right axis)
+        const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        
+        ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+  
     if (tvModalOiChgChart) tvModalOiChgChart.remove();
     tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
     const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
