@@ -1027,7 +1027,7 @@ function renderBacktestSnapshot() {
     globalSym = snap.symbol;
     document.getElementById('inp-spot').value = snap.spot || 0;
     
-    try { document.getElementById('play-time-display').innerText = snap.timestamp.split(' ')[1] || snap.timestamp; } catch(e){}
+    try { document.getElementById('play-time-display').innerText = snap.timestamp; } catch(e){}
     setStatus('backtest', `Playing (${backtestCurrentIndex + 1}/${backtestSnapshots.length})`);
     
     let coaData = snap.coa;
