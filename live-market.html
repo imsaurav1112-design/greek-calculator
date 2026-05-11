@@ -401,8 +401,16 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .logo { font-size: 14px; }
         
     .settings-panel { 
-        position: fixed !important; left: 10px !important; top: auto !important; bottom: 70px !important; width: 220px !important; 
-        max-height: 60vh !important; overflow-y: auto !important; overflow-x: hidden !important; -webkit-overflow-scrolling: touch !important; z-index: 9999 !important; 
+        position: fixed !important; 
+        left: 50px !important; /* Spawns exactly to the right of the 40px nav bar */
+        top: 65px !important;  /* Aligns perfectly with the top of the nav bar */
+        bottom: auto !important; 
+        width: 220px !important; 
+        max-height: calc(100vh - 80px) !important; /* Prevents it from going off-screen */
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; 
+        -webkit-overflow-scrolling: touch !important; 
+        z-index: 9999 !important; 
     }
     .settings-panel::-webkit-scrollbar { width: 5px; }
     .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
