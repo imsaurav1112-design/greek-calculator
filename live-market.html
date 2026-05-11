@@ -1018,8 +1018,75 @@ function parseTimeToUnix(timeStr) {
     return Math.floor(d.getTime() / 1000); 
 }
 
-function createInstChart(containerId) {
+// 🟢 UPGRADED: Now accepts extraOptions to prevent the "Axis Shift" bug
+function createInstChart(containerId, extraOptions = {}) {
     const container = document.getElementById(containerId);
+    container.innerHTML = ''; 
+    const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 300,
+        height: container.clientHeight || 300,
+        
+        layout: { 
+            background: { type: 'solid', color: '#131722' }, 
+            textColor: '#71717a', 
+            fontFamily: "'IBM Plex Sans', sans-serif" 
+        },
+        grid: { 
+            vertLines: { visible: false }, 
+            horzLines: { visible: false } 
+        }, 
+        crosshair: { 
+            mode: LightweightCharts.CrosshairMode.Magnet,
+            vertLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 },
+            horzLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 }
+        },
+        rightPriceScale: { 
+            borderVisible: false, 
+            scaleMargins: { top: 0.1, bottom: 0.1 } 
+        },
+        localization: {
+            priceFormatter: price => {
+                return new Intl.NumberFormat('en-IN', { 
+                    notation: "compact", 
+                    compactDisplay: "short", 
+                    maximumFractionDigits: 1 
+                }).format(price);
+            }
+        },
+        timeScale: { 
+            borderVisible: false, 
+            timeVisible: true, 
+            secondsVisible: false,
+            fixLeftEdge: true,  
+            fixRightEdge: true  
+        },
+        handleScroll: false, 
+        handleScale: false,
+        
+        // 🟢 THE MAGIC: Inject the dual-axis requirements during creation!
+        ...extraOptions 
+    });
+
+    let isDisposed = false;
+    const observer = new ResizeObserver(() => {
+        // Use clientWidth/Height directly for better flexbox stability
+        if (isDisposed || !container.clientWidth || !container.clientHeight) return;
+        try { 
+            chart.applyOptions({ width: container.clientWidth, height: container.clientHeight }); 
+            chart.timeScale().fitContent(); 
+        } catch(e) {}
+    });
+    observer.observe(container);
+
+    const originalRemove = chart.remove.bind(chart);
+    chart.remove = function() {
+        isDisposed = true;
+        observer.disconnect();
+        originalRemove();      
+    };
+    return chart;
+}
+  const container = document.getElementById(containerId);
     container.innerHTML = ''; 
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 300,
@@ -1106,11 +1173,9 @@ function showStrikeCharts(strike) {
         return;
     }
     
-    // 1. Show the modal immediately
     document.getElementById('chart-modal').style.display = 'flex';
     document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    // 2. 🟢 THE FIX: Wait 100ms for the modal to fully expand on mobile BEFORE drawing the charts!
     setTimeout(() => {
         const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
         const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];   
@@ -1142,12 +1207,11 @@ function showStrikeCharts(strike) {
         ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
         tvModalVolChart.timeScale().fitContent();
 
-        // --- DRAW OPEN INTEREST CHART (This is the one that was breaking) ---
+        // --- DRAW OPEN INTEREST CHART ---
         if (tvModalOiChart) tvModalOiChart.remove();
-        tvModalOiChart = createInstChart('tv-modal-oi');
         
-        // 🟢 FIX: Ensure the left scale inherits the sleek borderless design so it doesn't push the chart inward
-        tvModalOiChart.applyOptions({ 
+        // 🟢 THE FIX: Pass the left/right axes into the constructor so the canvas doesn't glitch!
+        tvModalOiChart = createInstChart('tv-modal-oi', {
             leftPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } }, 
             rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } } 
         });
@@ -1169,8 +1233,25 @@ function showStrikeCharts(strike) {
         ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
         tvModalOiChgChart.timeScale().fitContent();
 
-    }, 100); // Wait 100ms for CSS to settle
-}function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
+        // 🟢 Final fallback to ensure absolute centering on mobile
+        setTimeout(() => {
+            [
+                { chart: tvModalVolChart, id: 'tv-modal-vol' },
+                { chart: tvModalOiChart, id: 'tv-modal-oi' },
+                { chart: tvModalOiChgChart, id: 'tv-modal-oi-chg' }
+            ].forEach(({ chart, id }) => {
+                const div = document.getElementById(id);
+                if (chart && div && div.clientWidth > 0) {
+                    chart.applyOptions({ width: div.clientWidth, height: div.clientHeight });
+                    chart.timeScale().fitContent();
+                }
+            });
+        }, 50);
+
+    }, 100); 
+}
+  
+  function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
 
 // 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
 function updateMarketIntelligence(coa) {
