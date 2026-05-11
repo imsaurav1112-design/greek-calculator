@@ -1683,78 +1683,86 @@ function createInstChart(containerId) {
     };
     return chart;
 }
+// 🟢 SYNCHRONIZED BACKTESTER CHART LOGIC
+window.closeStrikeCharts = function(event) {
+    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('chart-modal').style.display = 'none';
+    if(tvModalVolChart) { tvModalVolChart.remove(); tvModalVolChart = null; }
+    if(tvModalOiChart) { tvModalOiChart.remove(); tvModalOiChart = null; }
+    if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
+};
+
 function showStrikeCharts(strike) {
     if (backtestSnapshots.length === 0) return;
+    
+    // 1. Show the modal immediately
     document.getElementById('chart-modal').style.display = 'flex';
-    document.getElementById('modal-strike-title').innerText = strike;
+    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
 
-    const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
-    const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];
-    const seenTimes = new Set();
-    let lastValidTime = 0;
+    // 2. 🟢 Wait 50ms for CSS flexbox to snap open on mobile
+    setTimeout(() => {
+        const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+        const ceOiChgData = [], peOiChgData = [];
+        const seenTimes = new Set();
+        let lastValidTime = 0;
 
-    // 🟢 ONLY read data up to current backtest frame
-    for (let i = 0; i <= backtestCurrentIndex; i++) {
-        let snap = backtestSnapshots[i];
-        let t = parseTimeToUnix(snap.timestamp);
-        if (isNaN(t)) t = lastValidTime + 60;
-        if (t <= lastValidTime) t = lastValidTime + 60;
-        lastValidTime = t;
+        // 🟢 Loop through backtest history up to current playhead
+        for (let i = 0; i <= backtestCurrentIndex; i++) {
+            let snap = backtestSnapshots[i];
+            let t = parseTimeToUnix(snap.timestamp);
+            
+            // Failsafe for missing timestamps in DB
+            if (isNaN(t) || t <= lastValidTime) t = lastValidTime + 60;
+            lastValidTime = t;
 
-        if (seenTimes.has(t)) continue;
-        seenTimes.add(t);
+            if (seenTimes.has(t)) continue;
+            seenTimes.add(t);
 
-        const row = snap.chain.find(r => r.strike === strike);
-        if (row) {
-            ceVolData.push({ time: t, value: row.ce.volume || 0 });
-            peVolData.push({ time: t, value: row.pe.volume || 0 });
-            ceOiData.push({ time: t, value: row.ce.oi || 0 });
-            peOiData.push({ time: t, value: row.pe.oi || 0 });
-            ceLtpData.push({ time: t, value: row.ce.ltp || 0 });
-            peLtpData.push({ time: t, value: row.pe.ltp || 0 });
-            ceOiChgData.push({ time: t, value: row.ce.change_oi || 0 });
-            peOiChgData.push({ time: t, value: row.pe.change_oi || 0 });
+            const row = snap.chain.find(r => r.strike === strike);
+            if (row) {
+                ceVolData.push({ time: t, value: row.ce.volume || 0 });
+                peVolData.push({ time: t, value: row.pe.volume || 0 });
+                ceOiData.push({ time: t, value: row.ce.oi || 0 });
+                peOiData.push({ time: t, value: row.pe.oi || 0 });
+                ceOiChgData.push({ time: t, value: row.ce.change_oi || 0 });
+                peOiChgData.push({ time: t, value: row.pe.change_oi || 0 });
+            }
         }
-    }
 
-    const sorter = (a, b) => a.time - b.time;
-    ceVolData.sort(sorter); peVolData.sort(sorter);
-    ceOiData.sort(sorter); peOiData.sort(sorter);
-    ceLtpData.sort(sorter); peLtpData.sort(sorter);
-    ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+        const sorter = (a, b) => a.time - b.time;
+        ceVolData.sort(sorter); peVolData.sort(sorter);
+        ceOiData.sort(sorter); peOiData.sort(sorter);
+        ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
 
-    if (tvModalVolChart) tvModalVolChart.remove();
-    tvModalVolChart = createInstChart('tv-modal-vol');
-    const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
-    const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-    ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
-    tvModalVolChart.timeScale().fitContent();
-
-    // --- DRAW OPEN INTEREST CHART ---
-        if (tvModalOiChart) tvModalOiChart.remove();
-        
-        // 🟢 Back to a standard, ultra-stable single right axis!
-        tvModalOiChart = createInstChart('tv-modal-oi', {
+        const chartOptions = {
             rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, minimumWidth: 50 } 
-        });
-        
-        // Draw only the CE and PE Open Interest lines (defaults to the right axis)
+        };
+
+        // --- DRAW VOLUME CHART ---
+        if (tvModalVolChart) tvModalVolChart.remove();
+        tvModalVolChart = createInstChart('tv-modal-vol', chartOptions);
+        const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
+
+        // --- DRAW OPEN INTEREST CHART ---
+        if (tvModalOiChart) tvModalOiChart.remove();
+        tvModalOiChart = createInstChart('tv-modal-oi', chartOptions);
         const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
         const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-        
         ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
-  
-    if (tvModalOiChgChart) tvModalOiChgChart.remove();
-    tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
-    const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
-    const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
-    ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
-    tvModalOiChgChart.timeScale().fitContent();
-}
 
-function closeCharts(event) { 
-    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return; 
-    document.getElementById('chart-modal').style.display = 'none'; 
+        // --- DRAW OI CHANGE CHART ---
+        if (tvModalOiChgChart) tvModalOiChgChart.remove();
+        tvModalOiChgChart = createInstChart('tv-modal-oi-chg', chartOptions);
+        const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+
+        // 🟢 THE MAGIC: Activate the Volume tab by default and resize everything!
+        switchModalChart('tv-modal-vol');
+
+    }, 50); 
 }
 </script>
 
