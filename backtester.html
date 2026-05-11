@@ -1167,15 +1167,9 @@ function updateMarketIntelligence(coa) {
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
     
-    // 🟢 FIXED LOG HISTORY PARSER
+    // 🟢 FIXED LOG HISTORY PARSER (No Audio Crash)
     const logBody = document.getElementById('coa-logs-body');
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
-        
-        // Alert Sound Trigger Fix
-        const latestLog = coa.logs[0];
-        const currentSig = typeof latestLog === 'string' ? latestLog : JSON.stringify(latestLog);
-        if (lastLogSignature !== "" && currentSig !== lastLogSignature) playAlertSound();
-        lastLogSignature = currentSig;
 
         logBody.innerHTML = coa.logs.map(log => {
             let time = "--:--";
@@ -1311,75 +1305,6 @@ function toggleTVType() {
     syncBacktestChartData(); 
 }
 
-function refreshTVChart() { if(tvChartInst) tvChartInst.timeScale().scrollToRealTime(); }
-
-// 🟢 FIXED ENGINE: Strict 5-Minute Candles + Live Watermark
-function syncBacktestChartData() {
-    if (!tvLineSeries || !tvCandleSeries || backtestSnapshots.length === 0) return;
-    
-    let spotData = [];
-    let candleMap = new Map();
-    let lastValidTime = 0;
-    let latestDisplayTime = ""; // To hold the time for our watermark
-
-    // 🟢 Hardcoded to 5 Minutes (300 seconds)
-    const tfSeconds = 300;
-
-    // Aggregate data up to the current playback frame
-    for (let i = 0; i <= backtestCurrentIndex; i++) {
-        let snap = backtestSnapshots[i];
-        let spot = parseFloat(snap.spot);
-        if (isNaN(spot) || spot === 0) {
-             if (snap.chain && snap.chain.length > 0) {
-                 spot = snap.chain.find(r => r.ce.ltp > 50 && r.pe.ltp > 50)?.strike || snap.chain[0].strike;
-             } else continue;
-        }
-
-        let tsStr = snap.timestamp || "";
-        latestDisplayTime = tsStr; // Grab the exact string from the database (e.g., "10:15 AM")
-
-        let t = Math.floor(new Date(tsStr.replace(' ', 'T')).getTime() / 1000);
-        
-        if (isNaN(t) && tsStr.includes('-')) {
-            let parts = tsStr.split(' ');
-            let dParts = parts[0].split('-');
-            if (dParts.length === 3 && dParts[0].length === 2) {
-                t = Math.floor(new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`).getTime() / 1000);
-            }
-        }
-        if (isNaN(t)) t = lastValidTime + 60;
-        if (t <= lastValidTime) t = lastValidTime + 60; 
-        lastValidTime = t;
-
-        spotData.push({ time: t, value: spot });
-
-        // 🟢 THE BUCKET MATH: Forces the time into exactly 5-minute blocks
-        const bucketTime = Math.floor(t / tfSeconds) * tfSeconds;
-        
-        if (!candleMap.has(bucketTime)) {
-            candleMap.set(bucketTime, { time: bucketTime, open: spot, high: spot, low: spot, close: spot });
-        } else {
-            const candle = candleMap.get(bucketTime);
-            candle.high = Math.max(candle.high, spot);
-            candle.low = Math.min(candle.low, spot);
-            candle.close = spot;
-        }
-    }
-
-    const candleData = Array.from(candleMap.values()).sort((a, b) => a.time - b.time);
-
-    try {
-        tvLineSeries.setData(spotData);
-        tvCandleSeries.setData(candleData);
-        
-        // 🟢 UPDATE THE WATERMARK: Paint the current backtest time on the chart!
-        tvChartInst.applyOptions({
-            watermark: { text: `Playback: ${latestDisplayTime}` }
-        });
-
-        tvChartInst.timeScale().scrollToRealTime(); 
-    } catch(err) { console.error("Chart Render Skip:", err); }
-}
 function abs(x) { return x < 0 ? -x : x; }
 function getStrikeInterval(symbol) {
   switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
