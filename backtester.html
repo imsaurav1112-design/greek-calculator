@@ -273,6 +273,23 @@ select.play-time-display:hover { background: rgba(59, 130, 246, 0.1); }
     display: flex;
     flex-direction: column;
 }
+  /* 🟢 TIME PICKER CLOCK UI */
+.time-picker-menu { cursor: default; }
+.tp-header { display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; font-family: "Ubuntu Mono", monospace; color: var(--muted); margin-bottom: 20px; gap: 4px; }
+.tp-header span { cursor: pointer; transition: 0.2s; padding: 0 4px; border-radius: 6px; }
+.tp-header span:hover { color: var(--text); background: var(--section); }
+.tp-header span.tp-active { color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+.tp-ampm { display: flex; flex-direction: column; gap: 4px; margin-left: 12px; }
+.tp-ampm button { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;}
+.tp-ampm button.tp-active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.tp-clock { width: 220px; height: 220px; border-radius: 50%; background: var(--section); position: relative; margin: 0 auto; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 4px 10px rgba(0,0,0,0.2); }
+.light-theme .tp-clock { box-shadow: inset 0 4px 10px rgba(0,0,0,0.05); }
+.tp-center { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; position: absolute; z-index: 10; }
+.tp-hand { position: absolute; bottom: 50%; left: calc(50% - 1px); width: 2px; height: 38%; background: var(--accent); transform-origin: bottom center; z-index: 5; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.tp-hand::after { content: ''; position: absolute; top: -14px; left: -13px; width: 28px; height: 28px; background: var(--accent); border-radius: 50%; opacity: 0.8; }
+.tp-num { position: absolute; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; border-radius: 50%; transform: translate(-50%, -50%); transition: 0.2s; z-index: 8; }
+.tp-num:hover { background: rgba(59, 130, 246, 0.3); }
 /* 📱 🟢 SUPER OPTIMIZED MOBILE APP LAYOUT */
 @media (max-width: 768px) {
     
@@ -450,7 +467,29 @@ header {
     <input type="hidden" id="sel-date" value="">
 
     <!-- Load Action -->
-    <button class="primary-btn" onclick="fetchBacktestData()">Load Data</button>
+    <div class="custom-dropdown-wrapper" id="time-dropdown-wrapper">
+        <button id="btn-time" class="primary-btn" onclick="openTimePicker(event)" style="display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="btn-time-text">09:15 AM</span> <span style="font-size: 10px; margin-left: 2px;">▾</span>
+        </button>
+        
+        <div class="custom-menu time-picker-menu" id="time-picker-menu" style="width: 280px; padding: 20px; align-items: center;">
+            <div class="tp-header">
+                <span id="tp-hour" class="tp-active" onclick="setTpMode('hour')">09</span>:<span id="tp-minute" onclick="setTpMode('minute')">15</span>
+                <div class="tp-ampm">
+                    <button id="tp-am" class="tp-active" onclick="setTpAmPm('AM')">AM</button>
+                    <button id="tp-pm" onclick="setTpAmPm('PM')">PM</button>
+                </div>
+            </div>
+            <div class="tp-clock" id="tp-clock">
+                <div class="tp-center"></div>
+                <div class="tp-hand" id="tp-hand"></div>
+                <div id="tp-numbers"></div>
+            </div>
+            <button class="primary-btn" style="width: 100%; margin-top: 20px; padding: 10px; font-size: 14px; box-shadow: 0 4px 15px var(--accent-glow);" onclick="executeFetchAndJump()">Fetch Data</button>
+        </div>
+    </div>
+    <input type="hidden" id="sel-time" value="09:15 AM">
 </header>
 
 <div id="error-bar" style="display:none; background: rgba(239, 68, 68, 0.9); color: white; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; width: 100%; z-index: 50; flex-shrink: 0;"></div>
@@ -1036,7 +1075,25 @@ try {
             `<option value="${idx}">${snap.timestamp}</option>`
         ).join('');
 
-        backtestCurrentIndex = 0;
+        // 🟢 THE FIX: Jump directly to the time the user selected on the clock!
+        const selectedTimeStr = document.getElementById('sel-time').value; 
+        const targetUnix = parseTimeToUnix(selectedTimeStr);
+        
+        let bestIdx = 0;
+        for (let i = 0; i < backtestSnapshots.length; i++) {
+            if (parseTimeToUnix(backtestSnapshots[i].timestamp) >= targetUnix) {
+                bestIdx = i;
+                break;
+            }
+        }
+        backtestCurrentIndex = bestIdx;
+        
+        // Populate the footer time dropdown
+        const timeSelector = document.getElementById('play-time-display');
+        timeSelector.innerHTML = backtestSnapshots.map((snap, idx) => 
+            `<option value="${idx}">${snap.timestamp}</option>`
+        ).join('');
+
         renderBacktestSnapshot();
         
     } catch (err) {
@@ -1645,6 +1702,94 @@ function closeCharts(event) {
       window.location.href = "/";
     }
   });
+  // 🟢 INTERACTIVE CLOCK UI LOGIC
+let tpMode = 'hour'; 
+let tpHour = 9;
+let tpMinute = 15;
+let tpAmPm = 'AM';
+
+window.openTimePicker = function(event) {
+    toggleMenu('time-picker-menu', event);
+    renderClock();
+};
+
+window.setTpMode = function(mode) {
+    tpMode = mode;
+    document.getElementById('tp-hour').classList.toggle('tp-active', mode === 'hour');
+    document.getElementById('tp-minute').classList.toggle('tp-active', mode === 'minute');
+    renderClock();
+};
+
+window.setTpAmPm = function(val) {
+    tpAmPm = val;
+    document.getElementById('tp-am').classList.toggle('tp-active', val === 'AM');
+    document.getElementById('tp-pm').classList.toggle('tp-active', val === 'PM');
+    updateTimeDisplay();
+};
+
+function renderClock() {
+    const container = document.getElementById('tp-numbers');
+    container.innerHTML = '';
+    const radius = 90; // Distance from center
+    const items = 12; 
+    const angleStep = 360 / items;
+    
+    for (let i = 1; i <= items; i++) {
+        // Switch between 1-12 (hours) and 0-55 (minutes)
+        let val = tpMode === 'hour' ? i : (i === 12 ? 0 : i * 5);
+        let displayVal = val.toString().padStart(2, '0');
+        
+        // Trigonometry to place numbers in a circle
+        let angle = (i * angleStep) - 90; 
+        let rad = angle * (Math.PI / 180);
+        let x = 110 + radius * Math.cos(rad); // 110 is center of 220px clock
+        let y = 110 + radius * Math.sin(rad);
+        
+        let div = document.createElement('div');
+        div.className = 'tp-num';
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        div.innerText = displayVal;
+        
+        div.onclick = (e) => {
+            e.stopPropagation();
+            if (tpMode === 'hour') {
+                tpHour = val;
+                setTpMode('minute'); // Auto-switch to minutes mode
+            } else {
+                tpMinute = val;
+            }
+            updateTimeDisplay();
+            updateHand();
+        };
+        container.appendChild(div);
+    }
+    updateHand();
+}
+
+function updateHand() {
+    let val = tpMode === 'hour' ? tpHour : (tpMinute / 5);
+    if (tpMode === 'hour' && val === 12) val = 0;
+    if (tpMode === 'minute' && val === 0) val = 12;
+    let angle = (val * 30); 
+    document.getElementById('tp-hand').style.transform = `rotate(${angle}deg)`;
+}
+
+function updateTimeDisplay() {
+    let hStr = tpHour.toString().padStart(2, '0');
+    let mStr = tpMinute.toString().padStart(2, '0');
+    document.getElementById('tp-hour').innerText = hStr;
+    document.getElementById('tp-minute').innerText = mStr;
+    
+    const timeStr = `${hStr}:${mStr} ${tpAmPm}`;
+    document.getElementById('sel-time').value = timeStr;
+    document.getElementById('btn-time-text').innerText = timeStr;
+}
+
+window.executeFetchAndJump = function() {
+    document.getElementById('time-picker-menu').style.display = 'none'; // Close clock
+    fetchBacktestData(); // Fetch the DB!
+};
 </script>
 </body>
 </html>
