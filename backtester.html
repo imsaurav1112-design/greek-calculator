@@ -1034,17 +1034,29 @@ async function fetchBacktestData() {
         // 🟢 Sort mathematically by Time so 9:15 AM comes before 1:15 PM
         data.sort((a, b) => parseTimeToUnix(a.time) - parseTimeToUnix(b.time));
 
+       // 🟢 THE FIX: Parse DuckDB Strings into Real Objects & Inject RPL/SPL Prices!
         backtestSnapshots = data.map(snap => {
+            
+            let parsedCoa = null;
+            if (snap.coa) {
+                try {
+                    // Force the raw database string into a real JavaScript Object
+                    parsedCoa = typeof snap.coa === 'string' ? JSON.parse(snap.coa) : snap.coa;
+                } catch(e) {}
+            }
+
             return {
                 timestamp: snap.time,
                 symbol: sym,
                 spot: snap.rows.length > 0 ? (snap.rows.find(r => r.ceLTP > 100 && r.peLTP > 100)?.strike || snap.rows[0].strike) : 0, 
                 chain: snap.rows.map(r => ({
                     strike: r.strike,
+                    ce_prz: r.ce_prz || 0, // 🟢 Required so R1/R2 calculate perfectly!
+                    pe_prz: r.pe_prz || 0, // 🟢 Required so S1/S2 calculate perfectly!
                     ce: { ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, iv: 0 },
                     pe: { ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, iv: 0 }
                 })),
-                coa: snap.coa 
+                coa: parsedCoa 
             };
         });
 
