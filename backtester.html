@@ -227,9 +227,41 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
 /* 🟢 BACKTEST PLAYBACK CONTROLS */
 .playback-controls { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 6px 16px; border-radius: 8px; border: 1px solid var(--border); }
-.play-btn { background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: 0.15s;}
-.play-btn:hover { color: var(--text); transform: scale(1.1); }
-.play-btn.active { color: var(--accent); }
+.play-btn { 
+    background: transparent; 
+    border: 1px solid transparent; 
+    color: var(--muted); 
+    cursor: pointer; 
+    width: 34px;           /* Fixed size for perfect circles */
+    height: 34px; 
+    border-radius: 50%;    /* Pill/Circle shape is more modern */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Premium easing curve */
+}
+
+.play-btn:hover { 
+    color: var(--text); 
+    background: var(--section); /* Subtle background highlight */
+    border: 1px solid var(--border);
+    transform: translateY(-1px); /* Slight floating lift */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Soft shadow */
+}
+  /* 🟢 Tactile "Click" Effect */
+.play-btn:active {
+    transform: translateY(1px) scale(0.92); /* Gives a physical 'press' feeling */
+    box-shadow: none;
+    background: var(--border);
+}
+
+/* 🟢 The 'Playing' State */
+.play-btn.active { 
+    color: var(--accent); 
+    background: rgba(59, 130, 246, 0.15); /* Sleek blue glass tint */
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 15px var(--accent-glow); /* Soft outer glow */
+}
 .play-time-display { 
     font-family: "Ubuntu Mono", monospace; 
     font-size: 13px; font-weight: 700; color: var(--accent); 
@@ -625,9 +657,12 @@ header {
     </div>
 
     <div class="playback-controls" id="playback-controls">
-        <button class="play-btn" onclick="backtestStep(-1)" title="Step Back">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
-        </button>
+<button class="play-btn" onclick="backtestStep(-1)" title="Step Back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="19 20 9 12 19 4 19 20"></polygon>
+        <line x1="5" y1="19" x2="5" y2="5"></line>
+    </svg>
+</button>
         
         <button class="play-btn" id="btn-play" onclick="toggleBacktestPlay()" title="Auto Play">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
