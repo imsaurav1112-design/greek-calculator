@@ -474,19 +474,52 @@ header {
     .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
     .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
     /* 6. Ultra-Compact Footer */
-    footer { 
-        height: auto; 
-        padding: 8px 10px; 
-        flex-direction: column; 
-        gap: 6px; 
-        font-size: 10px;
-        z-index: 95;
+   footer { 
+        height: 42px !important; /* Enough height to tap buttons comfortably */
+        padding: 0 8px !important; 
+        flex-direction: row !important; 
+        flex-wrap: nowrap !important;
+        overflow: hidden !important; /* 🟢 NO SCROLLING */
+        justify-content: space-between !important; /* Pushes stats left, controls right */
+        align-items: center !important;
+        z-index: 95; 
+        border-top: 1px solid var(--border) !important;
     }
-    .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
-    .footer-left span { font-size: 10px; }
-    .footer-left .divider { display: none; } /* Hide dividers to save space */
-    .footer-right { width: 100%; justify-content: space-between; }
+    .footer-left { 
+        width: auto !important; 
+        justify-content: flex-start !important;
+        border-bottom: none !important; 
+        padding-bottom: 0 !important; 
+        gap: 6px !important;
+        font-size: 10px !important; /* Small but highly readable */
+    }
+  .footer-left span { font-size: 10px; }
+    .footer-left .divider { display: block !important; height: 12px !important; margin: 0 !important; }
+    .footer-right { 
+        display: none !important; 
+    }
 }
+  /* 2. Playback Controls */
+    .playback-controls {
+        background: transparent !important; 
+        border: none !important;
+        padding: 0 !important;
+        gap: 4px !important;
+    }
+    .play-btn {
+        width: 28px !important; /* Compact circles */
+        height: 28px !important;
+    }
+    .play-btn svg { width: 12px; height: 12px; }
+    
+    .play-time-display {
+        font-size: 10px !important;
+        padding: 2px 4px !important;
+        min-width: 55px !important;
+        text-align: center;
+        background: transparent !important;
+        border: 1px solid var(--border) !important;
+    }
 </style>
 </head>
 <body>
