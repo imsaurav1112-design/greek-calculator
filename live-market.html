@@ -1019,17 +1019,29 @@ function createInstChart(containerId) {
         crosshair: { mode: LightweightCharts.CrosshairMode.Magnet },
         rightPriceScale: { borderColor: '#2b2b43' },
         
+        // 🟢 THE FIX: Compress massive numbers on the Y-Axis natively!
+        localization: {
+            priceFormatter: price => {
+                // Formats large numbers compactly into standard Indian scales (T, L, Cr)
+                return new Intl.NumberFormat('en-IN', { 
+                    notation: "compact", 
+                    compactDisplay: "short", 
+                    maximumFractionDigits: 1 
+                }).format(price);
+            }
+        },
+        
         timeScale: { 
             borderColor: '#2b2b43', 
             timeVisible: true, 
             secondsVisible: false,
-            fixLeftEdge: true,  // 🟢 Locks the chart to exactly 9:15
-            fixRightEdge: true  // 🟢 Locks the chart to exactly 3:30
+            fixLeftEdge: true,  // Locks the chart to exactly 9:15
+            fixRightEdge: true  // Locks the chart to exactly 3:30
         },
         
         // 🟢 Disable heavy interactivity
-        handleScroll: false, // Stops user from dragging the chart left/right
-        handleScale: false   // Stops user from zooming in/out
+        handleScroll: false, 
+        handleScale: false   
     });
 
     let isDisposed = false;
@@ -1037,7 +1049,7 @@ function createInstChart(containerId) {
         if (isDisposed || entries.length === 0 || entries[0].target !== container) return;
         try { 
             chart.applyOptions({ width: entries[0].contentRect.width, height: entries[0].contentRect.height }); 
-            chart.timeScale().fitContent(); // 🟢 Forces data to fit the square perfectly
+            chart.timeScale().fitContent(); // Forces data to fit the square perfectly
         } catch(e) {}
     });
     observer.observe(container);
@@ -1050,7 +1062,6 @@ function createInstChart(containerId) {
     };
     return chart;
 }
-
 window.closeStrikeCharts = function(event) {
     if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
     document.getElementById('chart-modal').style.display = 'none';
