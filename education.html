@@ -3,165 +3,266 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GC | Academy</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<title>Academy | Greek Calculator - Learn Options Trading & Order Flow</title>
+<meta name="description" content="Master the markets with Greek Calculator Academy. Educational resources on Nifty/Bank Nifty options chains, footprint charts, Greeks, and institutional trading strategies.">
+<link rel="canonical" href="https://greekcalculator.in/education">
+<link rel="icon" type="image/png" href="optionchain_fevicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
     :root { 
-        --bg: #09090b; --card: #141415; --section: #202023; --border: #27272a; 
-        --text: #f4f4f5; --muted: #a1a1aa; --accent: #3b82f6; 
+        --bg: #030303; 
+        --card: #0f0f11; 
+        --section: #16161a; 
+        --border: #27272a; 
+        --text: #f4f4f5; 
+        --muted: #a1a1aa; 
+        --accent: #3b82f6; 
+        --accent-glow: rgba(59, 130, 246, 0.2);
+        --purple: #a855f7;
     }
     
     body { 
         margin: 0; background-color: var(--bg); color: var(--text); 
         font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
     }
-    
-    /* HEADER */
+
+    /* Standard Header */
     header { 
-        height: 52px; background: var(--card); border-bottom: 1px solid var(--border); 
-        display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
-        position: sticky; top: 0; z-index: 10;
+        height: 60px; background: rgba(15, 15, 17, 0.8); backdrop-filter: blur(12px); 
+        border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; 
+        align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 100;
     }
-    .logo { font-weight: 900; font-size: 18px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 6px;}
+    .logo { font-weight: 900; font-size: 20px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 8px;}
     .logo span { color: var(--accent); }
-    .back-btn { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;}
-    .back-btn:hover { color: var(--text); }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 600; border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; transition: 0.2s;}
+    .back-btn:hover { background: var(--section); color: var(--text); border-color: var(--accent); }
 
-    /* CONTENT LAYOUT */
-    .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-    h1 { font-weight: 900; font-size: 32px; margin-bottom: 8px; }
-    p.subtitle { color: var(--muted); margin-bottom: 40px; }
-
-    .grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
-    @media(min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
-
-    /* CATEGORY CARDS */
-    .category { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-    .category h2 { font-size: 18px; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
-    
-    /* TOPIC LINKS */
-    .topic-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-    .topic-link { 
-        display: flex; justify-content: space-between; align-items: center;
-        background: var(--section); padding: 12px 15px; border-radius: 8px; 
-        color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600;
-        border: 1px solid transparent; cursor: pointer; transition: 0.2s;
+    /* Hero Section */
+    .hero-academy {
+        padding: 60px 5% 40px;
+        text-align: center;
+        background: radial-gradient(circle at top, var(--accent-glow) 0%, transparent 50%);
     }
-    .topic-link:hover { border-color: rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.05); }
-    .topic-link svg { width: 16px; height: 16px; color: var(--muted); }
+    .hero-academy h1 { font-size: 42px; font-weight: 900; margin: 0 0 15px 0; letter-spacing: -1px; }
+    .hero-academy p { color: var(--muted); font-size: 18px; max-width: 600px; margin: 0 auto; }
 
-    /* --- SLEEK COMING SOON MODAL --- */
+    /* Content Filters */
+    .filters {
+        display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap;
+    }
+    .filter-tag {
+        padding: 6px 18px; border-radius: 20px; background: var(--section); border: 1px solid var(--border);
+        font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s;
+    }
+    .filter-tag.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+
+    /* Academy Grid */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 5% 100px; }
+    
+    .category-section { margin-bottom: 60px; }
+    .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; }
+    .category-header h2 { font-size: 22px; font-weight: 800; margin: 0; }
+    .category-header .line { flex: 1; height: 1px; background: var(--border); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+    /* MODERN CARD UI */
+    .course-card {
+        background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+        overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;
+        display: flex; flex-direction: column;
+    }
+    .course-card:hover {
+        transform: translateY(-5px); border-color: var(--accent);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .card-thumb {
+        height: 160px; background: var(--section); display: flex; align-items: center;
+        justify-content: center; position: relative; overflow: hidden;
+    }
+    .card-thumb::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(0deg, var(--card) 0%, transparent 100%);
+    }
+    
+    /* Content Type Badges */
+    .type-badge {
+        position: absolute; top: 12px; left: 12px; z-index: 2;
+        padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);
+    }
+    .badge-video { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-pdf { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-blog { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+    .card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .level-text { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+    .course-card h3 { font-size: 16px; font-weight: 700; margin: 0 0 10px 0; line-height: 1.4; }
+    .course-card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.5; flex: 1; }
+    
+    .card-footer { 
+        margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted);
+    }
+
+    /* --- COMING SOON MODAL --- */
     #modal-overlay {
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
-        display: flex; justify-content: center; align-items: center;
-        opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100;
+        background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+        display: none; justify-content: center; align-items: center; z-index: 1000;
     }
-    #modal-overlay.active { opacity: 1; pointer-events: auto; }
-    
     .modal-box {
-        background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-        padding: 30px; text-align: center; width: 90%; max-width: 320px;
-        transform: translateY(20px); transition: transform 0.3s ease;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+        padding: 40px; text-align: center; width: 90%; max-width: 400px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
-    #modal-overlay.active .modal-box { transform: translateY(0); }
-    
-    .modal-icon { width: 48px; height: 48px; background: rgba(59, 130, 246, 0.1); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto; }
-    .modal-box h3 { margin: 0 0 10px 0; font-size: 20px; }
-    .modal-box p { color: var(--muted); font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
-    
+    .modal-icon { 
+        width: 60px; height: 60px; background: var(--accent-glow); color: var(--accent); 
+        border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        margin: 0 auto 20px auto; font-size: 24px;
+    }
     .close-btn {
-        background: var(--text); color: var(--bg); border: none; padding: 10px 20px;
-        border-radius: 6px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s;
+        background: var(--accent); color: white; border: none; padding: 12px 30px;
+        border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s;
     }
-    .close-btn:hover { opacity: 0.9; }
+    .close-btn:hover { background: #2563eb; }
+
+    @media (max-width: 768px) {
+        .hero-academy h1 { font-size: 32px; }
+        .grid { grid-template-columns: 1fr; }
+    }
 </style>
 </head>
 <body>
 
 <header>
-    <a href="../index.html" class="logo"><span>Greek</span> Calculator</a>
-    <a href="../index.html" class="back-btn">← Back to Terminal</a>
+    <a href="/" class="logo"><span>Greek</span> Academy</a>
+    <nav>
+        <a href="/" class="back-btn">Exit Academy</a>
+    </nav>
 </header>
 
+<section class="hero-academy">
+    <h1>Master Institutional Analytics</h1>
+    <p>Comprehensive guides on <strong>NSE/BSE</strong> derivatives, Order Flow, and Option Greeks theory.</p>
+</section>
+
 <div class="container">
-    <h1>Terminal Academy</h1>
-    <p class="subtitle">Master orderflow, options chains, and institutional strategies.</p>
+    
+    <div class="filters">
+        <div class="filter-tag active">All Topics</div>
+        <div class="filter-tag">Video Lessons</div>
+        <div class="filter-tag">Strategy Blogs</div>
+        <div class="filter-tag">PDF Handbooks</div>
+    </div>
 
-    <div class="grid">
-        
-        <div class="category">
-            <h2>🖥️ Terminal Guide</h2>
-            <div class="topic-list">
-                <a class="topic-link coming-soon">How to read the Footprint Chart <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Understanding Max Pain & PCR <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Navigating the Historical Backtester <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    <div class="category-section">
+        <div class="category-header">
+            <h2>🖥️ Terminal Masterclass</h2>
+            <div class="line"></div>
+        </div>
+        <div class="grid">
+            <div class="course-card coming-soon">
+                <div class="card-thumb">
+                    <span class="type-badge badge-video">Video</span>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="card-content">
+                    <div class="level-text">Beginner</div>
+                    <h3>Reading the Footprint Chart</h3>
+                    <p>Learn to identify aggressive buyers and sellers using tick-by-tick orderflow data.</p>
+                    <div class="card-footer">
+                        <span>12 Mins</span>
+                        <span>4.9 ★</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-card coming-soon">
+                <div class="card-thumb">
+                    <span class="type-badge badge-pdf">PDF</span>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="card-content">
+                    <div class="level-text">Intermediate</div>
+                    <h3>The Max Pain & PCR Handbook</h3>
+                    <p>A deep dive into how Open Interest affects Nifty and Bank Nifty expiry levels.</p>
+                    <div class="card-footer">
+                        <span>15 Pages</span>
+                        <span>Full Access</span>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="category">
-            <h2>🔰 Beginners</h2>
-            <div class="topic-list">
-                <a class="topic-link coming-soon">What is an Options Chain? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Calls vs. Puts Explained <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">The Basics of Open Interest (OI) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    <div class="category-section">
+        <div class="category-header">
+            <h2>♟️ Quantitative Strategies</h2>
+            <div class="line"></div>
+        </div>
+        <div class="grid">
+            <div class="course-card coming-soon">
+                <div class="card-thumb">
+                    <span class="type-badge badge-blog">Blog</span>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="card-content">
+                    <div class="level-text">Advanced</div>
+                    <h3>VWAP Imbalance Setups</h3>
+                    <p>Using volume-weighted average price alongside delta imbalances for high-probability entries.</p>
+                    <div class="card-footer">
+                        <span>6 Min Read</span>
+                        <span>Strategy</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="course-card coming-soon">
+                <div class="card-thumb">
+                    <span class="type-badge badge-video">Video</span>
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div class="card-content">
+                    <div class="level-text">Advanced</div>
+                    <h3>Zero-to-Hero Expiry Theory</h3>
+                    <p>The mathematical logic behind short-covering rallies and long-unwinding during expiries.</p>
+                    <div class="card-footer">
+                        <span>24 Mins</span>
+                        <span>Institutional</span>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="category">
-            <h2>🧠 Advanced</h2>
-            <div class="topic-list">
-                <a class="topic-link coming-soon">Chart of Accuracy (COA) Shifts <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Implied Volatility & The Greeks <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Delta Imbalances in Orderflow <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-            </div>
-        </div>
-
-        <div class="category">
-            <h2>♟️ Strategies</h2>
-            <div class="topic-list">
-                <a class="topic-link coming-soon">The VWAP Bounce Strategy <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Trading State of Trend (STT/STB) <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-                <a class="topic-link coming-soon">Zero-to-Hero Expiry Setup <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
-            </div>
-        </div>
-
     </div>
 </div>
 
 <div id="modal-overlay">
     <div class="modal-box">
-        <div class="modal-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <h3>Coming Soon</h3>
-        <p>We are currently writing this guide. Check back soon for deep institutional knowledge.</p>
-        <button class="close-btn" onclick="closeModal()">Got it</button>
+        <div class="modal-icon">🚀</div>
+        <h3>Curating Content</h3>
+        <p>We are currently producing high-quality video lessons and PDF guides for this topic. Stay tuned for the launch!</p>
+        <button class="close-btn" onclick="closeModal()">Back to Academy</button>
     </div>
 </div>
 
 <script>
     const modal = document.getElementById('modal-overlay');
 
-    // Find all links with the 'coming-soon' class and intercept their clicks
-    document.querySelectorAll('.coming-soon').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault(); // Stop the link from actually changing pages
-            modal.classList.add('active'); // Show the popup
+    document.querySelectorAll('.coming-soon').forEach(card => {
+        card.addEventListener('click', () => {
+            modal.style.display = 'flex';
         });
     });
 
-    // Function to close the modal
     function closeModal() {
-        modal.classList.remove('active');
+        modal.style.display = 'none';
     }
 
-    // Close the modal if they click anywhere outside the box
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
+        if (e.target === modal) closeModal();
     });
 </script>
 
