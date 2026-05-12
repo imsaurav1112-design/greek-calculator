@@ -625,13 +625,14 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     </div>
 
     <div class="right-sidebar" id="intel-panel">
-<div class="intel-section" style="background: var(--bg); padding: 15px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
-            <div style="font-size: 12px; display: flex; gap: 15px; font-family: 'Ubuntu Mono', monospace;">
-                <span style="color: var(--muted);">SUP: <b id="coa-sup-state" style="color:var(--green);">--</b></span>
-                <span style="color: var(--muted);">RES: <b id="coa-res-state" style="color:var(--red);">--</b></span>
-            </div>
-            <button onclick="toggleIntelPanel()" style="background:transparent; border:none; color:var(--muted); cursor:pointer; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✖</button>
-        </div>
+<div class="intel-section" style="position: relative; background: var(--bg); padding: 15px 18px; display: flex; align-items: center; border-bottom: 1px solid var(--border);">
+    <div style="font-size: 12px; display: flex; gap: 15px; font-family: 'Ubuntu Mono', monospace; padding-right: 20px;">
+        <span style="color: var(--muted);">SUP: <b id="coa-sup-state" style="color:var(--green);">--</b></span>
+        <span style="color: var(--muted);">RES: <b id="coa-res-state" style="color:var(--red);">--</b></span>
+    </div>
+    
+    <button onclick="toggleIntelPanel()" style="position: absolute; top: 12px; right: 12px; background:transparent; border:none; color:var(--muted); cursor:pointer; font-size: 14px; transition: 0.2s; padding: 4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✖</button>
+</div>
 
         <div class="intel-section">
             <div class="intel-header">
