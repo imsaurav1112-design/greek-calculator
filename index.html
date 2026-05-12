@@ -330,14 +330,19 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         <span> Greek</span> Calculator
     </div>
     
-    <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>  
-        <a href="/education">Learn</a>
-    </div>
+<nav class="nav-links">
+        <ul style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>  
+            <li><a href="/education">Learn</a></li>
+        </ul>
+    </nav>
 
 <div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
-       <button class="nav-btn btn btn-login" id="btn-login-nav" onclick="openAuthModal('login')">LogIn</button>
+  
+       <a href="/login" style="text-decoration: none;">
+    <button class="nav-btn btn btn-login" id="btn-login-nav" onclick="event.preventDefault(); openAuthModal('login')">LogIn</button>
+</a>
         
         <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
         
@@ -475,13 +480,15 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 
 <footer>
     <div>&copy; 2026 GC Analysis Tool. All rights reserved.</div>
-<div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-    <a href="about" style="color: var(--muted); text-decoration: none; transition: 0.2s;">About Us</a>
-    <a href="terms" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Terms & Conditions</a>
-    <a href="privacy" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Privacy Policy</a>
-    <a href="refunds" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Refund Policy</a>
-    <a href="contact" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Contact Us</a>
-</div>
+<nav style="margin-top: 15px;">
+    <ul style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
+        <li><a href="/about" style="color: var(--muted); text-decoration: none; transition: 0.2s;">About Us</a></li>
+        <li><a href="/terms" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Terms & Conditions</a></li>
+        <li><a href="/privacy" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Privacy Policy</a></li>
+        <li><a href="/refunds" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Refund Policy</a></li>
+        <li><a href="/contact" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Contact Us</a></li>
+    </ul>
+</nav>
 </footer>
 
 <div id="auth-overlay" class="auth-overlay" onclick="window.closeAuthModalViaOverlay(event)">
