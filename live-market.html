@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="Greek Calculator: High-performance options chain and real-time orderflow visualization terminal. Track live NIFTY footprint charts and advanced market data.">
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<title>Greek Calculator | Option Chain</title>
+<meta name="description" content="Track the live option chain for Nifty and Bank Nifty with real-time updates. Analyze Option Greeks, Open Interest, PCR, and Max Pain to make smarter trades.">
+<title>Live Option Chain & Greeks | NSE & BSE</title>
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root {
   --bg: #09090b;         
@@ -16,1052 +16,1540 @@
   --border: #27272a;     
   --text: #f4f4f5;       
   --muted: #a1a1aa;      
-  --accent: #3b82f6;       
+  --accent: #3b82f6;     
   --accent-glow: rgba(59, 130, 246, 0.4);
   --gold: #f59e0b;         
   --green: #10b981;        
   --red: #ef4444;          
+  --itm-ce: #0e1411;       
+  --itm-pe: #161011;       
 }
-  
-body {
-        /* 2. DISABLE TEXT SELECTION (HIGHLIGHTING) */
+
+.light-theme {
+  --bg: #f8fafc; 
+  --card: #ffffff; 
+  --section: #f1f5f9; 
+  --border: #e2e8f0;
+  --text: #0f172a; 
+  --muted: #64748b; 
+  --itm-ce: #f0fdf4; 
+  --itm-pe: #fef2f2;
+  --accent: #2563eb;
+}
+
+body { 
+    /* 2. DISABLE TEXT SELECTION (HIGHLIGHTING) */
     -webkit-user-select: none; /* Safari */
     -moz-user-select: none;    /* Firefox */
     -ms-user-select: none;     /* IE10+/Edge */
     user-select: none;         /* Standard */
-  margin: 0; font-family: 'Inter', sans-serif;
-  background-color: var(--bg); 
-  color: var(--text); line-height: 1.6;
-  overflow-x: hidden; }
 
-/* 🟢 BACKGROUND CANDLESTICK CANVAS */
-#bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; filter: blur(6px); opacity: 0.15; pointer-events: none; }
+    margin: 0; 
+    font-family: 'Poppins', sans-serif; 
+    background-color: var(--bg); 
+    color: var(--text); 
+    display: flex; 
+    flex-direction: column; 
+    height: 100dvh; 
+    width: 100vw;
+    overflow: hidden; 
+}
+  
+header { 
+    height: 52px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; flex-shrink: 0; gap: 12px; transition: background-color 0.3s, border-color 0.3s;
+}
 
-/* --- HEADER --- */
-header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 100; }
-.logo { font-weight: 800; font-size: 25px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px;}
-.logo span { color: var(--accent); }
+.logo { text-decoration: none; font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border);letter-spacing: 0.5px; white-space: nowrap;}
+  .logo span { color: var(--accent); }
+.divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0;}
 
-.nav-links {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    
-    /* 🟢 The Centering Magic */
+header select, header button { 
+    background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; padding: 6px 12px; cursor: pointer; transition: all 0.2s ease; outline: none; flex-shrink: 0;
+}
+
+header button.primary-btn { background: var(--accent); color: #fff; font-weight: 600; border: none; }
+header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(--accent-glow); border: none;}
+
+/* Centered Header Stats */
+.header-center-info {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg);
+    padding: 4px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    pointer-events: none;
 }
-.nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.2s; cursor: pointer;}
-.nav-links a:hover { color: var(--text); }
 
-.auth-buttons { display: flex; gap: 12px; align-items: center; }
-.btn { 
-    background: transparent; color: var(--text); padding: 10px 20px; 
-    border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; 
-    font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+.info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
 }
-  .btn:hover { background: var(--section); }
-.btn-primary { 
-    background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
-    border: 1px solid rgba(59, 130, 246, 0.6); 
-    color: #fff; 
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+.info-item .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+}
+
+.info-item b {
+    font-family: 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+}
+
+.info-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+}
+
+@media (max-width: 768px) {
+    .header-center-info { display: none; }
+}
+
+.custom-dropdown-wrapper { position:static !important; display: flex; align-items: center; flex-shrink: 0;}
+.custom-menu {
+    display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
+}
+.light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.custom-option {
+    display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; transition: 0.15s; font-family: "Ubuntu Mono", monospace; font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap;
+}
+.custom-option:hover { background: var(--section); color: var(--text); }
+.custom-option input { margin: 0; accent-color: var(--accent); }
+
+.left-nav {
+    width: 52px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 20; position: relative;
+}
+
+.nav-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; position: relative; }
+.nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
+.nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+
+/* Settings Panel logic */
+.settings-panel {
+    display: none; 
+    position: absolute; 
+    left: 60px; 
+    top: -50px; 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    width: 190px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    flex-direction: column; 
+    z-index: 9999; 
+    max-height: 65vh !important;
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch; 
+}
+
+.settings-panel > * { flex-shrink: 0 !important; }
+.settings-panel::-webkit-scrollbar { width: 5px; }
+.settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
+
+.light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.settings-header { padding: 10px 16px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--section); }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; cursor: pointer; transition: 0.15s;}
+.settings-row:hover { background: var(--section); }
+.settings-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+.settings-select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-size: 11px; font-family: 'Poppins', sans-serif; cursor: pointer; outline: none; }
+
+.workspace { flex: 1; display: flex; overflow: hidden; position: relative; background: var(--bg); min-height: 0; }
+.table-wrapper { flex: 1; overflow: auto; position: relative; -webkit-overflow-scrolling: touch; min-height: 0; }
+table { width: 100%; 
+       border-collapse: collapse;
+       font-family: 'IBM Plex Sans', sans-serif; 
+       font-variant-numeric: tabular-nums; 
+       table-layout: auto; 
+      }
+th { background: rgba(0, 0, 0, 0.3); 
+    padding: 10px 4px; 
+    color: #fafafc;
+    border-bottom: 1px solid var(--border); 
+    border-right: 1px solid var(--border); 
+   font-weight: 700;
+    font-size: 11px; 
+    position: sticky; 
+    top: 0; 
+    z-index: 10; 
+    letter-spacing: 0.5px;
+   }
+.light-theme th { background-color: var(--red); color: var(--text); }
+th.strike-cell { background: #1e293b !important; color: #f8fafc !important; border-bottom: 1px solid var(--accent); }
+.light-theme th.strike-cell { background: #cbd5e1 !important; color: var(--text) !important; }
+
+th.ce-header { background-color: var(--red) !important; color: #fff !important; border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important; }
+th.pe-header { background-color: var(--green) !important; color: #fff !important; border-bottom: 1px solid rgba(16, 185, 129, 0.3) !important; }
+.light-theme th.ce-header { background-color: var(--red) !important; color: #fff !important; }
+.light-theme th.pe-header { background-color: var(--green) !important; color: #fff !important; }
+
+tr { height: 38px; border-bottom: 1px solid var(--border); transition: background 0.1s;}
+tr:hover { background: var(--section) !important; }
+td { padding: 0 4px; 
+    border-right: 1px solid var(--border); 
+    text-align: center; 
+    font-size: 13px; 
+    color: var(--text); 
+    vertical-align: middle;
+    font-weight: 600;
+   }
+td:last-child { border-right: none; }
+
+.val-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.1; }
+.spot-line td { border: none !important; position: relative; height: 28px; background: transparent !important; }
+.spot-divider { display: flex; align-items: center; justify-content: center; width: 100%; height: 1px; background: var(--accent); position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; box-shadow: 0 0 10px var(--accent-glow);}
+.spot-divider span { background: var(--bg); color: var(--accent); padding: 4px 12px; font-size: 11px; font-weight: 700; border-radius: 20px; border: 1px solid var(--accent); letter-spacing: 0.5px; z-index: 6; font-family: 'Poppins', sans-serif; box-shadow: 0 0 10px var(--accent-glow);}
+
+.itm-ce { background-color: var(--itm-ce); }
+.itm-pe { background-color: var(--itm-pe); }
+
+.max-ce-heat { background-color: var(--red) !important; color: #fff !important; font-weight: 800 !important; }
+.max-pe-heat { background-color: var(--green) !important; color: #fff !important; font-weight: 800 !important; }
+.heat-2nd { background-color: var(--gold) !important; color: #000 !important; font-weight: 800 !important; }
+.heat-75 { background-color: #3f3f46 !important; color: #fff !important; font-weight: 600 !important; }
+.light-theme .heat-75 { background-color: #cbd5e1 !important; color: #000 !important; }
+.pct-tag { font-size: 9px; color: var(--accent); background: rgba(59, 130, 246, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2);}
+
+td.strike-cell { color: var(--text); font-weight: 700; background: #1e293b !important; border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
+.light-theme td.strike-cell { background: #f1f5f9 !important; color: var(--text) !important; }
+td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
+
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+.modal-content { 
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; 
+    width: 90%; max-width: 800px; padding: 20px; position: relative; 
+    box-shadow: 0 15px 50px rgba(0,0,0,0.9); 
+    display: flex; flex-direction: column; gap: 16px; 
+    height: 85vh; /* Forces the modal to be tall */
+    box-sizing: border-box;
+}
+.modal-content::-webkit-scrollbar { width: 6px; }
+.modal-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 6px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: transparent; color: var(--muted); border: none; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.modal-close:hover { color: var(--red); transform: scale(1.1); }
+.modal-header { text-align: center; font-family: "Ubuntu Mono", monospace; font-size: 18px; font-weight: 800; color: var(--text); margin: 0;}
+.modal-header span { color: var(--accent); }
+
+.charts-container { 
+    display: flex; 
+    flex-direction: row; 
+    justify-content: space-between; 
+    gap: 20px; 
+    width: 100%;
+    box-sizing: border-box; /* 🟢 FIX */
+}
+  .modal-chart-area {
+    flex: 1; /* Automatically takes up all remaining space in the modal */
     position: relative;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
     overflow: hidden;
 }
-  .btn-primary:hover span { transform: translateX(4px); }
-.btn-primary:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    border-color: rgba(96, 165, 250, 0.8);
+
+.tab-chart {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
 }
-  /* 🟢 High-Contrast Secondary Button (For Log In) */
-.btn-login {
-    background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); /* Subtle top light reflection */
+
+.modal-toggles {
+    display: flex;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
 }
-.btn-login:hover {
-    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+.modal-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: 'Poppins', sans-serif;
 }
-  .btn-primary::before {
-    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
-    transform: skewX(-25deg); transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+.modal-toggle-btn.active {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent);
 }
-  .btn-primary:hover::before { left: 150%; } /* Triggers the light sweep */
 
-/* --- Google btn (Used in Modal) --- */
-.btn-google { background: white; color: #0f172a; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px 24px; font-size: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 auto 20px auto; width: 100%; }
-.btn-google:hover { background: #f8fafc; box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
-
-/* --- HERO SECTION --- */
-.hero { padding: 100px 5%; text-align: center; max-width: 800px; margin: 0 auto; }
-.hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
-.hero h1 span { color: var(--accent); }
-.hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
-.hero-buttons { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; }
-.launch-btn { 
-    padding: 14px 36px; 
-    font-size: 16px; 
-    width: fit-content;
-}
-/* --- FEATURES GRID --- */
-.features { padding: 50px 5%; max-width: 1200px; margin: 0 auto; }
-.section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 10px; text-align: center;}
-.features h2 { font-size: 32px; text-align: center; margin-bottom: 50px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.feature-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 12px; transition: 0.3s; }
-.feature-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(59,130,246,0.1); }
-.feature-icon { width: 40px; height: 40px; background: rgba(59,130,246,0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-.feature-card h3 { margin: 0 0 10px 0; font-size: 18px; }
-.feature-card p { color: var(--muted); font-size: 14px; margin: 0; }
-
-/* --- PRICING SECTION --- */
-.pricing { padding: 50px 5%; max-width: 1200px; margin: 0 auto; margin-top: 20px; }
-.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
-.price-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 40px 30px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column;}
-.price-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(59,130,246,0.1); }
-.price-card.popular { border-color: var(--accent); background: linear-gradient(180deg, rgba(20,20,21,1) 0%, rgba(59,130,246,0.05) 100%); }
-.popular-badge { position: absolute; top: 12px; right: -30px; background: var(--accent); color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 30px; transform: rotate(45deg); letter-spacing: 1px;}
-.plan-name { font-size: 18px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
-.plan-price { font-size: 42px; font-weight: 900; color: var(--text); margin-bottom: 5px; }
-.plan-price span { font-size: 16px; color: var(--muted); font-weight: 500; }
-.plan-desc { font-size: 14px; color: var(--muted); margin-bottom: 30px; min-height: 44px;}
-.plan-features { list-style: none; padding: 0; margin: 0 0 30px 0; flex: 1; }
-.plan-features li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--text); }
-.plan-features li svg { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
-.plan-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; font-family: 'Inter', sans-serif;}
-.price-card:hover .plan-btn { background: var(--section); }
-.price-card.popular .plan-btn { background: var(--accent); color: white; border: none; }
-.price-card.popular:hover .plan-btn { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
-.bonus-tag { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--gold); font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); font-weight: 700; margin-top: 4px;}
-
-/* --- DISCLAIMER SECTION --- */
-.disclaimer-section { padding: 60px 5%; background: rgba(239, 68, 68, 0.05); border-top: 1px solid rgba(239, 68, 68, 0.2); border-bottom: 1px solid rgba(239, 68, 68, 0.2); margin-top: 50px;}
-.disclaimer-box { max-width: 800px; margin: 0 auto; background: var(--card); border: 1px solid var(--red); border-left: 4px solid var(--red); padding: 30px; border-radius: 8px; }
-.disclaimer-box h3 { color: var(--red); margin-top: 0; display: flex; align-items: center; gap: 10px; }
-.disclaimer-box p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
-.disclaimer-box strong { color: var(--text); }
-
-/* --- FOOTER --- */
-footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
-
-/* 📱 MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
-    .hero { padding: 60px 5%; }
-    .hero h1 { font-size: 36px; }
-    .hero p { font-size: 16px; }
-    .nav-links { display: none; }
-    .grid, .pricing-grid { grid-template-columns: 1fr; }
+    .modal-content { width: 95% !important; padding: 15px !important; height: 90vh !important; }
+    .modal-toggle-btn { font-size: 11px; padding: 8px; }
 }
 
-/* 🟢 PROFILE BUTTON & PANEL STYLES */
-.profile-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--accent); color: white;
-    display: none; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px; cursor: pointer;
-    border: 2px solid transparent; transition: 0.2s;
+.chart-box { 
+    flex: 1; 
+    aspect-ratio: 1 / 1; 
+    height: auto !important; 
+    background: var(--bg); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    padding: 12px; 
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* 🟢 FIX */
+    overflow: hidden; /* 🟢 FIX: Locks the canvas strictly inside the box */
 }
-.profile-btn:hover { border-color: var(--text); transform: scale(1.05); }
-
-.profile-panel {
-    display: none; position: absolute; right: 16px; top: 60px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; width: 280px; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-    flex-direction: column; z-index: 1000; overflow: hidden;
+.chart-sidebar { position: relative; width: 0px; height: 100%; background: #131722; border-left: 1px solid #2a2e39; display: flex; flex-direction: column; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; flex-shrink: 0; }
+.chart-sidebar.open { width: 340px; }
+.chart-sidebar .resizer { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; cursor: col-resize; background: transparent; z-index: 50; transition: background 0.2s; }
+.chart-sidebar .resizer:hover { background: var(--accent); }
+.chart-toolbar { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; padding: 6px 8px; background: #131722; border-bottom: 1px solid #2a2e39; overflow-x: auto; }
+.chart-toolbar::-webkit-scrollbar { height: 0px; }
+  /* 🟢 MODERN CHART TYPE TOGGLE */
+.chart-toggle-group {
+    display: flex;
+    align-items: center;
+    background: #0f111a; /* Dark inset background */
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid #2a2e39;
 }
-.profile-header { padding: 16px; background: var(--section); border-bottom: 1px solid var(--border); }
-.profile-email { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; word-break: break-all; }
-.profile-tier { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; display: inline-block; text-transform: uppercase; }
-.tier-pro { background: rgba(16, 185, 129, 0.15); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); }
-.tier-free { background: rgba(161, 161, 170, 0.1); color: var(--muted); border: 1px solid var(--border); }
+.toggle-option {
+    background: transparent;
+    color: #64748b; /* Faded out when inactive */
+    border: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+}
+.toggle-option:hover { color: #d1d4dc; }
+.toggle-option.active {
+    background: rgba(59, 130, 246, 0.15); /* Sleek blue glass highlight */
+    color: var(--accent); /* Bright blue icon */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
 
-.profile-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.chart-btn { background: transparent; color: #b2b5be; border: 1px solid transparent; padding: 4px 8px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 4px; font-family: 'Poppins', sans-serif; transition: 0.15s; white-space: nowrap; }
+.chart-btn:hover { background: #2a2e39; color: #d1d4dc; }
+.chart-btn.active { color: #2962FF; background: rgba(41, 98, 255, 0.1); }
+select.chart-btn { appearance: auto; background: #131722; border: 1px solid #2a2e39; }
+#tv-chart { flex-grow: 1; width: 100%; position: relative; }
 
-.wallet-box { display: flex; justify-content: space-between; align-items: center; background: rgba(59, 130, 246, 0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.2); }
-.wallet-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase;}
-.wallet-amount { font-size: 18px; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+.right-sidebar { width: 320px; background: var(--card); border-left: 1px solid var(--border); display: none; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: background-color 0.3s; }
+.intel-section { padding: 18px; border-bottom: 1px solid var(--border); }
+.intel-header { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.intel-value { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
+.intel-sub { font-size: 12px; color: var(--accent); font-weight: 500; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: "Ubuntu Mono", monospace; font-variant-numeric: tabular-nums;}
+.history-table th { background: transparent; padding: 6px 0; border: none; text-align: left; color: var(--muted); border-bottom: 1px solid var(--border); position: static; font-weight: 600;}
+.history-table td { padding: 8px 0; border: none; border-bottom: 1px solid rgba(150,150,150,0.1); text-align: left; color: var(--text);}
 
-.ref-box { display: flex; flex-direction: column; gap: 6px; }
-.ref-label { font-size: 11px; color: var(--muted); font-weight: 600; }
-.ref-input-group { display: flex; gap: 8px; }
-.ref-input { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 8px 10px; border-radius: 6px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; outline: none; }
-.ref-copy-btn { background: var(--section); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 0 12px; cursor: pointer; transition: 0.15s; font-weight: 600; font-size: 12px;}
-.ref-copy-btn:hover { background: var(--accent); border-color: var(--accent); color: white; }
+footer { height: 48px; background: var(--card); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; flex-shrink: 0; font-size: 11px; transition: background-color 0.3s; }
+.footer-left { display: flex; align-items: center; gap: 15px; font-family: "Ubuntu Mono", monospace; color: var(--muted); }
+.footer-left b { color: var(--text); font-weight: 600; }
+.footer-left .highlight { color: var(--accent); }
+.footer-right { display: flex; align-items: center; gap: 15px; }
+.live-clock { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: var(--text); }
+.status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
-.profile-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: center; }
-.logout-text { color: var(--red); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; background: none; border: none; }
-.logout-text:hover { color: #f87171; text-decoration: underline; }
+/* Mobile App Layout */
+@media (max-width: 768px) {
+    .nav-content { display: none; flex-direction: column; gap: 16px; }
+    .left-nav {
+        width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0;
+        display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; 
+        left: 0; background: var(--card); transition: height 0.3s ease; overflow: hidden; z-index: 100;
+    }
+    .left-nav.menu-open { height: auto !important; padding-bottom: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .left-nav.menu-open .nav-content { display: flex; }
+    .nav-btn { width: 32px !important; height: 32px !important; margin-top: 4px; }
+    .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; }
 
-/* 🟢 THEMED FLOATING AUTH MODAL STYLES */
-.auth-overlay {
-      display: none; 
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      
-      /* 🟢 THE FIX: Lowered from 0.8 to 0.3 so it's mostly transparent */
-      background: rgba(0, 0, 0, 0.3); 
-      
-      /* 🟢 Increased the blur slightly to compensate for the lighter background */
-      backdrop-filter: blur(16px); 
-      -webkit-backdrop-filter: blur(16px); /* Safari support */
-      
-      z-index: 3000; align-items: center; justify-content: center; padding: 20px;
-      animation: overlayFade 0.4s ease forwards;
-  }
+    header::after { content: ''; display: block; min-width: 15px; flex-shrink: 0; }
+    header { 
+        display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto !important; overflow-y: visible !important; 
+        width: 100vw !important; height: 40px !important; padding: 0 16px !important; align-items: center !important; gap: 12px !important; 
+        z-index: 1000 !important; position: sticky !important; top: 0; -webkit-overflow-scrolling: touch;
+    }
+    header > * { flex-shrink: 0 !important; }
+    header::-webkit-scrollbar { display: none; }
+    header > *:last-child { margin-right: 24px !important; }
+    
+    header button, header select, .custom-dropdown-wrapper button { 
+        font-size: 11px !important; padding: 2px 10px !important; pointer-events: auto !important; min-width: 0 !important; width: max-content !important; 
+    }
+    .custom-menu {
+        position: fixed !important; z-index: 99999 !important; margin: 0 !important; min-width: 140px !important; background: var(--card) !important;
+        border: 1px solid var(--border) !important; border-radius: 8px !important; box-shadow: 0 15px 40px rgba(0,0,0,0.9) !important;
+    }
+    .custom-option { padding: 12px 16px !important; font-size: 13px !important; border-bottom: 1px solid var(--border); }
+    .custom-dropdown-wrapper { position: static !important; }
+    .custom-option:last-child { border-bottom: none; }
+    .logo { font-size: 14px; }
+        
+    .settings-panel { 
+        position: fixed !important; 
+        left: 50px !important; /* Spawns exactly to the right of the 40px nav bar */
+        top: 65px !important;  /* Aligns perfectly with the top of the nav bar */
+        bottom: auto !important; 
+        width: 220px !important; 
+        max-height: calc(100vh - 80px) !important; /* Prevents it from going off-screen */
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; 
+        -webkit-overflow-scrolling: touch !important; 
+        z-index: 9999 !important; 
+    }
+    .settings-panel::-webkit-scrollbar { width: 5px; }
+    .settings-panel::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 5px; }
+    .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }  
+    
+    .header-center-info { display: none !important; }
 
- .auth-container {
-      display: flex; flex-direction: row; width: 100%; max-width: 950px; height: 600px;
-      background: #ffffff; border-radius: 20px; overflow: hidden;
-      box-shadow: 0 0 40px rgba(59, 130, 246, 0.15), 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-      border: 1px solid rgba(255, 255, 255, 0.1); position: relative;
-      /* 🟢 Modern cubic-bezier spring animation */
-      animation: modalModernPop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-  @keyframes modalPop {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-  }
- @keyframes overlayFade {
-      from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
-      to { opacity: 1; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-  }
-  .auth-left {
-      flex: 1.2;
-      background: linear-gradient(135deg, #1e40af 0%, var(--accent) 100%);
-      color: white; 
-      padding: 50px;
-      display: flex; 
-      flex-direction: column; 
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      box-sizing: border-box;
-  }
+    table { min-width: 750px; } 
+    th, td { 
+    font-size: 10px; /* Bumped up for legibility */
+    padding: 4px 1px; 
+    white-space: nowrap; 
+    /* Inherit the plain-zero font from the main table CSS instead of JetBrains */
+    font-family: inherit; 
+    text-align: center; 
+}
+    .chart-sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .chart-sidebar.open { transform: translateX(0); }
+    .chart-sidebar .resizer { display: none; } 
+   .charts-container { 
+        display: flex !important;
+        flex-direction: column !important; 
+        gap: 15px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+.chart-box { 
+        width: 100% !important; 
+        max-width: 100% !important;
+        aspect-ratio: auto !important; 
+        height: 280px !important; 
+        flex: none !important; 
+        box-sizing: border-box !important;
+        overflow: hidden !important; /* 🟢 FIX */
+    }
+.modal-content { 
+        width: 95% !important; 
+        padding: 15px !important; 
+        max-height: 90vh !important; 
+        overflow-y: auto !important;
+        box-sizing: border-box !important; /* 🟢 FIX */
+        margin: 0 auto; /* Keeps it centered */
+    }
+    
+    footer { height: auto !important; padding: 6px 10px !important; flex-direction: column; gap: 6px; font-size: 10px; z-index: 95; }
+    .footer-left { width: 100%; justify-content: space-between; flex-wrap: nowrap; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+    .footer-left span { font-size: 10px; }
+    .footer-left .divider { display: none; } 
+    
+    .footer-right { width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center; margin-top: 4px; }
+    .mobile-market-stats { display: flex !important; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); order: 1; }
+    .mobile-market-stats b { color: var(--accent); }
+    .status-indicator { order: 2; margin-left: auto; margin-right: 10px; }
+    .live-clock { order: 3; font-size: 11px; }
+}
 
-  .auth-left::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-      background-size: 24px 24px; opacity: 0.4;
-  }
-
-  .auth-badge {
-      position: relative; z-index: 1; background: rgba(255, 255, 255, 0.15); 
-      backdrop-filter: blur(5px); padding: 6px 14px; border-radius: 20px; 
-      font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; 
-      gap: 8px; margin-bottom: 25px; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .auth-badge .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
-
-  .auth-left h2 { position: relative; z-index: 1; font-size: 38px; font-weight: 900; line-height: 1.15; margin: 0 0 15px 0; letter-spacing: -1px; }
-  .auth-left p { position: relative; z-index: 1; font-size: 15px; opacity: 0.9; margin-bottom: 35px; line-height: 1.6; }
-  
-  .auth-feature-list { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 18px; }
-  .auth-feature { display: flex; align-items: center; gap: 14px; font-size: 14px; font-weight: 600; }
-  .auth-feature-icon { 
-      width: 36px; height: 36px; background: rgba(255,255,255,0.12); border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px;
-  }
-  
-  .auth-right {
-      flex: 1; 
-      background: #ffffff;
-      color: #0f172a; /* 🟢 FIX 2: Prevents text from turning invisible */
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      box-sizing: border-box;
-      overflow-y: auto; /* 🟢 FIX 3: Allows scrolling when Signup fields are added */
-  }
-
-  .modal-close-btn {
-      position: absolute; top: 20px; right: 20px; background: #f1f5f9; border: none;
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; 
-      align-items: center; justify-content: center; color: #64748b; transition: 0.2s; z-index: 10;
-  }
-  .modal-close-btn:hover { background: #e2e8f0; color: var(--red); transform: rotate(90deg); }
-
-  .auth-right-content { max-width: 380px; width: 100%; margin: auto; }
-  .auth-divider { display: flex; align-items: center; text-align: center; color: #94a3b8; font-size: 11px; font-weight: 700; margin: 20px 0; text-transform: uppercase; }
-  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e2e8f0; }
-  .auth-divider:not(:empty)::before { margin-right: 1em; }
-  .auth-divider:not(:empty)::after { margin-left: 1em; }
-  
-  .input-group { margin-bottom: 15px; }
-  .input-group label { display: block; font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .light-input {
-      width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #cbd5e1;
-      background: #ffffff; color: #0f172a; font-family: 'Inter', sans-serif; font-size: 14px;
-      box-sizing: border-box; transition: 0.2s;
-  }
-  .light-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-  
-  .btn-submit {
-      width: 100%; padding: 14px; border-radius: 8px; background: var(--accent); color: white;
-      font-size: 15px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; margin-top: 10px;
-  }
-  .btn-submit:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 8px 20px var(--accent-glow); }
-  
-  .auth-footer-text { text-align: center; margin-top: 20px; font-size: 14px; color: #64748b; }
-  .auth-footer-text a { color: var(--accent); font-weight: 700; text-decoration: none; cursor: pointer; }
-  .auth-footer-text a:hover { text-decoration: underline; }
-
-  @media (max-width: 900px) {
-      .auth-container { flex-direction: column; height: auto; max-height: 95vh; width: 400px; max-width: 90%; }
-      .auth-left { display: none; }
-      .auth-right { padding: 30px 20px; }
-  }
+.mobile-menu-toggle { display: none; }
+.mobile-market-stats { display: none; }
 </style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "mainEntity": {
+    "@type": "Dataset",
+    "name": "Live Option Chain & Greeks",
+    "description": "Real-time Nifty and Bank Nifty option chain data, Option Greeks, and Max Pain calculations.",
+    "isAccessibleForFree": "False",
+    "hasPart": [
+      {
+        "@type": "WebPageElement",
+        "isAccessibleForFree": "False",
+        "cssSelector": ".paywall-content" 
+      }
+    ]
+  }
+}
+</script>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
 <header>
-<div class="logo" style="position: relative; top: -5px; left: 10px; padding-top: 15px;">
-        <span> Greek</span> Calculator
-    </div>
-    
-<nav class="nav-links">
-        <ul style="display: flex; gap: 20px; list-style: none; margin: 0; padding: 0;">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>  
-            <li><a href="/education">Learn</a></li>
-        </ul>
-    </nav>
+    <a href="/index" class="logo"><span>GC</span>Live</a>
 
-<div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
-  
-       <a href="/login" style="text-decoration: none;">
-    <button class="nav-btn btn btn-login" id="btn-login-nav" onclick="event.preventDefault(); openAuthModal('login')">LogIn</button>
-</a>
-        
-        <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
-        
-       <div id="profile-panel" class="profile-panel">
-            <div class="profile-header">
-                <div id="prof-name" style="font-size: 16px; font-weight: 800; color: var(--text);">User Name</div>
-                
-                <div class="profile-email" id="prof-email" style="margin-bottom: 10px;">user@example.com</div>
-                <div class="profile-tier" id="prof-tier-badge">FREE PLAN</div>
-                <div id="prof-expiry" style="font-size: 10px; color: var(--muted); margin-top: 4px; display: none;">Expires: --</div>
-            </div>
-            <div class="profile-body">
-                <div class="wallet-box">
-                    <span class="wallet-label">Wallet Balance</span>
-                    <span class="wallet-amount" id="prof-wallet">₹0.00</span>
-                </div>
-                <div class="ref-box">
-                    <span class="ref-label">Your Referral Link (Earn 20%)</span>
-                    <div class="ref-input-group">
-                        <input type="text" id="prof-ref-code" class="ref-input" readonly value="Loading...">
-                        <button class="ref-copy-btn" onclick="copyRefCode()" id="copy-btn">Copy</button>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-footer">
-                <button class="logout-text" onclick="window.logoutFirebase()">Log Out Securely</button>
-            </div>
+    <div class="header-center-info">
+        <div class="info-item">
+            <span class="label">INDIA VIX</span>
+            <b id="h-vix">--</b>
+        </div>
+        <div class="info-divider"></div>
+        <div class="info-item">
+            <span class="label">MAX PAIN</span>
+            <b id="h-max-pain">--</b>
         </div>
     </div>
+    
+   <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
+        <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
+            NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+        <div class="custom-menu" id="symbol-menu">
+            <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
+            <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
+            <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
+            <div class="custom-option" onclick="selectSymbol('FINNIFTY', 'FINNIFTY')">FINNIFTY</div>
+        </div>
+    </div>
+    <input type="hidden" id="sel-symbol" value="NIFTY">
+    
+    <div class="divider"></div>
+    
+    <div class="custom-dropdown-wrapper" id="expiry-dropdown-wrapper">
+        <button id="btn-expiry" onclick="toggleMenu('expiry-menu', event)" style="display: flex; gap: 6px; align-items: center;">
+            Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>
+        </button>
+        <div class="custom-menu" id="expiry-menu">
+            <div class="custom-option">Loading...</div>
+        </div>
+    </div>
+    <input type="hidden" id="sel-expiry" value="">
+    
+    <div class="divider"></div>
+    <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
+
+<div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
 
-<section class="hero">
-    <div class="section-title">Empowering Vision with Data Clarity</div>
-    <h1>Smart <span>Analytics</span><br> for Smart <span>Decisions</span></h1>
-    <p>Advanced Options Chain visualizer featuring real-time Option chains of <span style="color: var(--accent);">Nifty 50, Sensex, Bank Nifty</span><br><span style="color: #a855f7; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; margin-top: 10px; display: inline-block;">⚡ Powered by Upstox</span></p>
-    
-<div class="hero-buttons" id="hero-actions">
-<button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
-    Join Now <span style="transition: transform 0.2s; display: inline-block;">→</span>
-</button>
+<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;">
+    <h1>Live Option Chain & Greeks</h1>
+    <p>Track real-time data for Nifty 50 and Bank Nifty. Analyze Option Greeks, Open Interest, PCR, and Max Pain to make smarter trades.</p>
 </div>
-</section>
 
-<section class="features" id="features">
-    <div class="section-title">Core Features</div>
-    <h2>Engineered for Precision</h2>
-    <div class="grid">
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-            </div>
-            <h3>Volatility Range Analysis</h3>
-            <p>Calculates expected movement ranges using real-time volatility inputs. Features automated data-modeling for intraday statistical study.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
-            <h3>Historical Data Mapping</h3>
-            <p>Maps historical data points and identifies technical price zones. Includes custom audio notifications for real-time data updates</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            </div>
-            <h3>Educational Charting</h3>
-            <p>Generate comprehensive data visualizations for any contract. Analyze historical volume and liquidity trends through interactive time-series charts</p>
-        </div>
-    </div>
-</section>
+<div class="paywall-content" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
 
-<section class="pricing" id="pricing">
-    <div class="section-title">Access Plans</div>
-    <h2 style="text-align: center; margin-bottom: 10px;">Access Your Research Suite</h2>
-    <p style="text-align: center; color: var(--muted); margin-bottom: 40px;">Comprehensive market data streams tailored for in-depth technical study and analysis.</p>
-    
-    <div class="pricing-grid">
-        <div class="price-card">
-            <div class="plan-name">1 Month</div>
-            <div class="plan-price">₹249<span>/mo</span></div>
-            <div class="plan-desc">Perfect for testing the waters and exploring the terminal.</div>
-            <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Complete Derivatives Data Visualization</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Real-Time Options Data Analytics</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> "Real-Time Market State Modeling</li>
-                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
-            </ul>
-           <button class="plan-btn" onclick="startCheckout('1_month')">Get Started</button>
-        </div>
+    <div class="workspace">
+        <div class="left-nav" id="left-nav">
+        <button class="nav-btn mobile-menu-toggle" onclick="toggleMobileNav()" title="Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
 
-        <div class="price-card popular">
-            <div class="popular-badge">Popular</div>
-            <div class="plan-name">3 Months</div>
-            <div class="plan-price">₹599<span>/qtr</span></div>
-            <div class="plan-desc">Optimal value for consistent intraday data analysis.</div>
-            <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 1-Month Plan</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Intraday Backtester Access</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Priority Audio Alerts</li>
-                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
-            </ul>
-            <button class="plan-btn" onclick="startCheckout('3_months')">Get Started</button>
-        </div>
+<div class="nav-content" id="nav-content">
+            <button class="nav-btn" onclick="window.location.href='/'" title="Return to Home">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </button>
+            
+            <button class="nav-btn" onclick="toggleIntelPanel()" title="Quick View" style="color: var(--accent);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </button>
 
-        <div class="price-card">
-            <div class="plan-name">6 Months</div>
-            <div class="plan-price">₹999<span>/half-yr</span></div>
-            <div class="plan-desc">For comprehensive and long-term quantitative market research.</div>
-            <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 3-Month Plan</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Lifetime Platform Updates</li>
-                <li>
-                    <div>
-                        <div style="display:flex; align-items:center; gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Traders Community</div>
-                        <div class="bonus-tag">₹499 JOINING FEE WAIVED</div>
+            <a href="/footprint" target="_blank" class="nav-btn" title="Launch Orderflow (Beta)" style="color: var(--accent); display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20V10"></path>
+                    <path d="M18 20V4"></path>
+                    <path d="M6 20v-4"></path>
+                </svg>
+            </a>
+
+            <div style="position: relative;" id="settings-wrapper">
+                <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+                    <div class="settings-panel" id="settings-panel">
+                    <div class="settings-header">General</div>
+                    <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
+                    <label class="settings-row">Audio Alerts <input type="checkbox" id="audio-cb" onchange="toggleAudio()"></label>
+                    <label class="settings-row">Flip Strikes <input type="checkbox" id="flip-cb" onchange="toggleTableFlip()"></label>
+                    <label class="settings-row" style="cursor: default;">
+                        Strikes (±)
+                        <select id="strike-count" class="settings-select" onchange="updateStrikeCount()">
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20" selected>20</option>
+                            <option value="30">30</option>
+                            <option value="all">All</option>
+                        </select>
+                    </label>
+                    <div class="settings-header">Show Greeks</div>
+                    <label class="settings-row">Delta (Δ) <input type="checkbox" class="greek-cb" value="delta" onchange="reRenderTable()"></label>
+                    <label class="settings-row">Theta (Θ) <input type="checkbox" class="greek-cb" value="theta" onchange="reRenderTable()"></label>
+                    <label class="settings-row">Vega (V) <input type="checkbox" class="greek-cb" value="vega" onchange="reRenderTable()"></label>
+                    <label class="settings-row">Gamma (Γ) <input type="checkbox" class="greek-cb" value="gamma" onchange="reRenderTable()"></label>
+                    <div style="padding: 10px; border-top: 1px solid var(--border); margin-top: 5px;">
+                        <button onclick="window.logoutFirebase()" style="width:100%; padding:8px; background:var(--red); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">Secure Log Out</button>
                     </div>
-                </li>
-            </ul>
-            <button class="plan-btn" onclick="startCheckout('6_months')">Get Started</button>
+                </div>
+            </div>
+
+            <div style="flex:1;"></div>
+            <button class="nav-btn" onclick="window.open('backtester', '_blank')" title="Open Backtester">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </button>
+        </div>
+    </div>    
+    <div class="table-wrapper" id="table-scroll-area">
+        <table id="main-table">
+          <thead>
+            <tr>
+              <th class="ce-header" style="width:45px;">IV</th><th class="ce-header">OI Chg</th><th class="ce-header">OI</th><th class="ce-header">Vol</th><th class="ce-header" style="width:55px;">LTP</th><th class="ce-header" style="color:var(--red);">RPL</th>
+              <th class="strike-cell" style="width:60px;">STRIKE</th>
+              <th class="pe-header" style="color:var(--green);">SPL</th><th class="pe-header" style="width:55px;">LTP</th><th class="pe-header">Vol</th><th class="pe-header">OI</th><th class="pe-header">OI Chg</th><th class="pe-header" style="width:45px;">IV</th>
+            </tr>
+          </thead>
+          <tbody id="oc-body">
+            <tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">Select a Symbol and click "Fetch Data" to load options chain...</td></tr>
+          </tbody>
+        </table>
+    </div>
+
+    <div class="right-sidebar" id="intel-panel">
+<div class="intel-section" style="background: var(--bg); padding: 15px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+            <div style="font-size: 12px; display: flex; gap: 15px; font-family: 'Ubuntu Mono', monospace;">
+                <span style="color: var(--muted);">SUP: <b id="coa-sup-state" style="color:var(--green);">--</b></span>
+                <span style="color: var(--muted);">RES: <b id="coa-res-state" style="color:var(--red);">--</b></span>
+            </div>
+            <button onclick="toggleIntelPanel()" style="background:transparent; border:none; color:var(--muted); cursor:pointer; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">✖</button>
+        </div>
+
+        <div class="intel-section">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                Key Market Levels
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-family: 'Ubuntu Mono', monospace; font-size: 14px; font-weight: 700;">
+                <div style="color: #ff8a65; display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">R2 (Ext)</span><span id="val-r2">--</span></div>
+                <div style="color: var(--red); display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">R1 (Res)</span><span id="val-r1">--</span></div>
+                <div style="color: var(--green); display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">S1 (Sup)</span><span id="val-s1">--</span></div>
+                <div style="color: #80cbc4; display: flex; flex-direction: column;"><span style="font-size: 10px; color: var(--muted);">S2 (Ext)</span><span id="val-s2">--</span></div>
+            </div>
+        </div>
+
+        <div class="intel-section" style="flex: 1; display: flex; flex-direction: column; border-bottom: none;">
+            <div class="intel-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Change History
+            </div>
+            <div style="flex: 1; overflow-y: auto;">
+                <table class="history-table">
+                    <thead><tr><th style="width: 70px;">TIME</th><th colspan="2">SCENARIO EVENT</th></tr></thead>
+                    <tbody id="coa-logs-body">
+                        <tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">No logs yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</section>
-
-<section class="disclaimer-section" id="disclaimer">
-    <div class="disclaimer-box">
-        <h3>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Mandatory Risk Warning & Disclaimer
-        </h3>
-        <p><strong>Trading Options involves significant risk of loss and is not suitable for all investors.</strong></p>
-        <p>The IOC Terminal is an analytical tool designed strictly for educational and informational purposes. The data, Greeks, Support/Resistance lines (EOR/EOS), and automated Scenarios provided by this software do not constitute financial advice, investment recommendations, or signals to buy or sell any security.</p>
-        <p><strong>Absolute Liability Waiver:</strong> By logging into this tool, you explicitly acknowledge that the creators, developers, and hosting providers of IOC Terminal are <strong>NOT RESPONSIBLE FOR ANY TYPE OF FINANCIAL LOSS</strong>, damages, or consequences incurred from trading decisions based on the data displayed in this application. All trades are executed at your own sole discretion and risk.</p>
-    </div>
-</section>
+</div>
 
 <footer>
-    <div>&copy; 2026 GC Analysis Tool. All rights reserved.</div>
-<nav style="margin-top: 15px;">
-    <ul style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
-        <li><a href="/about" style="color: var(--muted); text-decoration: none; transition: 0.2s;">About Us</a></li>
-        <li><a href="/terms" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Terms & Conditions</a></li>
-        <li><a href="/privacy" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Privacy Policy</a></li>
-        <li><a href="/refunds" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Refund Policy</a></li>
-        <li><a href="/contact" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Contact Us</a></li>
-    </ul>
-</nav>
-</footer>
+    <div class="footer-left" id="footer-data" style="opacity: 0;">
+        <span>PCR: <b id="f-pcr">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>CE OI: <b id="f-ce-oi">--</b></span>
+        <span class="divider" style="height: 12px;"></span>
+        <span>PE OI: <b id="f-pe-oi">--</b></span>
+    </div>
 
-<div id="auth-overlay" class="auth-overlay" onclick="window.closeAuthModalViaOverlay(event)">
-    <div class="auth-container" onclick="event.stopPropagation()">
-        
-        <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
-
-        <div class="auth-left">
-            <div class="auth-badge"><div class="dot"></div>Join 12k+ Active Users</div>
-            <h2 id="auth-marketing-heading">Analyze the Data.<br>Master the Market.</h2>
-            <div class="auth-feature-list">
-                <div class="auth-feature"><div class="auth-feature-icon">⚡</div>Blazing fast OI updates</div>
-                <div class="auth-feature"><div class="auth-feature-icon">📊</div>Advanced Greeks & AI Insights</div>
-                <div class="auth-feature"><div class="auth-feature-icon">🎯</div>PCR, MaxPain & Reversal Zones</div>
-            </div>
+  <div class="footer-right">
+        <div class="mobile-market-stats" id="mobile-stats-wrap">
+            <span>VIX: <b id="m-vix">--</b></span>
+            <span class="divider" style="height: 12px; margin: 0 4px;"></span>
+            <span>MP: <b id="m-max-pain">--</b></span>
         </div>
 
-        <div class="auth-right">
-            <div class="auth-right-content">
-                <div style="font-weight: 900; font-size: 22px; margin-bottom: 30px; color: #0f172a; text-align: center;">
-                    <span style="color: var(--accent);">Greek</span> Calculator
-                </div>
+        <div class="status-indicator">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="chain-status">Ready</span>
+        </div>
+        <div class="divider" style="height: 16px;"></div>
+        <span class="live-clock" id="live-clock">--:--:--</span>
+    </div>
+    <input type="number" id="inp-spot" style="display:none;">
+</footer>
 
-                <h3 id="auth-form-title" style="margin:0; font-size: 24px; text-align: center;">Welcome back</h3>
-                <p id="auth-form-subtitle" class="subtext" style="color: #64748b; margin-bottom: 25px; text-align: center;">Sign in to your account</p>
+</div>
 
-                <button class="btn-google" onclick="window.handleGoogleLogin()" style="width:100%; height:45px; border: 1px solid #e2e8f0; background:white; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; font-weight:600;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    Continue with Google
-                </button>
+<div class="modal-overlay" id="chart-modal" onclick="closeStrikeCharts(event)">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
+        <h2 class="modal-header">Strike: <span id="modal-strike-title">--</span></h2>
+        
+        <div class="modal-chart-area">
+            <div id="tv-modal-vol" class="tab-chart" style="display: block;"></div>
+            <div id="tv-modal-oi" class="tab-chart" style="display: none;"></div>
+            <div id="tv-modal-oi-chg" class="tab-chart" style="display: none;"></div>
+        </div>
 
-                <div class="auth-divider">OR</div>
-
-                <div id="signup-extra-fields" style="display: none;">
-                    <div class="input-group">
-                        <label>Full Name</label>
-                        <input type="text" id="modal-name" class="light-input" placeholder="Enter your full name">
-                    </div>
-                    <div class="input-group">
-                        <label>Mobile Number</label>
-                        <input type="tel" id="modal-phone" class="light-input" placeholder="Enter mobile number">
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" id="modal-email" class="light-input" placeholder="trader@example.com">
-                </div>
-                
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>Password</label>
-                    <input type="password" id="modal-password" class="light-input" placeholder="••••••••">
-                </div>
-                
-                <p id="modal-error" style="color: var(--red); font-size: 13px; text-align: center; margin-top: 10px; display: none; font-weight: 600;"></p>
-
-                <button id="auth-submit-btn" class="btn-submit" onclick="window.handleEmailLogin()">Sign In →</button>
-
-                <div class="auth-footer-text" id="auth-switch-text">
-                    No account? <a onclick="toggleAuthMode('signup')" style="color: var(--accent); cursor:pointer; font-weight:700;">Create one free →</a>
-                </div>
-            </div>
+        <div class="modal-toggles">
+            <button class="modal-toggle-btn active" data-target="tv-modal-vol" onclick="switchModalChart('tv-modal-vol')">Volume</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi" onclick="switchModalChart('tv-modal-oi')">Open Interest</button>
+            <button class="modal-toggle-btn" data-target="tv-modal-oi-chg" onclick="switchModalChart('tv-modal-oi-chg')">OI Change</button>
         </div>
     </div>
 </div>
 
 <script>
-  window.closeAuthModalViaOverlay = function(event) {
-    if (event.target.id === 'auth-overlay') {
-        closeAuthModal();
-    }
-};
- // 🟢 Ironclad Mode Switcher (Now includes 'Join Now' text)
-  window.toggleAuthMode = function(mode) {
-      const title = document.getElementById('auth-form-title');
-      const subtitle = document.getElementById('auth-form-subtitle');
-      const extraFields = document.getElementById('signup-extra-fields');
-      const submitBtn = document.getElementById('auth-submit-btn');
-      const switchText = document.getElementById('auth-switch-text');
-      const errorDiv = document.getElementById('modal-error');
-      const leftHeading = document.getElementById('auth-marketing-heading');
-      
-      errorDiv.style.display = 'none';
+const UPSTOX_API = 'https://api.greekcalculator.in';
 
-      if (mode === 'signup') {
-          title.innerText = "Create Your Account";
-          subtitle.innerText = "Enter your details to get started for free";
-          extraFields.style.display = "block";
-          
-          submitBtn.innerText = "Join Now →";
-          submitBtn.onclick = window.handleEmailSignUp;
-          
-          switchText.innerHTML = `Already have an account? <a onclick="toggleAuthMode('login')" style="color: var(--accent); cursor:pointer; font-weight:700;">Sign In →</a>`;
-          leftHeading.innerHTML = "Start Trading<br>Smarter Today.";
-      } else {
-          title.innerText = "Welcome back";
-          subtitle.innerText = "Sign in to your account";
-          extraFields.style.display = "none";
-          
-          submitBtn.innerText = "Sign In →";
-          submitBtn.onclick = window.handleEmailLogin;
-          
-          switchText.innerHTML = `No account? <a onclick="toggleAuthMode('signup')" style="color: var(--accent); cursor:pointer; font-weight:700;">Join Now free →</a>`;
-          leftHeading.innerHTML = "Analyze the Data.<br>Master the Market.";
-      }
-  };
-// 🟢 Strict Open Function (Forces the mode every single time)
-  window.openAuthModal = function(mode) {
-      // If a mode isn't passed, default to login. Otherwise, strictly use the mode requested.
-      toggleAuthMode(mode || 'login'); 
-      document.getElementById('auth-overlay').style.display = 'flex';
+let globalRows = [];
+let globalSym = '';
+let globalData = {};
+let isFlipped = false; 
+let strikeLimit = 20; 
+let liveHistory = []; 
+let tvModalVolChart = null;
+let tvModalOiChart = null;
+let tvModalOiChgChart = null;
+let tvChartInst = null;
+let tvCandleSeries = null;
+let tvLineSeries = null;
+let tvIsCandle = true; 
+let activePriceLines = []; 
+let lastChartSymbol = ''; 
+let tvResizeObserver = null; 
+
+function toggleMobileNav() {
+    const nav = document.getElementById('left-nav');
+    nav.classList.toggle('menu-open');
+    if (nav.classList.contains('menu-open')) {
+        document.addEventListener('click', function closeMenu(e) {
+            if (!nav.contains(e.target)) {
+                nav.classList.remove('menu-open');
+                document.removeEventListener('click', closeMenu);
+            }
+        }, { capture: true });
+    }
+}
+    
+function toggleSettings(event) {
+    if(event) event.stopPropagation();
+    const panel = document.getElementById('settings-panel');
+    const btn = document.getElementById('btn-settings');
+    const isVisible = panel.style.display === 'flex';
+    document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+    if (isVisible) {
+        panel.style.display = 'none';
+        btn.classList.remove('active');
+    } else {
+        panel.style.display = 'flex';
+        btn.classList.add('active');
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('owl-theme', isLight ? 'light' : 'dark');
+}
+
+function updateStrikeCount() {
+    const val = document.getElementById('strike-count').value;
+    strikeLimit = val === 'all' ? 'all' : parseInt(val, 10);
+    localStorage.setItem('owl-strikes', val);
+    reRenderTable();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('owl-theme') === 'light') {
+        document.body.classList.add('light-theme');
+        document.getElementById('theme-cb').checked = true;
+    }
+    if (localStorage.getItem('owl-audio') === 'on') {
+        audioEnabled = true;
+        document.getElementById('audio-cb').checked = true;
+    }
+    if (localStorage.getItem('owl-strikes')) {
+        const savedStrikes = localStorage.getItem('owl-strikes');
+        document.getElementById('strike-count').value = savedStrikes;
+        strikeLimit = savedStrikes === 'all' ? 'all' : parseInt(savedStrikes, 10);
+    }
+});
+
+// Global Click Listener for Menus and Settings
+document.addEventListener('click', function(event) {
+    let clickedInsideMenu = false;
+    let clickedOnButton = false;
+    document.querySelectorAll('.custom-menu').forEach(menu => {
+        if (menu.contains(event.target)) clickedInsideMenu = true;
+    });
+    if (event.target.closest('.custom-dropdown-wrapper')) clickedOnButton = true;
+
+    if (!clickedInsideMenu && !clickedOnButton) {
+        document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+    }
+
+    const settingsPanel = document.getElementById('settings-panel');
+    const settingsBtn = document.getElementById('btn-settings');
+    
+    if (settingsPanel && settingsPanel.style.display === 'flex') {
+        if (!settingsPanel.contains(event.target) && (!settingsBtn || !settingsBtn.contains(event.target))) {
+            settingsPanel.style.display = 'none';
+            if(settingsBtn) settingsBtn.classList.remove('active');
+        }
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const resizer = document.getElementById('chart-resizer');
+    const sidebar = document.getElementById('chart-sidebar');
+    let isResizing = false;
+    if (resizer && sidebar) {
+        resizer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isResizing = true;
+            sidebar.style.transition = 'none'; 
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const newWidth = document.body.clientWidth - e.clientX;
+            if (newWidth > 200 && newWidth < window.innerWidth * 0.8) sidebar.style.width = newWidth + 'px';
+        });
+        window.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                sidebar.style.transition = 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                if(tvChartInst) tvChartInst.timeScale().fitContent();
+            }
+        });
+    }
+});
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let lastLogSignature = "";
+let audioEnabled = false;
+
+function toggleAudio() {
+    audioEnabled = document.getElementById('audio-cb').checked;
+    localStorage.setItem('owl-audio', audioEnabled ? 'on' : 'off');
+    if(audioEnabled && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playAlertSound() {
+    if (!audioEnabled) return; 
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    function playNote(freq, startTime, duration) {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, startTime + 0.05); 
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration); 
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+    }
+    const now = audioCtx.currentTime;
+    playNote(523.25, now, 0.6);        
+    playNote(659.25, now + 0.15, 0.6); 
+    playNote(783.99, now + 0.30, 1.0); 
+}
+document.addEventListener('click', () => { if(audioCtx.state === 'suspended') audioCtx.resume(); }, {once:true});
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+}
+setInterval(updateClock, 1000); updateClock();
+
+function toggleIntelPanel() {
+    const panel = document.getElementById('intel-panel');
+    panel.style.display = panel.style.display === 'none' || panel.style.display === '' ? 'flex' : 'none';
+}
+
+function toggleMenu(menuId, event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById(menuId);
+    const btn = event.currentTarget; 
+    const isVisible = menu.style.display === 'flex';
+    document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+    if (!isVisible) {
+        const rect = btn.getBoundingClientRect();
+        menu.style.display = 'flex';
+        menu.style.top = (rect.bottom + 5) + 'px'; 
+        const menuWidth = menu.offsetWidth || 140;
+        if (rect.left + menuWidth > window.innerWidth) {
+            menu.style.left = (window.innerWidth - menuWidth - 10) + 'px';
+        } else {
+            menu.style.left = rect.left + 'px';
+        }
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'hidden', 'important');
+    } else {
+        const header = document.querySelector('header');
+        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+    }
+}
+
+function selectSymbol(val, text) {
+    document.getElementById('sel-symbol').value = val;
+    document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('symbol-menu').style.display = 'none';
+    window.loadExpiries();
+}
+
+function selectExpiry(val) {
+    document.getElementById('sel-expiry').value = val;
+    document.getElementById('btn-expiry').innerHTML = val + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    document.getElementById('expiry-menu').style.display = 'none';
+}
+
+function fmtN(n, dec) { return n == null || isNaN(n) ? '—' : Number(n).toLocaleString('en-IN', { minimumFractionDigits: dec || 0, maximumFractionDigits: dec || 0 }); }
+
+function setStatus(statusType, msg) { 
+    document.getElementById('chain-status').innerText = msg; 
+    document.getElementById('status-dot').style.background = statusType === 'live' ? 'var(--green)' : statusType === 'loading' ? 'var(--accent)' : 'var(--red)'; 
+    if(statusType === 'live') {
+        document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+    } else if (statusType === 'loading') {
+        document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.5)';
+    } else {
+        document.getElementById('status-dot').style.boxShadow = 'none';
+    }
+}
+
+function showErr(msg) { const e = document.getElementById('error-bar'); e.textContent = msg; e.style.display = 'block'; setStatus('error', 'Error');}
+function clearErr() { document.getElementById('error-bar').style.display = 'none'; }
+
+function toggleTableFlip() {
+    isFlipped = !isFlipped;
+    if (globalRows.length > 0) reRenderTable(); 
+}
+
+async function fetchIntradayHistory(sym, expiry) {
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+        const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}`, { headers });
+        if (!r.ok) throw new Error(`HTTP Error: ${r.status}`);
+        const data = await r.json();
+        if (!data.error && Array.isArray(data) && data.length > 0) {
+            liveHistory = data; 
+        } else {
+            liveHistory = [];
+        }
+    } catch (e) {
+        console.error("Could not load intraday history", e);
+        liveHistory = [];
+    }
+}
+
+window.loadExpiries = async function() {
+  if (!window.currentFirebaseToken) {
+      setTimeout(window.loadExpiries, 500); 
+      return;
+  }
+
+  const sym = document.getElementById('sel-symbol').value;
+  const menu = document.getElementById('expiry-menu');
+  const btn = document.getElementById('btn-expiry');
+  
+  menu.innerHTML = '<div class="custom-option">Loading...</div>';
+  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+  document.getElementById('sel-expiry').value = '';
+
+  try {
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+    
+    const d = await r.json();
+    if (d.error) { 
+        menu.innerHTML = `<div class="custom-option">Error</div>`; 
+        btn.innerHTML = 'Error ▾';
+        showErr(d.details || d.error); return; 
+    }
+
+    if (!d.expiries || d.expiries.length === 0) {
+        menu.innerHTML = `<div class="custom-option">No Data</div>`; 
+        btn.innerHTML = 'Upstox Login Needed ▾';
+        showErr("Upstox connection lost. Please go to your backend URL and login to Upstox.");
+        return;
+    }
+
+    // 🟢 OPTIMIZATION: Extract ONLY the very first (current) expiry date
+    const currentExpiry = d.expiries[0];
+    
+    // 🟢 OPTIMIZATION: Populate the dropdown with only this single date
+    menu.innerHTML = `<div class="custom-option" onclick="selectExpiry('${currentExpiry}')">${currentExpiry}</div>`;
+    
+    if (currentExpiry) {
+        selectExpiry(currentExpiry);
+        await fetchIntradayHistory(sym, currentExpiry); 
+        await fetchUpstoxChain(false); 
+    }
+    clearErr();
+  } catch(e) { 
+      menu.innerHTML = `<div class="custom-option">Failed</div>`; 
+      btn.innerHTML = 'Auth Failed ▾';
+      showErr("Server says: " + e.message); 
+  }
+}
+function getStrikeInterval(symbol) {
+  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'FINNIFTY': return 50; default: return 50; }
+}
+
+async function fetchUpstoxChain(quiet = false) {
+  const sym = document.getElementById('sel-symbol').value;
+  const expiry = document.getElementById('sel-expiry').value;
+  if (!expiry || expiry === 'Loading...' || expiry === 'Offline') return;
+  if (!window.currentFirebaseToken) return; 
+
+  if (!quiet) setStatus('loading', 'Fetching...');
+  if (!quiet) clearErr();
+
+  try {
+    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+    const r = await fetch(`${UPSTOX_API}/options-chain?symbol=${sym}&expiry=${expiry}`, { headers });
+    
+    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+    const data = await r.json();
+    if (data.error) throw new Error(data.details || data.error);
+    
+    document.getElementById('inp-spot').value = data.spot || 0;
+    
+    globalRows = data.chain || [];
+    globalSym = sym; globalData = data;
+    
+    const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+    const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
+    
+    if (lastEntry !== nowStr) {
+        liveHistory.push({
+            time: nowStr,
+            spot: data.spot, 
+            rows: globalRows.map(r => ({
+                strike: r.strike,
+                ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
+                ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
+                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0 
+            }))
+        });
+    }
+
+    // 🟢 CLEANED UP: No more heavy charts, just the table and the Key Levels UI!
+    renderTable(globalRows, sym, data, quiet); 
+    updateKeyLevels(data.chain, data.coa);
+
+  // 🟢 THIS WAS THE MISSING CATCH BLOCK:
+  } catch (e) {
+    if(!quiet) showErr("Server says: " + e.message);
+    setStatus('error', 'Auth Failed');
+  }
+}
+
+
+function parseTimeToUnix(timeStr) {
+    const [time, period] = timeStr.split(' ');
+    let [hrs, mins] = time.split(':');
+    hrs = parseInt(hrs);
+    
+    if (period === 'PM' && hrs !== 12) hrs += 12;
+    if (period === 'AM' && hrs === 12) hrs = 0;
+    
+    // 🟢 FIX 1: Get the exact local date to prevent midnight UTC rollover bugs
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    // 🟢 FIX 2: Append 'Z' (UTC) instead of '+05:30'. 
+    // This tricks Lightweight Charts into displaying the exact IST hours on the X-Axis!
+    const d = new Date(`${year}-${month}-${day}T${hrs.toString().padStart(2, '0')}:${mins}:00Z`);
+    
+    return Math.floor(d.getTime() / 1000); 
+}
+
+// 🟢 UPGRADED: Now accepts extraOptions to prevent the "Axis Shift" bug
+function createInstChart(containerId, extraOptions = {}) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = ''; 
+    const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 300,
+        height: container.clientHeight || 300,
+        
+        layout: { 
+            background: { type: 'solid', color: '#131722' }, 
+            textColor: '#71717a', 
+            fontFamily: "'IBM Plex Sans', sans-serif" 
+        },
+        grid: { 
+            vertLines: { visible: false }, 
+            horzLines: { visible: false } 
+        }, 
+        crosshair: { 
+            mode: LightweightCharts.CrosshairMode.Magnet,
+            vertLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 },
+            horzLine: { color: 'rgba(255, 255, 255, 0.05)', style: 0 }
+        },
+        rightPriceScale: { 
+            borderVisible: false, 
+            scaleMargins: { top: 0.1, bottom: 0.1 } 
+        },
+        localization: {
+            priceFormatter: price => {
+                return new Intl.NumberFormat('en-IN', { 
+                    notation: "compact", 
+                    compactDisplay: "short", 
+                    maximumFractionDigits: 1 
+                }).format(price);
+            }
+        },
+        timeScale: { 
+            borderVisible: false, 
+            timeVisible: true, 
+            secondsVisible: false,
+            fixLeftEdge: true,  
+            fixRightEdge: true  
+        },
+        handleScroll: false, 
+        handleScale: false,
+        
+        // 🟢 THE MAGIC: Inject the dual-axis requirements during creation!
+        ...extraOptions 
+    });
+
+    let isDisposed = false;
+    const observer = new ResizeObserver(() => {
+        // Use clientWidth/Height directly for better flexbox stability
+        if (isDisposed || !container.clientWidth || !container.clientHeight) return;
+        try { 
+            chart.applyOptions({ width: container.clientWidth, height: container.clientHeight }); 
+            chart.timeScale().fitContent(); 
+        } catch(e) {}
+    });
+    observer.observe(container);
+
+const originalRemove = chart.remove.bind(chart);
+    chart.remove = function() {
+        isDisposed = true;
+        observer.disconnect();
+        originalRemove();      
+    };
+    return chart;
+} // <-- This is the bracket from your snippet above
+
+// 👇 PASTE THE NEW CODE EXACTLY HERE 👇
+
+window.closeStrikeCharts = function(event) {
+    if (event && event.target.id !== 'chart-modal' && !event.target.classList.contains('modal-close')) return;
+    document.getElementById('chart-modal').style.display = 'none';
+    if(tvModalVolChart) { tvModalVolChart.remove(); tvModalVolChart = null; }
+    if(tvModalOiChart) { tvModalOiChart.remove(); tvModalOiChart = null; }
+    if(tvModalOiChgChart) { tvModalOiChgChart.remove(); tvModalOiChgChart = null; }
+};
+
+  // 🟢 THE TAB SWITCHER
+window.switchModalChart = function(targetId) {
+    // 1. Highlight the correct button
+    document.querySelectorAll('.modal-toggle-btn').forEach(btn => {
+        if (btn.dataset.target === targetId) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+
+    // 2. Map charts to their IDs
+    const charts = [
+        { id: 'tv-modal-vol', inst: tvModalVolChart },
+        { id: 'tv-modal-oi', inst: tvModalOiChart },
+        { id: 'tv-modal-oi-chg', inst: tvModalOiChgChart }
+    ];
+
+    // 3. Hide all charts except the requested one
+    charts.forEach(c => {
+        const div = document.getElementById(c.id);
+        if (!div) return;
+        
+        if (c.id === targetId) {
+            div.style.display = 'block'; // Reveal the div
+            // 4. Force Lightweight Charts to recalculate canvas size now that it is visible
+            if (c.inst) {
+                setTimeout(() => {
+                    c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
+                    c.inst.timeScale().fitContent();
+                }, 20);
+            }
+        } else {
+            div.style.display = 'none'; // Hide the div
+        }
+    });
+};
+
+function showStrikeCharts(strike) {
+    if (!liveHistory || liveHistory.length === 0) {
+        alert("No historical data available yet. Please wait for the next fetch.");
+        return; // Because this is safely inside the function, it will no longer throw the "Illegal return" error!
+    }
+    
+    document.getElementById('chart-modal').style.display = 'flex';
+    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
+
+    setTimeout(() => {
+        const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+        const ceLtpData = [], peLtpData = [], ceOiChgData = [], peOiChgData = [];   
+        const seenTimes = new Set();
+
+        liveHistory.forEach(snap => {
+            const timestamp = parseTimeToUnix(snap.time);
+            if (seenTimes.has(timestamp)) return;
+            seenTimes.add(timestamp);
+
+            const row = snap.rows.find(r => r.strike === strike);
+            if (row) {
+                ceVolData.push({ time: timestamp, value: row.ceVol }); peVolData.push({ time: timestamp, value: row.peVol });
+                ceOiData.push({ time: timestamp, value: row.ceOI }); peOiData.push({ time: timestamp, value: row.peOI });
+                ceLtpData.push({ time: timestamp, value: row.ceLTP || 0 }); peLtpData.push({ time: timestamp, value: row.peLTP || 0 });
+                ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 }); peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
+            }
+        });
+
+        const sorter = (a, b) => a.time - b.time;
+        ceVolData.sort(sorter); peVolData.sort(sorter); ceOiData.sort(sorter); peOiData.sort(sorter);
+        ceLtpData.sort(sorter); peLtpData.sort(sorter); ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+
+        // --- DRAW VOLUME CHART ---
+        if (tvModalVolChart) tvModalVolChart.remove();
+        tvModalVolChart = createInstChart('tv-modal-vol');
+        const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
+        tvModalVolChart.timeScale().fitContent();
+
+       // --- DRAW OPEN INTEREST CHART ---
+        if (tvModalOiChart) tvModalOiChart.remove();
+        
+        // 🟢 Back to a standard, ultra-stable single right axis!
+        tvModalOiChart = createInstChart('tv-modal-oi', {
+            rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, minimumWidth: 50 } 
+        });
+        
+        // Draw only the CE and PE Open Interest lines (defaults to the right axis)
+        const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        
+        ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+// --- DRAW OI CHANGE CHART ---
+        if (tvModalOiChgChart) tvModalOiChgChart.remove();
+        tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
+        const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+
+        // 🟢 THE MAGIC: Activate the Volume tab by default and resize everything!
+        switchModalChart('tv-modal-vol');
+
+    }, 50); 
+}
+  function reRenderTable() { if (globalRows.length > 0) renderTable(globalRows, globalSym, globalData, true); }
+
+// 🟢 UPGRADED MARKET INTELLIGENCE LOGIC
+function updateMarketIntelligence(coa) {
+    if (!coa) return;
+    
+    function formatState(side) {
+        if(!side) return '--';
+        let stateStr = side.state || 'N/A';
+        if (stateStr === 'Strong') return `Strong @ ${side.strike}`;
+        return `${side.strike} ${stateStr} @ ${side.target_strike}`;
+    }
+    
+    document.getElementById('coa-sup-state').innerText = formatState(coa.support);
+    document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
+    
+    // 🟢 FIXED LOG HISTORY PARSER
+    const logBody = document.getElementById('coa-logs-body');
+    if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
+        
+        // Alert Sound Trigger Fix
+        const latestLog = coa.logs[0];
+        const currentSig = typeof latestLog === 'string' ? latestLog : JSON.stringify(latestLog);
+        if (lastLogSignature !== "" && currentSig !== lastLogSignature) playAlertSound();
+        lastLogSignature = currentSig;
+
+        logBody.innerHTML = coa.logs.map(log => {
+            let time = "--:--";
+            let msg = "";
+            
+            // Handle if backend sends pure strings OR dictionaries
+            if (typeof log === 'string') {
+                const parts = log.split(' - ');
+                if (parts.length >= 2) {
+                    time = parts[0];
+                    msg = parts.slice(1).join(' - ');
+                } else {
+                    msg = log;
+                }
+            } else if (log.time && log.msg) {
+                time = log.time;
+                msg = log.msg;
+            }
+
+            // Dynamic Color Coding
+            let msgColor = 'var(--text)';
+            const lowerMsg = msg.toLowerCase();
+            if (lowerMsg.includes('bullish') || lowerMsg.includes('top') || lowerMsg.includes('support')) msgColor = 'var(--green)';
+            if (lowerMsg.includes('bearish') || lowerMsg.includes('bottom') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
+            if (lowerMsg.includes('challenger') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
+            
+            return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
+        }).join('');
+    } else {
+        logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
+    }
+}
+
+// 🟢 NEW: Key Levels Calculator
+function updateKeyLevels(chainData, coaData) {
+    try {
+        if (!chainData || !coaData || !coaData.resistance || !coaData.support) return;
+
+        const resStrike = coaData.resistance.strike;
+        const supStrike = coaData.support.strike;
+        const resRow = chainData.find(r => r.strike === resStrike);
+        const supRow = chainData.find(r => r.strike === supStrike);
+
+        if (!resRow || !supRow) return;
+
+        const eorVal = resRow.ce_prz > 0 ? resRow.ce_prz : resStrike; // R1
+        const eosVal = supRow.pe_prz > 0 ? supRow.pe_prz : supStrike; // S1
+        const step = (chainData.length > 1) ? Math.abs(chainData[1].strike - chainData[0].strike) : 50;
+
+        let eorPlus1Val = eorVal + step;  // R2
+        let eosMinus1Val = eosVal - step; // S2
+        
+        const nextResRow = chainData.find(r => r.strike === (resStrike + step));
+        const prevSupRow = chainData.find(r => r.strike === (supStrike - step));
+
+        if (nextResRow && nextResRow.ce_prz > 0) eorPlus1Val = nextResRow.ce_prz;
+        if (prevSupRow && prevSupRow.pe_prz > 0) eosMinus1Val = prevSupRow.pe_prz;
+
+        document.getElementById('val-r2').innerText = eorPlus1Val.toFixed(1);
+        document.getElementById('val-r1').innerText = eorVal.toFixed(1);
+        document.getElementById('val-s1').innerText = eosVal.toFixed(1);
+        document.getElementById('val-s2').innerText = eosMinus1Val.toFixed(1);
+    } catch(e) {}
+}
+
+let renderTable = function(rows, sym, data, quiet = false) {
+  const spot = parseFloat(document.getElementById('inp-spot').value) || 0;
+  const interval = getStrikeInterval(sym);
+  const atm = Math.round(spot / interval) * interval;
+  
+  let displayRows = [...rows];
+  if (strikeLimit !== 'all' && spot > 0) {
+      displayRows = displayRows.filter(r => abs(r.strike - atm) <= (strikeLimit * interval));
+  }
+
+  if (isFlipped) { displayRows.sort((a, b) => b.strike - a.strike); } 
+  else { displayRows.sort((a, b) => a.strike - b.strike); }
+
+  const ceOIs = displayRows.map(r => r.ce.oi); const peOIs = displayRows.map(r => r.pe.oi);
+  const ceVols = displayRows.map(r => r.ce.volume); const peVols = displayRows.map(r => r.pe.volume);
+  const ceChgs = displayRows.map(r => Math.abs(r.ce.change_oi || 0)); const peChgs = displayRows.map(r => Math.abs(r.pe.change_oi || 0));
+
+  const maxCeOI = Math.max(...ceOIs), maxPeOI = Math.max(...peOIs);
+  const maxCeVol = Math.max(...ceVols), maxPeVol = Math.max(...peVols);
+  const maxCeChg = Math.max(...ceChgs), maxPeChg = Math.max(...peChgs);
+
+  const getSecMax = (arr, maxVal) => [...new Set(arr)].sort((a, b) => b - a).find(v => v < maxVal) || -1;
+  const secCeOI = getSecMax(ceOIs, maxCeOI), secPeOI = getSecMax(peOIs, maxPeOI);
+  const secCeVol = getSecMax(ceVols, maxCeVol), secPeVol = getSecMax(peVols, maxPeVol);
+  const secCeChg = getSecMax(ceChgs, maxCeChg), secPeChg = getSecMax(peChgs, maxPeChg);
+
+  const getHeatCls = (val, max, sec, side) => {
+    if (val <= 0 || !max) return '';
+    if (val === max) return side === 'ce' ? 'max-ce-heat' : 'max-pe-heat';
+    if (val === sec && val >= max * 0.75) return 'heat-2nd';
+    if (val >= max * 0.75) return 'heat-75'; return '';
   };
   
-  window.closeAuthModal = function() { 
-      document.getElementById('auth-overlay').style.display = 'none'; 
+  const formatCell = (valStr, valNum, max, sec) => {
+      let pctHtml = '';
+      if (valNum > 0 && max) {
+          const pct = Math.round((valNum / max) * 100);
+          if (valNum === sec || pct >= 75) pctHtml = `<span class="pct-tag">${pct}%</span>`;
+      }
+      return `<div class="val-wrapper"><span>${valStr}</span>${pctHtml}</div>`;
   };
-// 🟢 PROCEDURAL BACKGROUND CANDLESTICK ANIMATION
-function initBgAnimation() {
-    const canvas = document.getElementById('bg-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let width, height;
 
-    function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
+  const activeGreeks = Array.from(document.querySelectorAll('.greek-cb:checked')).map(cb => cb.value);
+  const extraThCe = activeGreeks.map(g => `<th class="ce-header" style="width:50px;">${g.toUpperCase()}</th>`).join('');
+  const extraThPe = activeGreeks.map(g => `<th class="pe-header" style="width:50px;">${g.toUpperCase()}</th>`).join('');
+
+  document.querySelector('thead').innerHTML = `
+    <tr>
+      ${extraThCe}
+      <th class="ce-header" style="width:45px;">IV</th><th class="ce-header">OI Chg</th><th class="ce-header">OI</th><th class="ce-header">Vol</th><th class="ce-header" style="width:55px;">LTP</th><th class="ce-header" style="color:var(--red);">RPL</th>
+      <th class="strike-cell" style="width:60px;">STRIKE</th>
+      <th class="pe-header" style="color:var(--green);">SPL</th><th class="pe-header" style="width:55px;">LTP</th><th class="pe-header">Vol</th><th class="pe-header">OI</th><th class="pe-header">OI Chg</th><th class="pe-header" style="width:45px;">IV</th>
+      ${extraThPe}
+    </tr>
+  `;
+
+  let html = '';
+  if (displayRows.length > 0 && spot > 0) {
+      if ((!isFlipped && spot < displayRows[0].strike) || (isFlipped && spot > displayRows[0].strike)) {
+          html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span></div></td></tr>`;
+      }
+  }
+
+  for (let i = 0; i < displayRows.length; i++) {
+    const r = displayRows[i];
+    const isAtm = r.strike === atm, ceBg = r.strike < spot ? 'itm-ce' : '', peBg = r.strike > spot ? 'itm-pe' : '';
+    const eorValue = r.ce_prz > 0 ? r.ce_prz : (r.strike + interval); 
+    const eosValue = r.pe_prz > 0 ? r.pe_prz : (r.strike - interval);
+    
+    function tdHeat(base, heat) { return `class="${base} ${heat}"`; }
+    const ceExtraTd = activeGreeks.map(g => `<td class="${ceBg}" style="color:var(--muted);">${r.ce[g]?.toFixed(2)||'-'}</td>`).join('');
+    const peExtraTd = activeGreeks.map(g => `<td class="${peBg}" style="color:var(--muted);">${r.pe[g]?.toFixed(2)||'-'}</td>`).join('');
+
+    const ceChgStr = (r.ce.change_oi >= 0 ? '+' : '') + fmtN(r.ce.change_oi, 0);
+    const peChgStr = (r.pe.change_oi >= 0 ? '+' : '') + fmtN(r.pe.change_oi, 0);
+
+    html += `<tr class="${isAtm ? 'atm-row' : ''}">
+      ${ceExtraTd}
+      <td class="${ceBg}" style="color:var(--muted);">${(parseFloat(r.ce.iv)||0).toFixed(1)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(Math.abs(r.ce.change_oi), maxCeChg, secCeChg, 'ce'))}>${formatCell(ceChgStr, Math.abs(r.ce.change_oi), maxCeChg, secCeChg)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(r.ce.oi, maxCeOI, secCeOI, 'ce'))}>${formatCell(fmtN(r.ce.oi, 0), r.ce.oi, maxCeOI, secCeOI)}</td>
+      <td ${tdHeat(ceBg, getHeatCls(r.ce.volume, maxCeVol, secCeVol, 'ce'))}>${formatCell(fmtN(r.ce.volume, 0), r.ce.volume, maxCeVol, secCeVol)}</td>
+      <td class="${ceBg}" style="font-weight:700;">${(r.ce.ltp||0).toFixed(1)}</td>
+      <td style="color:var(--red); font-weight:800;">${eorValue.toFixed(0)}</td>
+      <td class="strike-cell" onclick="showStrikeCharts(${r.strike})" style="cursor: pointer;" title="View Intraday Trend">${r.strike}</td>
+      <td style="color:var(--green); font-weight:800;">${eosValue.toFixed(0)}</td>
+      <td class="${peBg}" style="font-weight:700;">${(r.pe.ltp||0).toFixed(1)}</td>
+      <td ${tdHeat(peBg, getHeatCls(r.pe.volume, maxPeVol, secPeVol, 'pe'))}>${formatCell(fmtN(r.pe.volume, 0), r.pe.volume, maxPeVol, secPeVol)}</td>
+      <td ${tdHeat(peBg, getHeatCls(r.pe.oi, maxPeOI, secPeOI, 'pe'))}>${formatCell(fmtN(r.pe.oi, 0), r.pe.oi, maxPeOI, secPeOI)}</td>
+      <td ${tdHeat(peBg, getHeatCls(Math.abs(r.pe.change_oi), maxPeChg, secPeChg, 'pe'))}>${formatCell(peChgStr, Math.abs(r.pe.change_oi), maxPeChg, secPeChg)}</td>
+      <td class="${peBg}" style="color:var(--muted);">${(parseFloat(r.pe.iv)||0).toFixed(1)}</td>
+      ${peExtraTd}
+    </tr>`;
+
+    if (i < displayRows.length - 1 && spot > 0) {
+        let currentStrike = displayRows[i].strike, nextStrike = displayRows[i+1].strike;
+        if (!isFlipped && spot >= currentStrike && spot < nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; } 
+        else if (isFlipped && spot <= currentStrike && spot > nextStrike) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
     }
-    window.addEventListener('resize', resize);
-    resize();
+  }
 
-    const candles = [];
-    const candleWidth = 12;  
-    const spacing = 25;      
-    const speed = 0.4;       
-    let lastClose = height / 2;
+  if (displayRows.length > 0 && spot > 0) {
+      let lastStrike = displayRows[displayRows.length - 1].strike;
+      if ((!isFlipped && spot >= lastStrike) || (isFlipped && spot <= lastStrike)) { html += `<tr class="spot-line"><td colspan="100%"><div class="spot-divider"><span>SPOT: ${spot.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></div></td></tr>`; }
+  }
 
-    for(let i = 0; i < (width / spacing) + 2; i++) {
-        generateCandle(width - (i * spacing));
-    }
+  document.getElementById('oc-body').innerHTML = html;
 
-    function generateCandle(x) {
-        const isGreen = Math.random() > 0.35; 
-        const bodySize = Math.random() * 30 + 10; 
-        let open, close, high, low;
+  if (data.vix !== undefined && data.vix !== null) {
+      const vixVal = data.vix.toFixed(2);
+      if(document.getElementById('h-vix')) document.getElementById('h-vix').innerText = vixVal;
+      if(document.getElementById('m-vix')) document.getElementById('m-vix').innerText = vixVal;
+  }
 
-        if (isGreen) {
-            close = lastClose - (Math.random() * 25 + 5); 
-            open = close + bodySize;
-        } else {
-            open = lastClose + (Math.random() * 15);  
-            close = open + bodySize;
-        }
-        
-        high = Math.min(open, close) - Math.random() * 20;
-        low = Math.max(open, close) + Math.random() * 20;
-        
-        lastClose = close;
-        candles.push({x, open, close, high, low, isGreen});
-        
-        if (lastClose < height * 0.15) { lastClose = height * 0.85; } 
-        else if (lastClose > height * 0.95) { lastClose = height * 0.85; }
-    }
+  let mpVal = "--";
+  if (data.max_pain) mpVal = data.max_pain;
+  else if (data.coa && data.coa.max_pain) mpVal = data.coa.max_pain;
 
-    function draw() {
-        ctx.clearRect(0, 0, width, height);
-        for (let i = 0; i < candles.length; i++) {
-            let c = candles[i];
-            c.x -= speed; 
-            ctx.strokeStyle = c.isGreen ? '#10b981' : '#ef4444';
-            ctx.fillStyle = c.isGreen ? '#10b981' : '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(c.x + candleWidth/2, c.high);
-            ctx.lineTo(c.x + candleWidth/2, c.low);
-            ctx.stroke();
-            ctx.fillRect(c.x, Math.min(c.open, c.close), candleWidth, Math.abs(c.open - c.close));
-        }
-        if (candles[0].x < -50) { candles.shift(); }
-        if (candles[candles.length - 1].x < width) { generateCandle(candles[candles.length - 1].x + spacing); }
-        requestAnimationFrame(draw);
-    }
-    draw();
+  if(document.getElementById('h-max-pain')) document.getElementById('h-max-pain').innerText = mpVal;
+  if(document.getElementById('m-max-pain')) document.getElementById('m-max-pain').innerText = mpVal;
+  
+  document.getElementById('f-pcr').innerText = (data.pcr || 0).toFixed(2);
+  document.getElementById('f-pcr').style.color = data.pcr >= 1 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('f-ce-oi').innerText = fmtN(data.total_ce_oi, 0);
+  document.getElementById('f-pe-oi').innerText = fmtN(data.total_pe_oi, 0);
+  document.getElementById('footer-data').style.opacity = '1';
+
+  updateMarketIntelligence(data.coa);
+
+  if (!quiet) {
+    setTimeout(() => { 
+      const container = document.querySelector('.table-wrapper');
+      const line = document.querySelector('tr.spot-line') || document.querySelector('tr.atm-row'); 
+      if (container && line) { container.scrollTo({ top: line.offsetTop - (container.clientHeight / 2) + (line.clientHeight / 2), behavior: 'smooth' }); }
+    }, 150);
+  }
+  setStatus('live', 'Live');
 }
-initBgAnimation();
+
+function abs(x) { return x < 0 ? -x : x; }
+
+// Terminal Initialization
+window.initTerminal = async function() {
+    try {
+        const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
+        const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
+        const profile = await r.json();
+        
+        if (profile.tier !== "pro") {
+            alert("The Live Terminal requires a Pro subscription.");
+            window.location.href = "index.html#pricing";
+            return; 
+        }
+    } catch(e) {}
+    window.loadExpiries(); 
+    setInterval(() => {
+        const expiry = document.getElementById('sel-expiry').value;
+        if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
+            fetchUpstoxChain(true);
+        }
+    }, 1000); 
+}; 
+
 </script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  
+  import { getAuth, onAuthStateChanged, getIdToken, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
   const firebaseConfig = {
-      apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
-      authDomain: "insideoptionchain.firebaseapp.com",
-      projectId: "insideoptionchain",
-      storageBucket: "insideoptionchain.firebasestorage.app",
-      messagingSenderId: "112098245685",
-      appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
+    apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
+    authDomain: "insideoptionchain.firebaseapp.com",
+    projectId: "insideoptionchain",
+    storageBucket: "insideoptionchain.firebasestorage.app",
+    messagingSenderId: "112098245685",
+    appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const googleProvider = new GoogleAuthProvider();
+  window.currentFirebaseToken = null; 
 
-  // 🟢 Profile Panel Toggle Logic
-  window.toggleProfilePanel = function(event) {
-      if(event) event.stopPropagation();
-      const panel = document.getElementById('profile-panel');
-      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-  };
-  
-  // Close panel when clicking outside
-  document.addEventListener('click', function(event) {
-      const panel = document.getElementById('profile-panel');
-      const btn = document.getElementById('profile-btn');
-      if (panel && btn && !panel.contains(event.target) && !btn.contains(event.target)) {
-          panel.style.display = 'none';
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window.currentFirebaseToken = await getIdToken(user);
+      if (typeof window.initTerminal === 'function') {
+          window.initTerminal();
       }
+    } else {
+      window.location.href = "/";
+    }
   });
-
-  // Copy Referral Code logic
-  window.copyRefCode = function() {
-      const codeInput = document.getElementById('prof-ref-code');
-      const btn = document.getElementById('copy-btn');
-      codeInput.select();
-      document.execCommand("copy");
-      btn.innerText = "Copied!";
-      btn.style.background = "var(--green)";
-      btn.style.borderColor = "var(--green)";
-      setTimeout(() => { 
-          btn.innerText = "Copy"; 
-          btn.style.background = "var(--section)";
-          btn.style.borderColor = "var(--border)";
-      }, 2000);
-  };
 
   window.logoutFirebase = function() {
       signOut(auth);
   };
-
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // Hide the Login button (Signup button was removed from header)
-        if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'none';
-        
-        const profileBtn = document.getElementById('profile-btn');
-        profileBtn.style.display = 'flex';
-        profileBtn.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
-        
-        window.currentFirebaseToken = await user.getIdToken();
-        try {
-            // 1. CHECK FOR REFERRAL CODE IN URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const refCode = urlParams.get('ref');
-            
-            // 2. IF THEY HAVE A CODE, PROCESS THE MONEY FIRST
-            if (refCode) {
-                console.log("Applying referral code:", refCode);
-                await fetch('https://api.greekcalculator.in/api/apply-referral', {
-                    method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${window.currentFirebaseToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ code: refCode })
-                });
-            }
-            
-            // 3. NOW FETCH THE PROFILE
-            const r = await fetch(`https://api.greekcalculator.in/user-profile`, { 
-                headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
-            });
-            const profile = await r.json();
-            
-            // 🟢 1. FIX THE NAME: Fallback to Google's built-in display name if DB is empty
-            const finalName = profile.name || user.displayName || "Trader";
-            document.getElementById('prof-name').innerText = finalName;
-            document.getElementById('prof-email').innerText = profile.email || user.email;
-            
-            const refCodeVal = profile.referral_code || "PENDING";
-            const referralUrl = window.location.origin + window.location.pathname + "?ref=" + refCodeVal;
-            document.getElementById('prof-ref-code').value = referralUrl;
-            
-            // 🟢 2. WALLET PARSING
-            // Combine both standard wallet and referral wallet if needed, or just show main balance
-            let rawBalance = profile.wallet_balance || 0;
-            const walletNum = parseFloat(rawBalance) || 0.00;
-            document.getElementById('prof-wallet').innerText = `₹${walletNum.toFixed(2)}`;            
-            
-            // 🟢 3. Update the floating profile icon
-            document.getElementById('profile-btn').innerText = finalName.charAt(0).toUpperCase();
-            
-            const badge = document.getElementById('prof-tier-badge');
-            const expiryText = document.getElementById('prof-expiry');
-            const heroBox = document.getElementById('hero-actions');
-            
-            if (profile.tier === "pro") {
-                badge.innerText = "PRO PLAN";
-                badge.className = "profile-tier tier-pro";
-                if(profile.expiry_date) {
-                    expiryText.innerText = `Expires: ${profile.expiry_date}`;
-                    expiryText.style.display = "block";
-                }
-                
-                heroBox.innerHTML = `
-                    <button class="btn btn-primary launch-btn" onclick="window.location.href='live-market'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 
-                        Launch Live Market (Unlocked)
-                    </button>
-                    <button class="btn launch-btn" onclick="window.location.href='backtester'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-                        Launch Backtester
-                    </button>
-                `;
-            } else {
-                badge.innerText = "FREE PLAN";
-                badge.className = "profile-tier tier-free";
-                expiryText.style.display = "none";
-                
-                heroBox.innerHTML = `
-                    <button class="btn launch-btn" style="background:#1e222d; color:var(--muted); border-color:var(--border);" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg> 
-                        Live Market (Pro Only)
-                    </button>
-                    <button class="btn btn-primary launch-btn" onclick="window.location.href='backtester'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-                        Launch Backtester (Free)
-                    </button>
-                `;
-            }
-            
-        } catch(e) { console.error("Profile Fetch Error", e); }
-        
-    } else {
-        window.currentFirebaseToken = null;
-        if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'block';
-        document.getElementById('profile-btn').style.display = 'none';
-        document.getElementById('profile-panel').style.display = 'none';
-        
-const heroBox = document.getElementById('hero-actions');
-        if (heroBox) {
-            // 🟢 THE FIX: Tell Firebase to draw the correct Join Now button!
-            heroBox.innerHTML = `
-                <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
-                    Join Now →
-                </button>
-            `;
-        }
-    }
-  });
-  
-// 🟢 MODAL CONTROLS
-  window.closeAuthModal = function() {
-      document.getElementById('auth-overlay').style.display = 'none';
-  };
-
-  // 🟢 Upgraded Email Sign Up Logic
-  window.handleEmailSignUp = async function() {
-      const name = document.getElementById('modal-name').value;
-      const phone = document.getElementById('modal-phone').value;
-      const email = document.getElementById('modal-email').value;
-      const password = document.getElementById('modal-password').value;
-      const errDiv = document.getElementById('modal-error');
-      errDiv.style.display = 'none';
-
-      if (!name || !email || password.length < 6) {
-          errDiv.innerText = "Please provide your name, a valid email, and a password (min 6 chars).";
-          errDiv.style.display = 'block';
-          return;
-      }
-
-      try {
-          // 1. Create the account in Firebase
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          
-          // 2. Attach the Name to their Firebase Profile (so the UI floating icon works instantly)
-          await updateProfile(userCredential.user, { displayName: name });
-          
-          // 3. Grab their new ID Badge
-          const token = await userCredential.user.getIdToken();
-          
-          // 4. Send the Name and Phone Number to your SQLite Database!
-          await fetch('https://api.greekcalculator.in/api/update-profile', {
-              method: 'POST',
-              headers: { 
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ name: name, phone: phone })
-          });
-
-          closeAuthModal();
-      } catch(err) {
-          errDiv.innerText = err.message.replace("Firebase:", "").trim();
-          errDiv.style.display = 'block';
-      }
-  };
-  // 🟢 Email Log In Logic
-  window.handleEmailLogin = async function() {
-      const email = document.getElementById('modal-email').value;
-      const password = document.getElementById('modal-password').value;
-      const errDiv = document.getElementById('modal-error');
-      errDiv.style.display = 'none';
-
-      if (!email || !password) {
-          errDiv.innerText = "Please enter both email and password.";
-          errDiv.style.display = 'block';
-          return;
-      }
-
-      try {
-          await signInWithEmailAndPassword(auth, email, password);
-          closeAuthModal();
-      } catch(err) {
-          errDiv.innerText = err.message.replace("Firebase:", "").trim();
-          errDiv.style.display = 'block';
-      }
-  };
-
-// 🟢 POPUP: Google Login
-  window.handleGoogleLogin = async function() {
-      try {
-          // Open the secure Google login popup
-          await signInWithPopup(auth, googleProvider);
-          
-          // Once successful, close the modal if it's open
-          closeAuthModal();
-          console.log("Successfully logged in with Google!");
-      } catch (error) {
-          console.error("Google Popup Error:", error.message);
-          
-          // Optional: Show error in the modal if it fails
-          const errDiv = document.getElementById('modal-error');
-          if (errDiv) {
-              errDiv.innerText = "Login cancelled or failed. Please try again.";
-              errDiv.style.display = 'block';
-          }
-      }
-  };
-
-  window.startCheckout = async function(planId) {
-      if (!window.currentFirebaseToken) {
-          alert("Please sign in first!");
-          openAuthModal();
-          return;
-      }
-
-      const planPrices = {
-          "1_month": 249,
-          "3_months": 599,
-          "6_months": 999
-      };
-      const cost = planPrices[planId];
-
-      const walletText = document.getElementById('prof-wallet').innerText.replace(/[^0-9.-]+/g, "");
-      const walletBalance = parseFloat(walletText) || 0;
-
-      // 🟢 The Wallet Intercept Logic
-      if (walletBalance >= cost) {
-          const useWallet = confirm(`🎉 You have ₹${walletBalance.toFixed(2)} in your wallet! Would you like to use it to buy this plan for ₹${cost}?`);
-          
-          if (useWallet) {
-              try {
-                  const resp = await fetch('https://api.greekcalculator.in/pay-with-wallet', {
-                      method: 'POST',
-                      headers: { 
-                          'Authorization': `Bearer ${window.currentFirebaseToken}`,
-                          'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({ plan: planId, cost: cost })
-                  });
-                  const data = await resp.json();
-                  
-                  if (resp.ok) {
-                      alert("Payment Successful using Wallet Balance! Welcome to Pro.");
-                      window.location.reload();
-                      return; 
-                  } else {
-                      alert("Wallet payment failed: " + (data.error || "Unknown Error"));
-                      return;
-                  }
-              } catch (err) {
-                  alert("Could not process wallet payment. Please try again.");
-                  return;
-              }
-          }
-      }
-
-      // 🟢 Fallback to standard Razorpay
-      try {
-          const orderResp = await fetch('https://api.greekcalculator.in/create-order', {
-              method: 'POST',
-              headers: { 
-                  'Authorization': `Bearer ${window.currentFirebaseToken}`,
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ plan: planId })
-          });
-          const orderData = await orderResp.json();
-          
-          if (!orderResp.ok) {
-              console.error("Backend Error Details:", orderData);
-              alert("Server failed to create order: " + (orderData.error || "Unknown Error"));
-              return; 
-          }
-
-          const options = {
-              "key": orderData.key, 
-              "amount": orderData.amount, 
-              "currency": "INR",
-              "name": "Greek Calculator",
-              "description": "Pro Terminal Subscription",
-              "order_id": orderData.order_id, 
-              "handler": async function (response) {
-                  const verifyResp = await fetch('https://api.greekcalculator.in/verify-payment', {
-                      method: 'POST',
-                      headers: { 
-                          'Authorization': `Bearer ${window.currentFirebaseToken}`,
-                          'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({
-                          razorpay_payment_id: response.razorpay_payment_id,
-                          razorpay_order_id: response.razorpay_order_id,
-                          razorpay_signature: response.razorpay_signature,
-                          plan: planId
-                      })
-                  });
-                  
-                  if (verifyResp.ok) {
-                      alert("Payment Successful! Welcome to Pro.");
-                      window.location.reload(); 
-                  } else {
-                      alert("Payment verification failed.");
-                  }
-              },
-              "theme": { "color": "#3b82f6" }
-          };
-          
-          const rzp = new Razorpay(options);
-          rzp.open();
-          
-      } catch (err) {
-          console.error(err);
-          alert("Could not initiate checkout.");
-      }
-  };
-</script>
-  <script>
-    // 1. Disable Right-Click (Context Menu)
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    });
-
-    // 2. Disable Copy (Ctrl+C / Cmd+C) and View Source (Ctrl+U)
-    document.addEventListener('keydown', function(e) {
-        // Prevent Ctrl+C (Windows) or Cmd+C (Mac)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-            e.preventDefault();
-        }
-        // Prevent Ctrl+U (View Source)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
-            e.preventDefault();
-        }
-        // Prevent Ctrl+P (Print)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
-            e.preventDefault();
-        }
-    });
-
-    // 3. Disable Dragging of Elements (Prevents dragging images/data)
-    document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-    });
-</script>
+  </script>
 </body>
 </html>
-also make social media buttons on index page in footer like u made on contact page
