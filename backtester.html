@@ -1010,7 +1010,7 @@ let renderTable = function(rows, sym, data, quiet = false) {
   
   let tCeOI = 0, tPeOI = 0;
   displayRows.forEach(r => { tCeOI += r.ce.oi; tPeOI += r.pe.oi; });
-  const f_pcr = tCeOI > 0 ? (tPeOI / tCeOI).toFixed(2) : 0;
+const f_pcr = data.pcr !== undefined ? data.pcr.toFixed(2) : (tCeOI > 0 ? (tPeOI / tCeOI).toFixed(2) : 0);
   
   document.getElementById('f-pcr').innerText = f_pcr;
   document.getElementById('f-pcr').style.color = f_pcr >= 1 ? 'var(--green)' : 'var(--red)';
@@ -1229,7 +1229,7 @@ async function fetchBacktestData() {
 
         data.sort((a, b) => parseTimeToUnix(a.time) - parseTimeToUnix(b.time));
 
-        backtestSnapshots = data.map(snap => {
+       backtestSnapshots = data.map(snap => {
             let parsedCoa = null;
             if (snap.coa) {
                 try { parsedCoa = typeof snap.coa === 'string' ? JSON.parse(snap.coa) : snap.coa; } catch(e) {}
@@ -1237,17 +1237,24 @@ async function fetchBacktestData() {
             return {
                 timestamp: snap.time,
                 symbol: sym,
-                spot: snap.rows.length > 0 ? (snap.rows.find(r => r.ceLTP > 100 && r.peLTP > 100)?.strike || snap.rows[0].strike) : 0, 
+                spot: snap.spot || 0, // 🟢 FIX 2: Use the exact spot price from the backend
+                pcr: snap.pcr || 0,   // 🟢 FIX 3: Pull exact PCR
                 chain: snap.rows.map(r => ({
                     strike: r.strike,
                     ce_prz: r.ce_prz || 0, pe_prz: r.pe_prz || 0,
-                    ce: { ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, iv: 0 },
-                    pe: { ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, iv: 0 }
+                    // 🟢 FIX 4: Map the Greeks and IV accurately into the UI
+                    ce: { 
+                        ltp: r.ceLTP, oi: r.ceOI, change_oi: r.ceOIChg, volume: r.ceVol, 
+                        iv: r.ceGreeks?.iv || 0, delta: r.ceGreeks?.delta || 0, theta: r.ceGreeks?.theta || 0 
+                    },
+                    pe: { 
+                        ltp: r.peLTP, oi: r.peOI, change_oi: r.peOIChg, volume: r.peVol, 
+                        iv: r.peGreeks?.iv || 0, delta: r.peGreeks?.delta || 0, theta: r.peGreeks?.theta || 0 
+                    }
                 })),
                 coa: parsedCoa 
             };
         });
-
         const selectedTimeStr = document.getElementById('sel-time').value; 
         const targetUnix = parseTimeToUnix(selectedTimeStr);
         let bestIdx = 0;
