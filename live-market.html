@@ -471,6 +471,25 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .mobile-menu-toggle { display: none; }
 .mobile-market-stats { display: none; }
 </style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "mainEntity": {
+    "@type": "Dataset",
+    "name": "Live Option Chain & Greeks",
+    "description": "Real-time Nifty and Bank Nifty option chain data, Option Greeks, and Max Pain calculations.",
+    "isAccessibleForFree": "False",
+    "hasPart": [
+      {
+        "@type": "WebPageElement",
+        "isAccessibleForFree": "False",
+        "cssSelector": ".paywall-content" 
+      }
+    ]
+  }
+}
+</script>
 </head>
 <body>
 <header>
@@ -516,11 +535,18 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     <div class="divider"></div>
     <button class="primary-btn" onclick="fetchUpstoxChain(false)">Fetch Data</button>
 
-    <div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
+<div id="error-bar" style="display:none; color:var(--red); font-size:12px; font-weight:600; margin-left: 10px;"></div>
 </header>
 
-<div class="workspace">
-    <div class="left-nav" id="left-nav">
+<div style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;">
+    <h1>Live Option Chain & Greeks</h1>
+    <p>Track real-time data for Nifty 50 and Bank Nifty. Analyze Option Greeks, Open Interest, PCR, and Max Pain to make smarter trades.</p>
+</div>
+
+<div class="paywall-content" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; min-height: 0;">
+
+    <div class="workspace">
+        <div class="left-nav" id="left-nav">
         <button class="nav-btn mobile-menu-toggle" onclick="toggleMobileNav()" title="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -655,7 +681,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <span>PE OI: <b id="f-pe-oi">--</b></span>
     </div>
 
-    <div class="footer-right">
+  <div class="footer-right">
         <div class="mobile-market-stats" id="mobile-stats-wrap">
             <span>VIX: <b id="m-vix">--</b></span>
             <span class="divider" style="height: 12px; margin: 0 4px;"></span>
@@ -671,6 +697,8 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     </div>
     <input type="number" id="inp-spot" style="display:none;">
 </footer>
+
+</div>
 
 <div class="modal-overlay" id="chart-modal" onclick="closeStrikeCharts(event)">
     <div class="modal-content">
