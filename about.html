@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About Us - Greek Calculator</title>
+<title>About Us | Greek Calculator - Advanced Option Chain & Trading Analytics</title>
+<meta name="description" content="Discover Greek Calculator, an educational platform for real-time NSE & BSE option chain data, advanced trading analytics, and Option Greeks calculations.">
+<link rel="canonical" href="https://greekcalculator.in/about">
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 <style>
@@ -40,21 +42,30 @@
         margin: 0 auto; 
     }
     
+    /* 🟢 SEO: Styled to support an H1 without breaking your visual design */
     .header-title {
         display: flex;
         align-items: center;
         gap: 15px;
-        font-size: 28px;
-        font-weight: 800;
         margin-bottom: 40px;
         border-bottom: 1px solid var(--border);
         padding-bottom: 20px;
+    }
+
+    .header-title h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 0;
+        color: var(--text);
+        border-left: 2px solid var(--border);
+        padding-left: 15px;
     }
     
     .back-btn {
         font-size: 16px;
         color: var(--muted);
         font-weight: 600;
+        white-space: nowrap;
     }
     
     .back-btn:hover {
@@ -94,7 +105,7 @@
     }
 
     .feature-list li {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         color: var(--muted);
         font-size: 15px;
         display: flex;
@@ -108,32 +119,33 @@
 </style>
 </head>
 <body>
-<div class="container">
-    <div class="header-title">
-        <a href="index.html" class="back-btn">← Back</a> 
-        <span>| About Greek Calculator</span>
-    </div>
+<main class="container">
+    
+    <header class="header-title">
+        <a href="/" class="back-btn">← Back</a> 
+        <h1>About Greek Calculator</h1>
+    </header>
 
-    <div class="content-box">
+    <section class="content-box">
         <h2>Our Mission</h2>
-        <p>Greek Calculator was engineered to bridge the gap between retail traders and institutional-grade analytics. We believe that understanding the stock market, particularly complex derivatives and option chains, shouldn't require a Wall Street budget or a PhD.</p>
-        <p>Our goal is to democratize quantitative data, empowering retail traders with the mathematical tools needed to navigate the markets with precision and confidence.</p>
-    </div>
+        <p>The Greek <strong>trading calculator</strong> was engineered to bridge the gap between retail traders and institutional-grade analytics. We believe that understanding the stock market, particularly complex derivatives and <strong>option chains</strong>, shouldn't require a Wall Street budget or a PhD in mathematics.</p>
+        <p>Our goal is to democratize quantitative data, empowering retail traders with the analytical tools needed to navigate the markets with precision, discipline, and confidence.</p>
+    </section>
 
-    <div class="content-box">
+    <section class="content-box">
         <h2>What We Do</h2>
-        <p>We are a premier educational and analytical platform specifically focused on the Indian stock market (NIFTY, BANK NIFTY, FINNIFTY). We provide a robust terminal that visualizes live options data, calculates Greeks in real-time, and backtests historical setups.</p>
+        <p>We are a premier educational platform specifically focused on the Indian stock market, covering major <strong>NSE</strong> and <strong>BSE</strong> indices including NIFTY 50, BANK NIFTY, and FINNIFTY. We provide a robust trading terminal that visualizes live <strong>option chain</strong> data, calculates complex Option Greeks in real-time, and backtests historical market setups.</p>
         <p>By translating raw market data into readable, actionable insights, we help traders shift their focus from emotional speculation to statistical probability.</p>
-    </div>
+    </section>
 
-    <div class="content-box">
+    <section class="content-box">
         <h2>The Educational Edge</h2>
         <ul class="feature-list">
-            <li><strong>Data-Driven Approach:</strong> We teach you how to read volatility, open interest, and implied ranges instead of just looking at standard price charts.</li>
-            <li><strong>Advanced Tooling:</strong> Access to institutional concepts like Order Flow (Footprint), historical mapping, and Greek calculations.</li>
-            <li><strong>Community & Growth:</strong> We foster an environment where traders can test strategies, learn from real-time data, and grow their quantitative skill sets.</li>
+            <li><strong>Data-Driven Approach:</strong> We teach you how to read volatility, open interest (OI), and implied price ranges instead of just looking at standard candlestick charts.</li>
+            <li><strong>Advanced Tooling:</strong> Gain access to institutional-level concepts like Order Flow (Footprint charts), historical data mapping, and real-time Greek calculations.</li>
+            <li><strong>Trading Strategies & Growth:</strong> We foster a disciplined environment where traders can backtest strategies, learn from real-time data flow, and grow their quantitative skill sets securely.</li>
         </ul>
-    </div>
-</div>
+    </section>
+</main>
 </body>
 </html>
