@@ -1,20 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Privacy Policy - GC Live</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<style>body { background: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; padding: 40px 5%; line-height: 1.6; } a { color: #3b82f6; text-decoration: none; } .container { max-width: 800px; margin: 0 auto; }</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy | Greek Calculator Data Security</title>
+<meta name="description" content="Review the Privacy Policy for Greek Calculator. Learn how we securely collect, use, and protect your data while you use our options trading analytics terminal.">
+<link rel="canonical" href="https://greekcalculator.in/privacy">
+<link rel="icon" type="image/png" href="optionchain_fevicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #09090b;         
+        --card: #141415;       
+        --border: #27272a;     
+        --text: #f4f4f5;       
+        --muted: #a1a1aa;      
+        --accent: #3b82f6;     
+        --green: #10b981;
+    }
+    
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: 'Inter', sans-serif; 
+        padding: 40px 5%; 
+        line-height: 1.6; 
+        margin: 0;
+    }
+    
+    a { 
+        color: var(--accent); 
+        text-decoration: none; 
+        transition: 0.2s;
+    }
+    
+    a:hover {
+        color: #60a5fa;
+    }
+    
+    .container { 
+        max-width: 800px; 
+        margin: 0 auto; 
+    }
+    
+    /* Header Styling */
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+    }
+
+    .header-title h1 {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 0;
+        color: var(--text);
+        border-left: 2px solid var(--border);
+        padding-left: 15px;
+    }
+    
+    .back-btn {
+        font-size: 16px;
+        color: var(--muted);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .back-btn:hover {
+        color: var(--text);
+    }
+    
+    .last-updated {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+
+    /* Content Cards */
+    .content-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+
+    .content-box h2 {
+        margin-top: 0;
+        color: var(--accent);
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .content-box p {
+        color: var(--muted);
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+    .content-box p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Trust Badge */
+    .trust-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--green);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+</style>
 </head>
 <body>
-<div class="container">
-    <h1><a href="index.html">← Back</a> | Privacy Policy</h1>
-    <p>Last updated: April 2026</p>
-    <h3>1. Information We Collect</h3>
-    <p>We collect your email address, name (provided by Google Auth), and basic usage data when you register an account. We do not store sensitive payment information; all transactions are processed securely by Razorpay.</p>
-    <h3>2. How We Use Your Information</h3>
-    <p>Your information is used strictly to provide platform access, track subscription status, and calculate referral commissions. We will never sell your data to third parties.</p>
-    <h3>3. Data Security</h3>
-    <p>We use Google Firebase for authentication and database security to ensure your login details are encrypted and safe.</p>
-</div>
+
+<main class="container">
+    
+    <header class="header-title">
+        <a href="/" class="back-btn">← Back</a> 
+        <h1>Privacy Policy</h1>
+    </header>
+    
+    <div class="last-updated">Last updated: April 2026</div>
+    
+    <div class="trust-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        Your Data is Encrypted & Secure
+    </div>
+
+    <section class="content-box">
+        <h2>1. Information We Collect</h2>
+        <p>When you register an account with Greek Calculator, we collect essential personal information including your email address, name (provided manually or via Google OAuth), and basic platform usage data.</p>
+        <p><strong>We do NOT collect or store sensitive financial data.</strong> Your credit card numbers, UPI details, and banking information are securely handled and tokenized directly by our PCI-DSS compliant payment gateway, Razorpay.</p>
+    </section>
+
+    <section class="content-box">
+        <h2>2. How We Use Your Information</h2>
+        <p>Your information is utilized strictly to ensure the proper functioning of the Greek Calculator terminal. This includes providing secure platform access, managing PRO subscription statuses, delivering real-time market data, and accurately calculating referral commissions.</p>
+    </section>
+
+    <section class="content-box">
+        <h2>3. Data Sharing & Third Parties</h2>
+        <p><strong>We will never sell, rent, or trade your personal data to third parties.</strong></p>
+        <p>To provide our services, we utilize industry-leading third-party infrastructure. Specifically, we use Google Firebase for encrypted user authentication and database security, ensuring your login credentials and account states are protected by enterprise-grade security protocols.</p>
+    </section>
+
+</main>
 </body>
 </html>
