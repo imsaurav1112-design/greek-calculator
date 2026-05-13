@@ -129,7 +129,13 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 .left-nav {
     width: 52px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 20; position: relative;
 }
-
+  .nav-content { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    width: 100%; 
+    align-items: center; 
+}
 .nav-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; position: relative; }
 .nav-btn:hover { background: var(--section); color: var(--text); border: 1px solid var(--border); }
 .nav-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid var(--accent); }
