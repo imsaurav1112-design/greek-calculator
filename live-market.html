@@ -1280,12 +1280,12 @@ liveHistory.forEach(snap => {
             if (seenTimes.has(timestamp)) return;
             seenTimes.add(timestamp);
 
-            // 🟢 THE FIX: The Live Market array uses nested 'rows' just like the backtester!
+            // 🟢 THE FIX: Ensure we are accessing the nested 'rows' array!
             const rowArray = snap.rows || snap.chain || []; 
             const row = rowArray.find(r => r.strike === strike);
             
             if (row) {
-                // 🟢 THE FIX: Safely parse old array formats and new dict formats
+                // Safely extract values from the row
                 const ceVol = row.ceVol !== undefined ? row.ceVol : (row.ce ? row.ce.volume : 0);
                 const peVol = row.peVol !== undefined ? row.peVol : (row.pe ? row.pe.volume : 0);
                 const ceOI = row.ceOI !== undefined ? row.ceOI : (row.ce ? row.ce.oi : 0);
