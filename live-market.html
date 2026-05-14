@@ -1007,7 +1007,7 @@ function fmtVol(n) {
 async function fetchIntradayHistory(sym, expiry) {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
-        const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}`, { headers });
+        const r = await fetch(`${UPSTOX_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&source=live`, { headers });
         if (!r.ok) throw new Error(`HTTP Error: ${r.status}`);
         const data = await r.json();
         if (!data.error && Array.isArray(data) && data.length > 0) {
