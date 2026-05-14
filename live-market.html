@@ -1097,23 +1097,24 @@ async function fetchUpstoxChain(quiet = false) {
     globalRows = data.chain || [];
     globalSym = sym; globalData = data;
     
-    const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+   const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
+    // 🟢 THE FIX: Push the exact same structure the backend sends, so the chart parser never breaks!
     if (lastEntry !== nowStr) {
         liveHistory.push({
             time: nowStr,
-            spot: data.spot, 
+            spot: data.spot,
+            pcr: data.pcr,
             rows: globalRows.map(r => ({
                 strike: r.strike,
                 ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
                 ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
                 ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
-                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0 
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0
             }))
         });
     }
-
     // 🟢 CLEANED UP: No more heavy charts, just the table and the Key Levels UI!
     renderTable(globalRows, sym, data, quiet); 
     updateKeyLevels(data.chain, data.coa);
@@ -1280,20 +1281,20 @@ liveHistory.forEach(snap => {
             if (seenTimes.has(timestamp)) return;
             seenTimes.add(timestamp);
 
-            // 🟢 THE FIX: Ensure we are accessing the nested 'rows' array!
+            // Access the rows array safely
             const rowArray = snap.rows || snap.chain || []; 
             const row = rowArray.find(r => r.strike === strike);
             
             if (row) {
-                // Safely extract values from the row
-                const ceVol = row.ceVol !== undefined ? row.ceVol : (row.ce ? row.ce.volume : 0);
-                const peVol = row.peVol !== undefined ? row.peVol : (row.pe ? row.pe.volume : 0);
-                const ceOI = row.ceOI !== undefined ? row.ceOI : (row.ce ? row.ce.oi : 0);
-                const peOI = row.peOI !== undefined ? row.peOI : (row.pe ? row.pe.oi : 0);
-                const ceLTP = row.ceLTP !== undefined ? row.ceLTP : (row.ce ? row.ce.ltp : 0);
-                const peLTP = row.peLTP !== undefined ? row.peLTP : (row.pe ? row.pe.ltp : 0);
-                const ceOIChg = row.ceOIChg !== undefined ? row.ceOIChg : (row.ce ? row.ce.change_oi : 0);
-                const peOIChg = row.peOIChg !== undefined ? row.peOIChg : (row.pe ? row.pe.change_oi : 0);
+                // 🟢 THE FIX: Extract directly. Both server history and live push now use identical keys!
+                const ceVol = row.ceVol || 0;
+                const peVol = row.peVol || 0;
+                const ceOI = row.ceOI || 0;
+                const peOI = row.peOI || 0;
+                const ceLTP = row.ceLTP || 0;
+                const peLTP = row.peLTP || 0;
+                const ceOIChg = row.ceOIChg || 0;
+                const peOIChg = row.peOIChg || 0;
 
                 ceVolData.push({ time: timestamp, value: ceVol }); 
                 peVolData.push({ time: timestamp, value: peVol });
@@ -1306,6 +1307,16 @@ liveHistory.forEach(snap => {
             }
         });
 
+        // 🟢 FIX: If there is only 1 data point, duplicate it 1 minute earlier so Lightweight Charts can draw a line!
+        if (ceVolData.length === 1) {
+            const firstTime = ceVolData[0].time;
+            ceVolData.unshift({ time: firstTime - 60, value: ceVolData[0].value });
+            peVolData.unshift({ time: firstTime - 60, value: peVolData[0].value });
+            ceOiData.unshift({ time: firstTime - 60, value: ceOiData[0].value });
+            peOiData.unshift({ time: firstTime - 60, value: peOiData[0].value });
+            ceOiChgData.unshift({ time: firstTime - 60, value: ceOiChgData[0].value });
+            peOiChgData.unshift({ time: firstTime - 60, value: peOiChgData[0].value });
+        }
         const sorter = (a, b) => a.time - b.time;
         ceVolData.sort(sorter); peVolData.sort(sorter); ceOiData.sort(sorter); peOiData.sort(sorter);
         ceLtpData.sort(sorter); peLtpData.sort(sorter); ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
