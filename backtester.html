@@ -1353,7 +1353,7 @@ async function fetchBacktestData() {
 
     try {
         const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-        const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}`, { headers });
+        const r = await fetch(`${BACKTEST_API}/api/intraday-history?symbol=${sym}&expiry=${expiry}&date=${date}&source=backtester`, { headers });
         if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
         
         let data = await r.json();
