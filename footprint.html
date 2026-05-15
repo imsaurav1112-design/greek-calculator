@@ -344,9 +344,15 @@
                 }
 
                 // Fetch Footprint Data
+               // Fetch Footprint Data
                 const r = await fetch('https://api.greekcalculator.in/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
-                if (data.status === "success" && Object.keys(data.data).length > 0) {
+                
+                // 🟢 X-RAY VISION: Print exactly what the server sends to the browser console
+                console.log("🔥 LIVE SERVER DATA:", data);
+
+                // 🟢 THE FIX: Always draw the canvas, even if data is empty, so we can see the grid/warnings!
+                if (data.status === "success") {
                     latestDataCache = data.data;
                     processSessionData(); 
                     renderCanvas();
