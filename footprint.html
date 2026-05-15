@@ -444,34 +444,40 @@
             return;
         }
 
-        let minPrice = Infinity, maxPrice = -Infinity;
+      let minPrice = Infinity, maxPrice = -Infinity;
         
-        // 🟢 PREVENT NaN CRASHES: Auto-calculate High/Low if backend is still building the candle
+        // 🟢 THE FIX: Aggressively scan both the OHLC data AND the volume matrix to find the absolute High/Low
         timeKeys.forEach(t => {
             const candle = latestDataCache[t];
-            let cHigh = candle.high;
-            let cLow = candle.low;
+            let cHigh = -Infinity;
+            let cLow = Infinity;
             
-            if (cHigh === undefined || cLow === undefined) {
-                const prices = Object.keys(candle.volumes || {}).map(Number);
-                if (prices.length > 0) {
-                    cHigh = Math.max(...prices);
-                    cLow = Math.min(...prices);
-                }
+            // First, try to extract High/Low from the volume matrix keys (most reliable)
+            const prices = Object.keys(candle.volumes || {}).map(Number);
+            if (prices.length > 0) {
+                cHigh = Math.max(...prices);
+                cLow = Math.min(...prices);
             }
-
-            if (cHigh !== undefined && cHigh > maxPrice) maxPrice = cHigh;
-            if (cLow !== undefined && cLow < minPrice) minPrice = cLow;
+            
+            // Fallback: If matrix is somehow empty, use the OHLC data if it is greater than zero
+            if (cHigh === -Infinity && candle.high > 0) cHigh = candle.high;
+            if (cLow === Infinity && candle.low > 0) cLow = candle.low;
+            
+            // Compare against the global min/max
+            if (cHigh !== -Infinity && cHigh > maxPrice) maxPrice = cHigh;
+            if (cLow !== Infinity && cLow < minPrice) minPrice = cLow;
         });
 
-        // If data is fully corrupted, stop rendering
-        if (minPrice === Infinity) return;
+        // 🟢 If data is completely zeroed out (e.g. weekend), force a dummy price range so the grid still draws!
+        if (minPrice === Infinity || maxPrice === -Infinity) {
+            minPrice = 22000;
+            maxPrice = 22100;
+        }
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
             return height - X_AXIS_HEIGHT - 50 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
-
         // Draw Horizontal Grid (Theme Aware)
         ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
         ctx.lineWidth = 1; ctx.beginPath();
