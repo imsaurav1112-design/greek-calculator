@@ -371,15 +371,24 @@
         let orHigh = -Infinity, orLow = Infinity;
         let ibHigh = -Infinity, ibLow = Infinity;
 
-        const parseTime = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-        const firstTimeMin = parseTime(times[0]);
+const parseTime = (t) => { 
+            if (!t) return 0;
+            const parts = t.split(':');
+            if (parts.length < 2) return 0;
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]); 
+        };
+        const firstTimeMin = parseTime(times[0]) || (9 * 60 + 15); // Fallback to 9:15 AM
 
+        // 🟢 FIX: Ensure we process EVERY candle sent by the backend safely
         times.forEach(t => {
+            if (!latestDataCache[t]) return;
+            
             const min = parseTime(t);
             const isOR = min < firstTimeMin + 15; 
             const isIB = min < firstTimeMin + 60; 
 
-            const matrix = latestDataCache[t].volumes || {};
+            // 🟢 FIX: Handle both object shapes (sometimes backend drops 'volumes' wrapper)
+            const matrix = latestDataCache[t].volumes || latestDataCache[t] || {};
             
             Object.keys(matrix).forEach(pStr => {
                 const p = parseFloat(pStr);
