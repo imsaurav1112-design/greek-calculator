@@ -250,6 +250,7 @@
     let lastMouseY = 0;
     
     let latestDataCache = {};
+    let latestDomCache = { bids: {}, asks: {} }; // 🟢 NEW
     let volumeProfile = {};
     let sessionStats = {};
 
@@ -354,6 +355,7 @@
                 // 🟢 THE FIX: Always draw the canvas, even if data is empty, so we can see the grid/warnings!
                 if (data.status === "success") {
                     latestDataCache = data.data;
+                    latestDomCache = data.dom || { bids: {}, asks: {} }; // 🟢 NEW
                     processSessionData(); 
                     renderCanvas();
                 }
@@ -639,6 +641,62 @@ const parseTime = (t) => {
                 ctx.setLineDash([]); 
             }
         }
+
+        // ==========================================
+        // 🟢 NEW: DEPTH 30 (DOM) RENDERER
+        // ==========================================
+        const DOM_WIDTH = 100; // How wide the limit order bars can stretch
+        const domStartX = width - Y_AXIS_WIDTH; 
+        
+        // Find the maximum limit order size so we can scale the bars properly
+        let maxDomVol = 0;
+        Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+        Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+
+        if (maxDomVol > 0) {
+            // Draw Asks (Resistance / Sell Limits) - Red
+            Object.keys(latestDomCache.asks).forEach(pStr => {
+                const p = parseFloat(pStr);
+                const vol = latestDomCache.asks[pStr];
+                const y = getPriceY(p);
+                if (y < -50 || y > height - X_AXIS_HEIGHT) return;
+
+                const barW = (vol / maxDomVol) * DOM_WIDTH;
+                
+                // Draw the heat bar extending to the left
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; // Semi-transparent Red
+                ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
+                
+                // Print the quantity
+                ctx.fillStyle = isLight ? '#ef4444' : '#fca5a5';
+                ctx.font = "bold 9px 'JetBrains Mono'";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
+            });
+
+            // Draw Bids (Support / Buy Limits) - Green
+            Object.keys(latestDomCache.bids).forEach(pStr => {
+                const p = parseFloat(pStr);
+                const vol = latestDomCache.bids[pStr];
+                const y = getPriceY(p);
+                if (y < -50 || y > height - X_AXIS_HEIGHT) return;
+
+                const barW = (vol / maxDomVol) * DOM_WIDTH;
+                
+                // Draw the heat bar extending to the left
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.3)'; // Semi-transparent Green
+                ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
+                
+                // Print the quantity
+                ctx.fillStyle = isLight ? '#10b981' : '#6ee7b7';
+                ctx.font = "bold 9px 'JetBrains Mono'";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
+            });
+        }
+        // ==========================================
 
         // 🟢 Y-Axis Background & Text (Theme Aware)
         ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b';
