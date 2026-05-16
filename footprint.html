@@ -731,53 +731,6 @@ const parseTime = (t) => {
             if (y > 0 && y < height - X_AXIS_HEIGHT) { ctx.fillText(p, width - Y_AXIS_WIDTH + 15, y); }
         }
     }
-
-    // ==========================================
-    // 🧪 TEMPORARY UI TESTER (Delete this later!)
-    // ==========================================
-    setTimeout(() => {
-        // 1. Kill the live polling so it doesn't instantly overwrite our fake data
-        for (let i = 1; i < 100; i++) window.clearInterval(i);
-
-        // 2. Inject Fake Candles
-        latestDataCache = {
-            "10:00": {
-                open: 23490, high: 23515, low: 23485, close: 23510,
-                volumes: {
-                    "23515": { buy_vol: 1200, sell_vol: 200 },  
-                    "23510": { buy_vol: 3500, sell_vol: 3000 },
-                    "23505": { buy_vol: 5200, sell_vol: 4800 }, 
-                    "23500": { buy_vol: 3100, sell_vol: 3500 },
-                    "23495": { buy_vol: 1500, sell_vol: 2000 },
-                    "23490": { buy_vol: 800,  sell_vol: 1200 },
-                    "23485": { buy_vol: 100,  sell_vol: 1500 }  
-                }
-            },
-            "10:05": {
-                open: 23510, high: 23530, low: 23500, close: 23525,
-                volumes: {
-                    "23530": { buy_vol: 800,  sell_vol: 100 },
-                    "23525": { buy_vol: 2500, sell_vol: 1500 },
-                    "23520": { buy_vol: 6800, sell_vol: 2200 }, 
-                    "23515": { buy_vol: 3200, sell_vol: 3000 },
-                    "23510": { buy_vol: 1500, sell_vol: 1800 },
-                    "23505": { buy_vol: 500,  sell_vol: 900 },
-                    "23500": { buy_vol: 200,  sell_vol: 800 }
-                }
-            }
-        };
-
-        // 3. Inject Fake Depth 30 (DOM)
-        latestDomCache = {
-            asks: { "23535": 12000, "23540": 8500, "23545": 45000, "23550": 15000, "23555": 65000 },
-            bids: { "23495": 18000, "23490": 25000, "23485": 8000, "23480": 75000, "23475": 12000 }
-        };
-
-        // 4. Force a redraw
-        processSessionData();
-        renderCanvas();
-        console.log("🎨 FAKED D30 DATA INJECTED SUCCESSFULLY!");
-    }, 2500); // Waits 2.5 seconds after page load to hijack the chart
 </script>
 </body>
 </html>
