@@ -126,7 +126,9 @@
 <header>
     <a href="index.html" class="logo"><span>Greek</span> Calculator</a>
     
-    <div class="header-prices">
+<div class="header-prices">
+        <input type="date" id="history-date" style="background: var(--section); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 11px; outline: none; cursor: pointer; margin-right: 15px;">
+        
         <div class="price-box">
             <span class="price-label">SPOT:</span>
             <span class="price-val" id="hdr-spot">--</span>
@@ -323,39 +325,57 @@
 
 
     // --- DATA POLLING ---
+let isLiveMode = true;
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
         
-        // 🟢 NEW: Sync live Header Prices alongside Footprint
+        // 🟢 NEW: Handle Date Picker Changes
+        document.getElementById('history-date').addEventListener('change', async (e) => {
+            const selectedDate = e.target.value;
+            
+            // Generate today's date in YYYY-MM-DD for IST (rough approximation for browser)
+            const today = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Kolkata'}).split('/').reverse().join('-');
+
+            if (!selectedDate || selectedDate === today) {
+                isLiveMode = true;
+                return;
+            }
+
+            // Pause live feed and fetch history
+            isLiveMode = false;
+            try {
+                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await r.json();
+                
+                latestDataCache = data.data || {};
+                latestDomCache = { bids: {}, asks: {} }; // Clear DOM for history
+                
+                processSessionData(); 
+                renderCanvas();
+            } catch(err) { console.error("History fetch failed", err); }
+        });
+
+        // Live Polling Loop
         setInterval(async () => {
+            if (!isLiveMode) return; // 🟢 Stop polling if viewing history!
+            
             try {
                 // Fetch Tick Data for Header
                 const tResp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
                 const tData = await tResp.json();
                 
-                // 1. Update Spot Price
-                if (tData["NIFTY 50"]) {
-                    document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
-                }
-                
-                // 2. Update REAL Future Price
-                if (tData["NIFTY FUT"]) {
-                    document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2); 
-                }
+                if (tData["NIFTY 50"]) document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
+                if (tData["NIFTY FUT"]) document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2); 
 
-                // Fetch Footprint Data
-               // Fetch Footprint Data
+                // Fetch Live Footprint Data
                 const r = await fetch('https://api.greekcalculator.in/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
                 
-                // 🟢 X-RAY VISION: Print exactly what the server sends to the browser console
-                console.log("🔥 LIVE SERVER DATA:", data);
-
-                // 🟢 THE FIX: Always draw the canvas, even if data is empty, so we can see the grid/warnings!
                 if (data.status === "success") {
                     latestDataCache = data.data;
-                    latestDomCache = data.dom || { bids: {}, asks: {} }; // 🟢 NEW
+                    if (data.dom) latestDomCache = data.dom;
                     processSessionData(); 
                     renderCanvas();
                 }
