@@ -528,8 +528,20 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     .hero p { font-size: 16px; }
     .nav-links { display: none; }
     .grid, .pricing-grid { grid-template-columns: 1fr; }
+    
+    /* 🟢 HEADER FIX: Shrink elements to prevent overlap */
+    .logo { font-size: 18px; letter-spacing: 0; }
+    .auth-buttons { gap: 8px; }
+    header .btn { padding: 8px 12px; font-size: 12px; }
 }
 
+/* 🟢 EXTRA SMALL SCREENS (iPhone SE, older Androids) */
+@media (max-width: 400px) {
+    header { padding: 0 3%; } /* Reduce side margins */
+    .logo { font-size: 15px; } /* Shrink logo slightly more */
+    .auth-buttons { gap: 4px; }
+    header .btn { padding: 6px 8px; font-size: 11px; } /* Tighter buttons */
+}
 /* 🟢 PROFILE BUTTON & PANEL STYLES */
 .profile-btn {
     width: 36px; height: 36px; border-radius: 50%;
