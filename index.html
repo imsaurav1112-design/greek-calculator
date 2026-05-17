@@ -124,6 +124,65 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .feature-icon { width: 40px; height: 40px; background: rgba(59,130,246,0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
 .feature-card h3 { margin: 0 0 10px 0; font-size: 18px; }
 .feature-card p { color: var(--muted); font-size: 14px; margin: 0; }
+  /* --- MODERN ANIMATED FEATURES GRID --- */
+.modern-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 24px; 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
+.bento-card { 
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 16px; 
+    padding: 30px; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+    position: relative; 
+    transition: 0.3s;
+}
+.bento-card:hover { 
+    border-color: rgba(59, 130, 246, 0.5); 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(59, 130, 246, 0.05); 
+}
+.bento-card.full-width { grid-column: span 2; flex-direction: row; align-items: center; gap: 40px; }
+
+.bento-content { flex: 1; position: relative; z-index: 2; }
+.bento-title { font-size: 22px; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; gap: 10px; }
+.bento-title svg { color: var(--accent); }
+.bento-desc { font-size: 15px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+/* Mini UI Visualizations inside the cards */
+.bento-visual { flex: 1; display: flex; flex-direction: column; gap: 8px; margin-top: 25px; user-select: none; }
+.bento-visual.side { margin-top: 0; min-width: 300px; }
+
+/* The DOM Animated Bars (Like your screenshot) */
+.dom-row { display: flex; align-items: center; gap: 10px; width: 100%; }
+.dom-price { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); width: 45px; text-align: right; }
+.dom-bar-container { flex: 1; height: 16px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden; position: relative; }
+.dom-bar { height: 100%; border-radius: 4px; animation: barPulse 2s infinite alternate ease-in-out; }
+.dom-bar.ask { background: rgba(239, 68, 68, 0.4); border-right: 2px solid var(--red); transform-origin: left; }
+.dom-bar.bid { background: rgba(16, 185, 129, 0.4); border-right: 2px solid var(--green); transform-origin: left; }
+
+@keyframes barPulse {
+    0% { transform: scaleX(0.8); }
+    100% { transform: scaleX(1.05); }
+}
+
+/* Footprint Matrix Imbalance Animation */
+.fp-row { display: flex; justify-content: space-between; font-family: 'JetBrains Mono'; font-size: 12px; padding: 4px 8px; border-radius: 4px; background: rgba(255,255,255,0.02); }
+.fp-row.vpoc { border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.1); }
+.fp-vol { width: 40%; text-align: center; }
+.imb-buy { color: var(--green); font-weight: 800; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+.imb-sell { color: var(--red); font-weight: 800; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+@media (max-width: 768px) {
+    .modern-grid { grid-template-columns: 1fr; }
+    .bento-card.full-width { grid-column: span 1; flex-direction: column; align-items: flex-start; }
+    .bento-visual.side { min-width: 100%; margin-top: 20px; }
+}
 
 /* --- PRICING SECTION --- */
 .pricing { padding: 50px 5%; max-width: 1200px; margin: 0 auto; margin-top: 20px; }
@@ -387,29 +446,93 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 </section>
 
 <section class="features" id="features">
-    <div class="section-title">Core Features</div>
-    <h2>Engineered for Precision</h2>
-    <div class="grid">
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+    <div class="section-title">Terminal Features</div>
+    <h2 style="text-align: center; margin-bottom: 50px;">See Inside the Candlestick</h2>
+    
+    <div class="modern-grid">
+        <div class="bento-card">
+            <div class="bento-content">
+                <h3 class="bento-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    X-Ray Footprint
+                </h3>
+                <p class="bento-desc">Stop guessing. See the exact volume of aggressive market buyers and sellers inside every 5-minute candle to spot trapped traders.</p>
             </div>
-            <h3>Volatility Range Analysis</h3>
-            <p>Calculates expected movement ranges using real-time volatility inputs. Features automated data-modeling for intraday statistical study.</p>
+            <div class="bento-visual">
+                <div class="fp-row"><span class="fp-vol">1.2k</span> <span style="color:var(--muted)">|</span> <span class="fp-vol imb-buy">4.5k</span></div>
+                <div class="fp-row vpoc"><span class="fp-vol">8.2k</span> <span style="color:var(--muted)">|</span> <span class="fp-vol">7.9k</span></div>
+                <div class="fp-row"><span class="fp-vol imb-sell">3.1k</span> <span style="color:var(--muted)">|</span> <span class="fp-vol">800</span></div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+
+        <div class="bento-card">
+            <div class="bento-content">
+                <h3 class="bento-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    Live Session Intel
+                </h3>
+                <p class="bento-desc">Your daily scorecard. Track real-time VWAP, Cumulative Delta, and the shifting Value Area (VAH/VAL) all in one clean floating panel.</p>
             </div>
-            <h3>Historical Data Mapping</h3>
-            <p>Maps historical data points and identifies technical price zones. Includes custom audio notifications for real-time data updates</p>
+            <div class="bento-visual" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-family:'JetBrains Mono'; font-size: 13px;">
+                    <span style="color:var(--muted)">VWAP</span> <span>23,540.50</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-family:'JetBrains Mono'; font-size: 13px;">
+                    <span style="color:var(--muted)">Cum Delta</span> <span style="color:var(--green); font-weight:800;">+45,200</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size: 13px;">
+                    <span style="color:var(--muted)">Value Area</span> <span>23,480 / 23,550</span>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+
+        <div class="bento-card full-width">
+            <div class="bento-content">
+                <h3 class="bento-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Order Flow DOM (Depth 30)
+                </h3>
+                <p class="bento-desc" style="max-width: 400px;">Look into the future. Visualize massive pending limit orders with dynamic heat bars. Instantly spot the "brick walls" of institutional liquidity acting as magnets or resistance, and catch spoofing in real-time.</p>
             </div>
-            <h3>Educational Charting</h3>
-            <p>Generate comprehensive data visualizations for any contract. Analyze historical volume and liquidity trends through interactive time-series charts</p>
+            <div class="bento-visual side">
+                <div class="dom-row"><span class="dom-price">23550</span><div class="dom-bar-container"><div class="dom-bar ask" style="width: 85%;"></div></div><span style="font-size:10px; color:var(--red); width:30px;">45k</span></div>
+                <div class="dom-row"><span class="dom-price">23500</span><div class="dom-bar-container"><div class="dom-bar ask" style="width: 30%;"></div></div><span style="font-size:10px; color:var(--red); width:30px;">12k</span></div>
+                <div class="dom-row" style="margin: 5px 0;"><div style="width: 100%; height: 1px; border-bottom: 1px dashed var(--muted);"></div></div>
+                <div class="dom-row"><span class="dom-price">23450</span><div class="dom-bar-container"><div class="dom-bar bid" style="width: 45%; animation-delay: 0.5s;"></div></div><span style="font-size:10px; color:var(--green); width:30px;">22k</span></div>
+                <div class="dom-row"><span class="dom-price">23400</span><div class="dom-bar-container"><div class="dom-bar bid" style="width: 95%; animation-delay: 1s;"></div></div><span style="font-size:10px; color:var(--green); width:30px;">75k</span></div>
+            </div>
+        </div>
+
+        <div class="bento-card full-width">
+            <div class="bento-visual side" style="margin-right: 40px; margin-top: 0;">
+                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--border); padding: 10px; font-family:'JetBrains Mono'; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between; color:var(--muted); margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:4px;">
+                        <span>Call OI</span><span>Strike</span><span>Put OI</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <span style="color:var(--red); background:rgba(239,68,68,0.1); padding:2px 6px; border-radius:4px;">2.4M</span>
+                        <span style="color:var(--text);">23500</span>
+                        <span>800k</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px; background:rgba(59,130,246,0.1); border-radius:4px; padding:2px 0;">
+                        <span>1.1M</span>
+                        <span style="color:var(--accent); font-weight:800;">23450 (ATM)</span>
+                        <span>950k</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>400k</span>
+                        <span style="color:var(--text);">23400</span>
+                        <span style="color:var(--green); background:rgba(16,185,129,0.1); padding:2px 6px; border-radius:4px;">3.1M</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bento-content">
+                <h3 class="bento-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Smart Option Chain
+                </h3>
+                <p class="bento-desc">Your daily Greeks, calculated perfectly. Automatically highlights the highest Open Interest and Volume nodes, tracking real-time shifts in Max Pain and generating dynamic Support/Resistance zones (EOR/EOS).</p>
+            </div>
         </div>
     </div>
 </section>
