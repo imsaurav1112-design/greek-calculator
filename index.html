@@ -106,14 +106,13 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 /* --- HERO BUTTONS & PULSING DOTS --- */
 .hero-buttons { 
     display: flex; 
-    flex-direction: row; 
-    justify-content: space-between; 
+    flex-direction: column; /* 🟢 Stack vertically */
     gap: 12px; 
     margin-top: 30px; 
-    width: 100%;
+    width: 280px; /* 🟢 Match the width of the rotating cards */
 }
 .hero-buttons .btn {
-    flex: 1; /* This forces all 3 buttons to be exactly equal width */
+    width: 100%; /* Fill the container */
     padding: 14px 10px;
     font-size: 13px;
     display: flex;
@@ -122,12 +121,10 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     white-space: nowrap;
 }
 
-/* Mobile: Stack them equally */
+/* Mobile: Center the stack */
 @media (max-width: 900px) {
-    .hero-buttons { flex-direction: column; }
-    .hero-buttons .btn { width: 100%; }
+    .hero-buttons { width: 100%; max-width: 280px; margin: 30px auto 0 auto; }
 }
-
 /* The Animated Pulse Dots */
 .live-dot-indicator {
     width: 8px;
@@ -606,22 +603,18 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 
 <section class="hero">
     <div class="hero-container">
+        
         <div class="hero-content">
             <div class="section-title" style="text-align: left; color: var(--accent);">Institutional Edge | Retail Accessibility</div>
             
-             <h1>Smart <span style="color: var(--accent);">Option Chain &</span><br> Advanced <span style="color: var(--accent);">Orderflow<br></span>For FnO traders.</h1>
+            <h1>Smart <span style="color: var(--accent);">Option Chain &</span><br> Advanced <span style="color: var(--accent);">Orderflow<br></span>For FnO traders.</h1>
             
             <p>Equip yourself with an elite F&O research suite. Deep-dive option chains, live order flow, and real-time Greeks—giving retail traders the ultimate data advantage without the institutional price tag.</p>
-            
-            <div class="hero-buttons" id="hero-actions">
-                <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
-                    Join Now <span style="transition: transform 0.2s; display: inline-block;">→</span>
-                </button>
-            </div>
         </div>
         
-<div class="hero-right">
-           <div class="rotating-cards-container" id="rotator-box">
+        <div class="hero-right" style="flex-direction: column; align-items: center; justify-content: center; height: auto;">
+            
+            <div class="rotating-cards-container" id="rotator-box" style="margin-bottom: 20px;">
                 <div class="rot-card active" id="card-nifty">
                     <div class="rot-left">
                         <div class="rot-icon icon-nifty">N</div>
@@ -654,10 +647,17 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                         <div class="rot-pct up" id="rot-pct-sensex">--</div>
                     </div>
                 </div>
-            </div>        </div>
+            </div>
+
+            <div class="hero-buttons" id="hero-actions">
+                <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')" style="width: 100%;">
+                    Join Now <span style="transition: transform 0.2s; display: inline-block;">→</span>
+                </button>
+            </div>
+            
+        </div>
     </div>
 </section>
-
 <section class="features" id="features">
     
     <h2 style="text-align: center; margin-bottom: 50px;">Engineered for Institutional Precision</h2>
@@ -1446,6 +1446,45 @@ if (heroBox) {
 
         }, 3500); // Cycles every 3.5 seconds
     });
+    // --- 2. LIVE PRICE FEEDER ---
+    async function fetchLiveHeroPrices() {
+        try {
+            const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
+            const data = await resp.json();
+            
+            const updateCard = (key, idName) => {
+                if (data[key]) {
+                    const ltp = data[key].ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    const pct = data[key].pct;
+                    
+                    document.getElementById(`rot-price-${idName}`).innerText = ltp;
+                    
+                    const pctEl = document.getElementById(`rot-pct-${idName}`);
+                    pctEl.innerText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+                    
+                    if (pct >= 0) {
+                        pctEl.classList.remove('down');
+                        pctEl.classList.add('up');
+                    } else {
+                        pctEl.classList.remove('up');
+                        pctEl.classList.add('down');
+                    }
+                }
+            };
+
+            // Ensure your backend upstox_live.py is tracking these keys!
+            updateCard("NIFTY 50", "nifty");
+            updateCard("NSE_INDEX|Nifty Bank", "bank"); 
+            updateCard("BSE_INDEX|SENSEX", "sensex");
+
+        } catch(e) {
+            console.error("Failed to fetch live hero prices:", e);
+        }
+    }
+
+    // Fetch immediately, then every 3 seconds
+    fetchLiveHeroPrices();
+    setInterval(fetchLiveHeroPrices, 3000);
   </script>
 </body>
 </html>
