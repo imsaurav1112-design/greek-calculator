@@ -115,14 +115,14 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     width: fit-content;
 }
 
-/* --- HERO SECTION LAYOUT & ROTATING TEXT --- */
+/* --- HERO SECTION LAYOUT & ROTATING CARDS --- */
 .hero-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
-    gap: 40px;
+    gap: 60px;
 }
 
 .hero-content {
@@ -135,62 +135,114 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.rotating-words-container {
-    height: 100px; /* Fits the large h1 text height */
-    overflow: hidden;
     position: relative;
-    width: 100%;
+    height: 120px;
+    perspective: 1000px; /* Adds 3D depth to the rotation */
 }
 
-.rotating-word {
-    font-size: 56px; /* Slightly larger than h1 */
-    font-weight: 900;
-    line-height: 1;
+/* The Container that holds all the cards */
+.rotating-cards-container {
+    position: relative;
+    width: 280px;
+    height: 80px;
+}
+
+/* The individual index card */
+.rot-card {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 0;
-    transform: translateY(100%); /* Start hidden below */
+    width: 100%;
+    height: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    
+    /* Animation defaults */
     opacity: 0;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    transform: translateY(40px) rotateX(-20deg); 
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Specific Colors for specific indices */
-.word-nifty { background-image: linear-gradient(135deg, #3b82f6, #60a5fa); } /* Blue */
-.word-bank { background-image: linear-gradient(135deg, #10b981, #34d399); } /* Green */
-.word-sensex { background-image: linear-gradient(135deg, #f59e0b, #fbbf24); } /* Gold */
-
-@keyframes rotateWord {
-    0% { transform: translateY(100%); opacity: 0; }
-    10% { transform: translateY(-50%); opacity: 1; }
-    33% { transform: translateY(-50%); opacity: 1; }
-    43% { transform: translateY(-200%); opacity: 0; }
-    100% { transform: translateY(-200%); opacity: 0; }
+/* The active, visible card */
+.rot-card.active {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+    z-index: 2;
 }
 
-.rotating-word:nth-child(1) { animation: rotateWord 9s infinite 0s; }
-.rotating-word:nth-child(2) { animation: rotateWord 9s infinite 3s; }
-.rotating-word:nth-child(3) { animation: rotateWord 9s infinite 6s; }
+/* The card exiting upwards */
+.rot-card.exit {
+    opacity: 0;
+    transform: translateY(-40px) rotateX(20deg);
+    z-index: 1;
+}
+
+/* Left side of the card (Logo & Name) */
+.rot-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.rot-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+}
+.icon-nifty { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.icon-bank { background: linear-gradient(135deg, #10b981, #047857); }
+.icon-sensex { background: linear-gradient(135deg, #f59e0b, #b45309); }
+
+.rot-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+/* Right side of the card (Price & Pct) */
+.rot-right {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+}
+.rot-price {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+}
+.rot-pct {
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+.rot-pct.up { color: var(--green); }
+.rot-pct.down { color: var(--red); }
 
 /* Adjust original hero rules */
 .hero { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
 .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
-.hero h1 span { color: var(--text); } /* Removed blue span since right side has color */
+.hero h1 span { color: var(--text); } 
 .hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
 .hero-buttons { display: flex; flex-direction: row; justify-content: flex-start; gap: 15px; margin-top: 20px; }
 
 /* 📱 MOBILE OPTIMIZATION OVERRIDE */
 @media (max-width: 900px) {
-    .hero-container { flex-direction: column; text-align: center; gap: 20px; }
+    .hero-container { flex-direction: column; text-align: center; gap: 40px; }
     .hero-content { text-align: center; }
     .hero-buttons { justify-content: center; }
-    .rotating-words-container { height: 60px; display: flex; justify-content: center; }
-    .rotating-word { font-size: 42px; left: auto; /* Center it */ }
-}
-  
+    .hero-right { height: 80px; }
+}  
 /* --- FEATURES GRID --- */
 .features { padding: 50px 5%; max-width: 1200px; margin: 0 auto; }
 .section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 10px; text-align: center;}
@@ -538,10 +590,9 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         <div class="hero-content">
             <div class="section-title" style="text-align: left;">Institutional Edge. Retail Accessibility.</div>
             
-            <h1>Level the Playing<br>Field in Derivatives.</h1>
+             <h1>Smart <span>Option Chain</span><br> Advanced <span>Orderflow</span>For FnO traders.</h1>
             
-            <p>Equip yourself with an elite F&O research suite. Deep-dive option chains, live order flow, and real-time Greeks—giving retail traders the ultimate data advantage without the institutional price tag.<br>
-            <span style="color: #a855f7; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; margin-top: 10px; display: inline-block;">⚡ Powered by Upstox</span></p>
+            <p>Equip yourself with an elite F&O research suite. Deep-dive option chains, live order flow, and real-time Greeks—giving retail traders the ultimate data advantage without the institutional price tag.</p>
             
             <div class="hero-buttons" id="hero-actions">
                 <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')">
@@ -550,11 +601,40 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
             </div>
         </div>
         
-        <div class="hero-right">
-            <div class="rotating-words-container">
-                <div class="rotating-word word-nifty">Nifty 50</div>
-                <div class="rotating-word word-bank">Bank Nifty</div>
-                <div class="rotating-word word-sensex">Sensex</div>
+<div class="hero-right">
+            <div class="rotating-cards-container" id="rotator-box">
+                <div class="rot-card active" id="card-nifty">
+                    <div class="rot-left">
+                        <div class="rot-icon icon-nifty">N</div>
+                        <div class="rot-name">Nifty 50</div>
+                    </div>
+                    <div class="rot-right">
+                        <div class="rot-price" id="rot-price-nifty">--</div>
+                        <div class="rot-pct up" id="rot-pct-nifty">--</div>
+                    </div>
+                </div>
+
+                <div class="rot-card" id="card-bank">
+                    <div class="rot-left">
+                        <div class="rot-icon icon-bank">B</div>
+                        <div class="rot-name">Bank Nifty</div>
+                    </div>
+                    <div class="rot-right">
+                        <div class="rot-price" id="rot-price-bank">--</div>
+                        <div class="rot-pct up" id="rot-pct-bank">--</div>
+                    </div>
+                </div>
+
+                <div class="rot-card" id="card-sensex">
+                    <div class="rot-left">
+                        <div class="rot-icon icon-sensex">S</div>
+                        <div class="rot-name">Sensex</div>
+                    </div>
+                    <div class="rot-right">
+                        <div class="rot-price" id="rot-price-sensex">--</div>
+                        <div class="rot-pct up" id="rot-pct-sensex">--</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
