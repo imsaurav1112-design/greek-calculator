@@ -683,55 +683,44 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     </nav>
 
 <div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
-  
-       <a href="/login" style="text-decoration: none;">
-    <button class="nav-btn btn btn-login" id="btn-login-nav" onclick="event.preventDefault(); openAuthModal('login')">LogIn</button>
-</a>
-        
-        <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
-        
-       <div id="profile-panel" class="profile-panel">
-            <div class="profile-header">
-                <div id="prof-name" style="font-size: 16px; font-weight: 800; color: var(--text);">User Name</div>
-                
-                <div class="profile-email" id="prof-email" style="margin-bottom: 10px;">user@example.com</div>
-                <div class="profile-tier" id="prof-tier-badge">FREE PLAN</div>
-                <div id="prof-expiry" style="font-size: 10px; color: var(--muted); margin-top: 4px; display: none;">Expires: --</div>
+    <button class="btn btn-login" id="btn-login-nav" onclick="event.preventDefault(); openAuthModal('login')">Log In</button>
+    <button class="btn btn-primary" id="btn-signup-nav" onclick="event.preventDefault(); openAuthModal('signup')">Join Now →</button>
+    
+    <div id="profile-btn" class="profile-btn" onclick="toggleProfilePanel(event)">U</div>
+    
+    <div id="profile-panel" class="profile-panel">
+        <div class="profile-header">
+            <div id="prof-name" style="font-size: 16px; font-weight: 800; color: var(--text);">User Name</div>
+            <div class="profile-email" id="prof-email" style="margin-bottom: 10px;">user@example.com</div>
+            <div class="profile-tier" id="prof-tier-badge">FREE PLAN</div>
+            <div id="prof-expiry" style="font-size: 10px; color: var(--muted); margin-top: 4px; display: none;">Expires: --</div>
+        </div>
+        <div class="profile-body">
+            <div class="wallet-box">
+                <span class="wallet-label">Wallet Balance</span>
+                <span class="wallet-amount" id="prof-wallet">₹0.00</span>
             </div>
-            <div class="profile-body">
-                <div class="wallet-box">
-                    <span class="wallet-label">Wallet Balance</span>
-                    <span class="wallet-amount" id="prof-wallet">₹0.00</span>
+            <div class="ref-box">
+                <span class="ref-label">Your Referral Link (Earn 10%)</span>
+                <div class="ref-input-group">
+                    <input type="text" id="prof-ref-code" class="ref-input" readonly value="Loading...">
+                    <button class="ref-copy-btn" onclick="copyRefCode()" id="copy-btn">Copy</button>
                 </div>
-                <div class="ref-box">
-                    <span class="ref-label">Your Referral Link (Earn 10%)</span>
-                    <div class="ref-input-group">
-                        <input type="text" id="prof-ref-code" class="ref-input" readonly value="Loading...">
-                        <button class="ref-copy-btn" onclick="copyRefCode()" id="copy-btn">Copy</button>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-footer">
-                <button class="logout-text" onclick="window.logoutFirebase()">Log Out Securely</button>
             </div>
         </div>
+        <div class="profile-footer">
+            <button class="logout-text" onclick="window.logoutFirebase()">Log Out Securely</button>
+        </div>
     </div>
+</div>
 </header>
 
 <section class="hero">
     <div class="hero-container">
         
-        <div class="hero-content">
-            <div class="section-title" style="text-align: left; color: var(--accent);">Institutional Edge | Retail Accessibility</div>
+        <div class="hero-widget">
             
-            <h1>Smart <span style="color: var(--accent);">Option Chain </span>&<br> Advanced <span style="color: var(--accent);">Orderflow<br></span>For FnO traders.</h1>
-            
-            <p>Equip yourself with an elite F&O research suite. Deep-dive option chains, live order flow, and real-time Greeks—giving retail traders the ultimate data advantage without the institutional price tag.</p>
-        </div>
-        
-        <div class="hero-right" style="flex-direction: column; align-items: center; justify-content: center; height: auto;">
-            
-            <div class="rotating-cards-container" id="rotator-box" style="margin-bottom: 20px;">
+            <div class="rotating-cards-container" id="rotator-box">
                 <div class="rot-card active" id="card-nifty">
                     <div class="rot-left">
                         <div class="rot-icon icon-nifty">N</div>
@@ -767,15 +756,30 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
             </div>
 
             <div class="hero-buttons" id="hero-actions">
-                <button class="btn btn-primary launch-btn" onclick="openAuthModal('signup')" style="width: 100%;">
-                    Join Now <span style="transition: transform 0.2s; display: inline-block;">→</span>
+                <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
+                    <span class="live-dot-indicator green"></span> LIVE OC
+                </button>
+                <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
+                    <span class="live-dot-indicator red"></span> FOOTPRINT
+                </button>
+                <button class="btn btn-primary" onclick="openAuthModal('signup')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                    BACKTESTER
                 </button>
             </div>
             
         </div>
+
+        <div class="hero-text">
+            <div class="section-title" style="text-align: left; color: var(--accent);">Institutional Edge | Retail Accessibility</div>
+            
+            <h1>Smart <span style="color: var(--accent);">Option Chain</span>&<br> Advanced <span style="color: var(--accent);">Orderflow<br></span>For FnO traders.</h1>
+            
+            <p>Equip yourself with an elite F&O research suite. Deep-dive option chains, live order flow, and real-time Greeks—giving retail traders the ultimate data advantage without the institutional price tag.</p>
+        </div>
+
     </div>
 </section>
-
 <section class="features" id="features">    
     <h2 style="text-align: center; margin-bottom: 50px;">Engineered for Institutional Precision</h2>
     
@@ -1287,7 +1291,9 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Hide the Login button (Signup button was removed from header)
         if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'none';
-        
+        if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'none';
+        if(document.getElementById('btn-signup-nav')) document.getElementById('btn-signup-nav').style.display = 'none'; // 🟢 Hide Signup too
+      
         const profileBtn = document.getElementById('profile-btn');
         profileBtn.style.display = 'flex';
         profileBtn.innerText = user.email ? user.email.charAt(0).toUpperCase() : 'U';
@@ -1382,9 +1388,10 @@ onAuthStateChanged(auth, async (user) => {
             
         } catch(e) { console.error("Profile Fetch Error", e); }
         
-    } else {
+  } else {
         window.currentFirebaseToken = null;
         if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'block';
+        if(document.getElementById('btn-signup-nav')) document.getElementById('btn-signup-nav').style.display = 'flex'; // 🟢 Show Signup
         document.getElementById('profile-btn').style.display = 'none';
         document.getElementById('profile-panel').style.display = 'none';
         
