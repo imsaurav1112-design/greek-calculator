@@ -1034,33 +1034,5 @@ const heroBox = document.getElementById('hero-actions');
           alert("Could not initiate checkout.");
       }
   };
-</script>
-  <script>
-    // 1. Disable Right-Click (Context Menu)
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    });
-
-    // 2. Disable Copy (Ctrl+C / Cmd+C) and View Source (Ctrl+U)
-    document.addEventListener('keydown', function(e) {
-        // Prevent Ctrl+C (Windows) or Cmd+C (Mac)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-            e.preventDefault();
-        }
-        // Prevent Ctrl+U (View Source)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U')) {
-            e.preventDefault();
-        }
-        // Prevent Ctrl+P (Print)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
-            e.preventDefault();
-        }
-    });
-
-    // 3. Disable Dragging of Elements (Prevents dragging images/data)
-    document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-    });
-</script>
 </body>
 </html>
