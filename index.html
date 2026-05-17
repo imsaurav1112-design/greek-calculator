@@ -900,15 +900,17 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" id="modal-email" class="light-input" placeholder="trader@example.com">
-                </div>
-                
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>Password</label>
-                    <input type="password" id="modal-password" class="light-input" placeholder="••••••••">
-                </div>
+<form onsubmit="event.preventDefault();" style="width: 100%;">
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="modal-email" class="light-input" placeholder="trader@example.com" autocomplete="username">
+    </div>
+                    
+    <div class="input-group" style="margin-top: 15px;">
+        <label>Password</label>
+        <input type="password" id="modal-password" class="light-input" placeholder="••••••••" autocomplete="current-password">
+    </div>
+</form>
                 
                 <p id="modal-error" style="color: var(--red); font-size: 13px; text-align: center; margin-top: 10px; display: none; font-weight: 600;"></p>
 
