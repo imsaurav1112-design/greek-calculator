@@ -259,18 +259,22 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 @media (max-width: 900px) {
     .hero-container { flex-direction: column; text-align: center; gap: 40px; }
     .hero-content { text-align: center; }
-    .hero-buttons { justify-content: center; }
+    .hero-buttons { width: 100%; max-width: 280px; margin: 30px auto 0 auto; }
+}
+
+/* Make sure this is OUTSIDE the media query */
 .hero-right {
     flex: 0.8;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
-    height: 260px; /* Increased height to fit all 3 stacked cards */
+    height: 260px;
     perspective: 1000px;
 } 
+
 /* --- MODERN ANIMATED FEATURES GRID --- */
-.modern-grid { 
+.modern-grid {
     display: grid; 
     grid-template-columns: repeat(2, 1fr); 
     gap: 24px; 
@@ -771,8 +775,8 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         </div>
     </div>
 </section>
-<section class="features" id="features">
-    
+
+<section class="features" id="features">    
     <h2 style="text-align: center; margin-bottom: 50px;">Engineered for Institutional Precision</h2>
     
     <div class="modern-grid">
