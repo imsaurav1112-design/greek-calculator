@@ -441,8 +441,56 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .disclaimer-box p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
 .disclaimer-box strong { color: var(--text); }
 
-/* --- FOOTER --- */
-footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+/* --- PREMIUM FOOTER --- */
+footer { 
+    padding: 60px 5% 40px 5%; 
+    border-top: 1px solid var(--border); 
+    background: var(--bg); 
+}
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+.footer-brand {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+.footer-brand .grey { color: #71717a; } /* 'GREEK' in subtle grey */
+.footer-brand .white { color: #ffffff; } /* 'CALCULATOR' in pure white */
+
+.footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.footer-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+.footer-links a:hover {
+    color: var(--text);
+}
+.footer-copy {
+    width: 100%;
+    text-align: left;
+    font-size: 12px;
+    color: #52525b;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
 
 /* 📱 MOBILE OPTIMIZATION */
 @media (max-width: 768px) {
@@ -456,6 +504,10 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
     .logo { font-size: 18px; letter-spacing: 0; }
     .auth-buttons { gap: 8px; }
     header .btn { padding: 8px 12px; font-size: 12px; }
+  
+  /* --- PREMIUM FOOTER --- */
+   .footer-container { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .footer-links { flex-wrap: wrap; gap: 15px; }
 }
 
 /* 🟢 EXTRA SMALL SCREENS (iPhone SE, older Androids) */
@@ -947,16 +999,23 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
 </section>
 
 <footer>
-    <div>&copy; 2026 GC Analysis Tool. All rights reserved.</div>
-<nav style="margin-top: 15px;">
-    <ul style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; list-style: none; padding: 0; margin: 0;">
-        <li><a href="/about" style="color: var(--muted); text-decoration: none; transition: 0.2s;">About Us</a></li>
-        <li><a href="/terms" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Terms & Conditions</a></li>
-        <li><a href="/privacy" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Privacy Policy</a></li>
-        <li><a href="/refunds" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Refund Policy</a></li>
-        <li><a href="/contact" style="color: var(--muted); text-decoration: none; transition: 0.2s;">Contact Us</a></li>
-    </ul>
-</nav>
+    <div class="footer-container">
+        <div class="footer-brand">
+            <span class="grey">GREEK</span><span class="white">CALCULATOR</span>
+        </div>
+        
+        <ul class="footer-links">
+            <li><a href="/about">About Us</a></li>
+            <li><a href="/terms">Terms & Conditions</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/refunds">Refund Policy</a></li>
+            <li><a href="/contact">Contact</a></li>
+        </ul>
+        
+        <div class="footer-copy">
+            &copy; 2026 Greek Calculator. All rights reserved. Options trading involves significant risk and is not suitable for every investor.
+        </div>
+    </div>
 </footer>
 
 <div id="auth-overlay" class="auth-overlay" onclick="window.closeAuthModalViaOverlay(event)">
