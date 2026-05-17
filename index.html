@@ -103,6 +103,41 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .btn-google { background: white; color: #0f172a; border: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px 24px; font-size: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 0 auto 20px auto; width: 100%; }
 .btn-google:hover { background: #f8fafc; box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
 
+
+/* --- HERO SECTION LAYOUT & 3D ROTATING CARDS --- */
+.hero-container {
+    display: flex;
+    justify-content: space-between; /* 🟢 Pushes left and right apart */
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 60px;
+}
+
+/* 🟢 LEFT SIDE: Text */
+.hero-text {
+    text-align: left;
+    flex: 1.2;
+}
+
+/* 🟢 RIGHT SIDE: Rotating Cards + Buttons */
+.hero-widget {
+    flex: 0.8;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 300px; /* Gives room for 3D rotation and buttons */
+    perspective: 1000px;
+}
+
+
+/* Adjust original hero rules */
+.hero { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
+.hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
+.hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
+
 /* --- HERO BUTTONS & PULSING DOTS --- */
 .hero-buttons { 
     display: flex; 
@@ -123,8 +158,17 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 
 /* Mobile: Center the stack */
 @media (max-width: 900px) {
+    .hero-container { 
+        flex-direction: column; /* 🟢 Text naturally goes top, widget bottom */
+        text-align: center; 
+        gap: 40px; 
+    }
+    .hero-text { text-align: center; }
+    .hero-text .section-title { text-align: center !important; }
     .hero-buttons { width: 100%; max-width: 280px; margin: 30px auto 0 auto; }
 }
+
+
 /* The Animated Pulse Dots */
 .live-dot-indicator {
     width: 8px;
@@ -158,6 +202,7 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     position: relative;
     width: 280px;
     height: 80px;
+    margin-bottom: 20px; /* Space between cards and buttons */
 }
 
 /* Base Card State */
@@ -249,29 +294,6 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .rot-pct.up { color: var(--green); }
 .rot-pct.down { color: var(--red); }
 
-/* Adjust original hero rules */
-.hero { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
-.hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
-.hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
-.hero-buttons { display: flex; flex-direction: row; justify-content: flex-start; gap: 15px; margin-top: 20px; }
-
-/* 📱 MOBILE OPTIMIZATION OVERRIDE */
-@media (max-width: 900px) {
-    .hero-container { flex-direction: column; text-align: center; gap: 40px; }
-    .hero-content { text-align: center; }
-    .hero-buttons { width: 100%; max-width: 280px; margin: 30px auto 0 auto; }
-}
-
-/* Make sure this is OUTSIDE the media query */
-.hero-right {
-    flex: 0.8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    height: 260px;
-    perspective: 1000px;
-} 
 
 /* --- MODERN ANIMATED FEATURES GRID --- */
 .modern-grid {
@@ -665,7 +687,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
       .auth-left { display: none; }
       .auth-right { padding: 30px 20px; }
   }
-</style>
+</style>  
 </head>
 <body>
 <canvas id="bg-canvas"></canvas>
