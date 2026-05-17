@@ -163,7 +163,7 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     height: 80px;
 }
 
-/* The individual index card */
+/* Base Card State */
 .rot-card {
     position: absolute;
     top: 0;
@@ -178,26 +178,33 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     
-    /* Animation defaults */
-    opacity: 0;
-    transform: translateY(40px) rotateX(-20deg); 
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* The active, visible card */
+/* Center Card (In Focus) */
 .rot-card.active {
     opacity: 1;
-    transform: translateY(0) rotateX(0deg);
-    z-index: 2;
+    transform: translateY(0) scale(1) translateZ(0);
+    z-index: 3;
+    filter: blur(0px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border-color: rgba(59, 130, 246, 0.4);
 }
-
-/* The card exiting upwards */
-.rot-card.exit {
-    opacity: 0;
-    transform: translateY(-40px) rotateX(20deg);
+  /* Top Card (Blurred & Pushed Back) */
+.rot-card.prev {
+    opacity: 0.4;
+    transform: translateY(-75px) scale(0.85) translateZ(-50px) rotateX(10deg);
     z-index: 1;
+    filter: blur(3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+  /* Bottom Card (Blurred & Pushed Back) */
+.rot-card.next {
+    opacity: 0.4;
+    transform: translateY(75px) scale(0.85) translateZ(-50px) rotateX(-10deg);
+    z-index: 1;
+    filter: blur(3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 /* Left side of the card (Logo & Name) */
@@ -248,7 +255,6 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 /* Adjust original hero rules */
 .hero { padding: 100px 5%; max-width: 1200px; margin: 0 auto; }
 .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; line-height: 1.1; letter-spacing: -1px; }
-.hero h1 span { color: var(--text); } 
 .hero p { font-size: 18px; color: var(--muted); margin-bottom: 40px; }
 .hero-buttons { display: flex; flex-direction: row; justify-content: flex-start; gap: 15px; margin-top: 20px; }
 
@@ -257,8 +263,15 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     .hero-container { flex-direction: column; text-align: center; gap: 40px; }
     .hero-content { text-align: center; }
     .hero-buttons { justify-content: center; }
-    .hero-right { height: 80px; }
-}  
+.hero-right {
+    flex: 0.8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 260px; /* Increased height to fit all 3 stacked cards */
+    perspective: 1000px;
+} 
 /* --- MODERN ANIMATED FEATURES GRID --- */
 .modern-grid { 
     display: grid; 
@@ -608,7 +621,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
         </div>
         
 <div class="hero-right">
-            <div class="rotating-cards-container" id="rotator-box">
+           <div class="rotating-cards-container" id="rotator-box">
                 <div class="rot-card active" id="card-nifty">
                     <div class="rot-left">
                         <div class="rot-icon icon-nifty">N</div>
@@ -620,7 +633,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                     </div>
                 </div>
 
-                <div class="rot-card" id="card-bank">
+                <div class="rot-card next" id="card-bank">
                     <div class="rot-left">
                         <div class="rot-icon icon-bank">B</div>
                         <div class="rot-name">Bank Nifty</div>
@@ -631,7 +644,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                     </div>
                 </div>
 
-                <div class="rot-card" id="card-sensex">
+                <div class="rot-card prev" id="card-sensex">
                     <div class="rot-left">
                         <div class="rot-icon icon-sensex">S</div>
                         <div class="rot-name">Sensex</div>
@@ -641,8 +654,7 @@ footer { text-align: center; padding: 40px 5%; border-top: 1px solid var(--borde
                         <div class="rot-pct up" id="rot-pct-sensex">--</div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div>        </div>
     </div>
 </section>
 
@@ -1402,79 +1414,38 @@ if (heroBox) {
           alert("Could not initiate checkout.");
       }
   };
- </script> <script>
-    // --- 1. CARD ROTATOR LOGIC ---
+ </script> 
+  <script>
+  // --- 1. 3D CARD ROTATOR LOGIC ---
     document.addEventListener("DOMContentLoaded", () => {
         const cards = [
             document.getElementById('card-nifty'),
             document.getElementById('card-bank'),
             document.getElementById('card-sensex')
         ];
-        let currentIndex = 0;
+        let currentIndex = 0; // Starts with Nifty (index 0) as active
 
         setInterval(() => {
-            // Remove active class and add exit class to current card
-            const currentCard = cards[currentIndex];
-            currentCard.classList.remove('active');
-            currentCard.classList.add('exit');
-
-            // Determine next card
+            // Move to the next index
             currentIndex = (currentIndex + 1) % cards.length;
-            const nextCard = cards[currentIndex];
-
-            // Reset the exit class immediately before it enters (hidden behind)
-            nextCard.classList.remove('exit');
             
-            // Small delay to allow the CSS to reset before animating it in
-            setTimeout(() => {
-                nextCard.classList.add('active');
-            }, 50);
+            // Calculate the positions for all three slots
+            const activeIndex = currentIndex;
+            const nextIndex = (currentIndex + 1) % cards.length;
+            const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
 
-        }, 4000); // Rotates every 4 seconds
+            // Strip all position classes
+            cards.forEach(card => {
+                card.classList.remove('active', 'prev', 'next');
+            });
+
+            // Assign the new positions
+            cards[activeIndex].classList.add('active');
+            cards[nextIndex].classList.add('next');
+            cards[prevIndex].classList.add('prev');
+
+        }, 3500); // Cycles every 3.5 seconds
     });
-
-    // --- 2. LIVE PRICE FEEDER ---
-    async function fetchLiveHeroPrices() {
-        try {
-            const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
-            const data = await resp.json();
-            
-            const updateCard = (key, idName) => {
-                if (data[key]) {
-                    const ltp = data[key].ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    const pct = data[key].pct;
-                    
-                    document.getElementById(`rot-price-${idName}`).innerText = ltp;
-                    
-                    const pctEl = document.getElementById(`rot-pct-${idName}`);
-                    pctEl.innerText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-                    
-                    if (pct >= 0) {
-                        pctEl.classList.remove('down');
-                        pctEl.classList.add('up');
-                    } else {
-                        pctEl.classList.remove('up');
-                        pctEl.classList.add('down');
-                    }
-                }
-            };
-
-            // Look for the specific keys Upstox sends (you might need to adjust these strings based on your API)
-            updateCard("NIFTY 50", "nifty");
-            
-            // Note: Ensure your backend ticker API is actually tracking Bank Nifty and Sensex 
-            // If they are missing, you will need to add their tokens to the `instrument_keys` array in `upstox_live.py`!
-            updateCard("NSE_INDEX|Nifty Bank", "bank"); 
-            updateCard("BSE_INDEX|SENSEX", "sensex");
-
-        } catch(e) {
-            console.error("Failed to fetch live hero prices:", e);
-        }
-    }
-
-    // Fetch immediately, then every 3 seconds
-    fetchLiveHeroPrices();
-    setInterval(fetchLiveHeroPrices, 3000);
-</script>
+  </script>
 </body>
 </html>
