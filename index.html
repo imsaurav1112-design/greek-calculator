@@ -243,16 +243,6 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     .hero-buttons { justify-content: center; }
     .hero-right { height: 80px; }
 }  
-/* --- FEATURES GRID --- */
-.features { padding: 50px 5%; max-width: 1200px; margin: 0 auto; }
-.section-title { font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 10px; text-align: center;}
-.features h2 { font-size: 32px; text-align: center; margin-bottom: 50px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.feature-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 12px; transition: 0.3s; }
-.feature-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(59,130,246,0.1); }
-.feature-icon { width: 40px; height: 40px; background: rgba(59,130,246,0.1); color: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-.feature-card h3 { margin: 0 0 10px 0; font-size: 18px; }
-.feature-card p { color: var(--muted); font-size: 14px; margin: 0; }
 /* --- MODERN ANIMATED FEATURES GRID --- */
 .modern-grid { 
     display: grid; 
@@ -1383,5 +1373,79 @@ const heroBox = document.getElementById('hero-actions');
           alert("Could not initiate checkout.");
       }
   };
+ </script> <script>
+    // --- 1. CARD ROTATOR LOGIC ---
+    document.addEventListener("DOMContentLoaded", () => {
+        const cards = [
+            document.getElementById('card-nifty'),
+            document.getElementById('card-bank'),
+            document.getElementById('card-sensex')
+        ];
+        let currentIndex = 0;
+
+        setInterval(() => {
+            // Remove active class and add exit class to current card
+            const currentCard = cards[currentIndex];
+            currentCard.classList.remove('active');
+            currentCard.classList.add('exit');
+
+            // Determine next card
+            currentIndex = (currentIndex + 1) % cards.length;
+            const nextCard = cards[currentIndex];
+
+            // Reset the exit class immediately before it enters (hidden behind)
+            nextCard.classList.remove('exit');
+            
+            // Small delay to allow the CSS to reset before animating it in
+            setTimeout(() => {
+                nextCard.classList.add('active');
+            }, 50);
+
+        }, 4000); // Rotates every 4 seconds
+    });
+
+    // --- 2. LIVE PRICE FEEDER ---
+    async function fetchLiveHeroPrices() {
+        try {
+            const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
+            const data = await resp.json();
+            
+            const updateCard = (key, idName) => {
+                if (data[key]) {
+                    const ltp = data[key].ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    const pct = data[key].pct;
+                    
+                    document.getElementById(`rot-price-${idName}`).innerText = ltp;
+                    
+                    const pctEl = document.getElementById(`rot-pct-${idName}`);
+                    pctEl.innerText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+                    
+                    if (pct >= 0) {
+                        pctEl.classList.remove('down');
+                        pctEl.classList.add('up');
+                    } else {
+                        pctEl.classList.remove('up');
+                        pctEl.classList.add('down');
+                    }
+                }
+            };
+
+            // Look for the specific keys Upstox sends (you might need to adjust these strings based on your API)
+            updateCard("NIFTY 50", "nifty");
+            
+            // Note: Ensure your backend ticker API is actually tracking Bank Nifty and Sensex 
+            // If they are missing, you will need to add their tokens to the `instrument_keys` array in `upstox_live.py`!
+            updateCard("NSE_INDEX|Nifty Bank", "bank"); 
+            updateCard("BSE_INDEX|SENSEX", "sensex");
+
+        } catch(e) {
+            console.error("Failed to fetch live hero prices:", e);
+        }
+    }
+
+    // Fetch immediately, then every 3 seconds
+    fetchLiveHeroPrices();
+    setInterval(fetchLiveHeroPrices, 3000);
+</script>
 </body>
 </html>
