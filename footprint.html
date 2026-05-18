@@ -843,7 +843,7 @@ const getPriceY = (price) => {
             }
         }
 
-     // 🟢 UPGRADED: Infinite Y-Axis Rendering
+// 🟢 UPGRADED: Infinite Y-Axis Rendering
         // The isLight variable is already declared at the top of renderCanvas()
         ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b';
         ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
@@ -862,7 +862,7 @@ const getPriceY = (price) => {
                 ctx.fillText(p, width - Y_AXIS_WIDTH + 8, y); 
             }
         }
- 
+    } // <--- 🟢 ADDED THIS BRACKET to close renderCanvas()
 
     // 🟢 TEST BACKDOOR: Allows the console to inject fake trades
     window.testTick = function(price, isBuy, vol) {
