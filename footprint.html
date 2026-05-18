@@ -863,7 +863,7 @@ const getPriceY = (price) => {
                 ctx.fillText(p, width - Y_AXIS_WIDTH + 8, y); 
             }
         }
-   
+    } // <--- 🟢 THE CLOSING BRACKET FOR renderCanvas() MUST GO HERE!
 
     // 🟢 TEST BACKDOOR: Allows the console to inject fake trades
     window.testTick = function(price, isBuy, vol) {
