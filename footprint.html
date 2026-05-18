@@ -843,8 +843,8 @@ const getPriceY = (price) => {
             }
         }
 
-       // 🟢 UPGRADED: Infinite Y-Axis Rendering
-    const isLight = document.body.classList.contains('light-theme');
+     // 🟢 UPGRADED: Infinite Y-Axis Rendering
+        // The isLight variable is already declared at the top of renderCanvas()
         ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b';
         ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
         ctx.strokeStyle = isLight ? '#cbd5e1' : '#27272a'; 
@@ -862,6 +862,7 @@ const getPriceY = (price) => {
                 ctx.fillText(p, width - Y_AXIS_WIDTH + 8, y); 
             }
         }
+    }
 </script>
 </body>
 </html>
