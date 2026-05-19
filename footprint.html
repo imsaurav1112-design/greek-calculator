@@ -887,7 +887,7 @@ const parseTime = (t) => {
             Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
 
             if (maxDomVol > 0) {
-               // Asks (Red)
+              // Asks (Red)
                 Object.keys(latestDomCache.asks).forEach(pStr => {
                     const p = parseFloat(pStr);
                     const vol = latestDomCache.asks[pStr];
@@ -897,8 +897,8 @@ const parseTime = (t) => {
                     const barW = (vol / maxDomVol) * DOM_WIDTH;
                     
                     // 1. Draw the bar first
-                    ctx.fillStyle = isLight ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)';
-                    ctx.fillRect(domStartX - 35, y - 6, 30, 12);
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; 
+                    ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
                     
                     // 2. THEN draw the text on top
                     ctx.fillStyle = isLight ? '#ef4444' : '#fca5a5';
@@ -927,7 +927,7 @@ const parseTime = (t) => {
                     ctx.textAlign = "right";
                     ctx.textBaseline = "middle";
                     ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
-                });           
+                });
             }
         }
 
