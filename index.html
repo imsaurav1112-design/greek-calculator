@@ -517,12 +517,59 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
 .price-card.popular:hover .plan-btn { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
 .bonus-tag { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--gold); font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); font-weight: 700; margin-top: 4px;}
 
-/* --- DISCLAIMER SECTION --- */
-.disclaimer-section { padding: 60px 5%; background: rgba(239, 68, 68, 0.05); border-top: 1px solid rgba(239, 68, 68, 0.2); border-bottom: 1px solid rgba(239, 68, 68, 0.2); margin-top: 50px;}
-.disclaimer-box { max-width: 800px; margin: 0 auto; background: var(--card); border: 1px solid var(--red); border-left: 4px solid var(--red); padding: 30px; border-radius: 8px; }
-.disclaimer-box h3 { color: var(--red); margin-top: 0; display: flex; align-items: center; gap: 10px; }
-.disclaimer-box p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
-.disclaimer-box strong { color: var(--text); }
+/* --- FIXED RISK TICKER --- */
+.risk-ticker-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(239, 68, 68, 0.08); /* Subtle red tint */
+    border-top: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 10px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.light-theme .risk-ticker-wrap {
+    background: rgba(220, 38, 38, 0.05);
+    color: var(--text);
+}
+
+.risk-ticker {
+    display: inline-block;
+    white-space: nowrap;
+    /* Adjust '45s' to make it scroll faster or slower */
+    animation: tickerScroll 45s linear infinite; 
+}
+
+.risk-ticker:hover {
+    animation-play-state: paused; /* Pauses the text when the user hovers over it to read */
+}
+
+.risk-ticker span {
+    display: inline-block;
+    padding-right: 100px; /* Space between the repeating sentences */
+}
+
+.risk-ticker strong {
+    color: var(--red);
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } 
+}
+
+/* Add padding to the footer so the fixed ticker doesn't overlap your links */
+footer {
+    padding-bottom: 80px !important; 
+}
 
 /* --- PREMIUM FOOTER --- */
 footer { 
@@ -1087,18 +1134,12 @@ footer {
         </div>
     </div>
 </section>
-
-<section class="disclaimer-section" id="disclaimer">
-    <div class="disclaimer-box">
-        <h3>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Mandatory Risk Warning & Disclaimer
-        </h3>
-        <p><strong>Trading Options involves significant risk of loss and is not suitable for all investors.</strong></p>
-        <p>The IOC Terminal is an analytical tool designed strictly for educational and informational purposes. The data, Greeks, Support/Resistance lines (EOR/EOS), and automated Scenarios provided by this software do not constitute financial advice, investment recommendations, or signals to buy or sell any security.</p>
-        <p><strong>Absolute Liability Waiver:</strong> By logging into this tool, you explicitly acknowledge that the creators, developers, and hosting providers of IOC Terminal are <strong>NOT RESPONSIBLE FOR ANY TYPE OF FINANCIAL LOSS</strong>, damages, or consequences incurred from trading decisions based on the data displayed in this application. All trades are executed at your own sole discretion and risk.</p>
+  <div class="risk-ticker-wrap">
+    <div class="risk-ticker">
+        <span>⚠️ <strong>MANDATORY RISK WARNING:</strong> Trading Options involves significant risk of loss and is not suitable for all investors. Greek Calculator is an analytical tool for educational purposes only. We are <strong>NOT RESPONSIBLE FOR ANY TYPE OF FINANCIAL LOSS</strong>. All trades are executed at your own discretion and risk.</span>
+        <span>⚠️ <strong>MANDATORY RISK WARNING:</strong> Trading Options involves significant risk of loss and is not suitable for all investors. Greek Calculator is an analytical tool for educational purposes only. We are <strong>NOT RESPONSIBLE FOR ANY TYPE OF FINANCIAL LOSS</strong>. All trades are executed at your own discretion and risk.</span>
     </div>
-</section>
+</div>
 
 <footer>
     <div class="footer-container">
