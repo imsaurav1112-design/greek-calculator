@@ -22,6 +22,89 @@
   --green: #10b981;        
   --red: #ef4444;          
 }
+
+.light-theme {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --section: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.2);
+  --gold: #d97706;
+  --green: #16a34a;
+  --red: #dc2626;
+}
+
+/* 🟢 Force Background Canvas to flip in Light Theme */
+.light-theme #bg-canvas { opacity: 0.05; filter: blur(4px); invert(1); }
+
+/* 🟢 Light Theme Overrides for Landing Page Specific Elements */
+.light-theme .btn-login {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.light-theme .btn-login:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.light-theme header {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.light-theme .bento-visual.side {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+}
+
+.light-theme .fp-row { background: rgba(0,0,0,0.03); }
+.light-theme .fp-row.vpoc { background: rgba(217, 119, 6, 0.1); }
+.light-theme .dom-bar-container { background: rgba(0,0,0,0.05); }
+.light-theme .oc-table { background: #ffffff; }
+.light-theme .oc-row.header { border-bottom-color: #e2e8f0; }
+.light-theme .tick-anim { animation: bgFlashLight 2s infinite alternate; }
+@keyframes bgFlashLight { 0%, 80% { background: transparent; } 100% { background: rgba(0,0,0,0.05); } }
+
+.light-theme .replay-box { background: #ffffff; }
+.light-theme .replay-track { background: #e2e8f0; }
+
+.light-theme .price-card.popular {
+    background: linear-gradient(180deg, #ffffff 0%, rgba(37, 99, 235, 0.05) 100%);
+}
+
+.light-theme .disclaimer-section {
+    background: rgba(220, 38, 38, 0.05);
+}
+.light-theme .footer-brand .white { color: #0f172a; }
+
+/* 🟢 Theme Toggle Button Styles */
+.theme-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    margin-right: 10px;
+}
+.theme-toggle-btn:hover {
+    background: var(--section);
+    color: var(--text);
+}
+.light-theme .icon-moon { display: block; }
+.light-theme .icon-sun { display: none; }
+.icon-moon { display: none; }
+.icon-sun { display: block; }
   
 body {
         /* 2. DISABLE TEXT SELECTION (HIGHLIGHTING) */
@@ -692,6 +775,23 @@ footer {
     </nav>
 
 <div class="auth-buttons" style="position: relative; display: flex; align-items: center; gap: 12px;">
+    
+    <button class="theme-toggle-btn" onclick="toggleMainTheme()" aria-label="Toggle Theme">
+        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
     <button class="btn btn-login" id="btn-login-nav" onclick="event.preventDefault(); openAuthModal('login')">Log In</button>
     <button class="btn btn-primary" id="btn-signup-nav" onclick="event.preventDefault(); openAuthModal('signup')">Join Now →</button>
     
@@ -1087,6 +1187,19 @@ footer {
 </div>
 
 <script>
+  // 🟢 Theme Toggle Logic
+    function toggleMainTheme() {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        localStorage.setItem('owl-theme', isLight ? 'light' : 'dark');
+    }
+
+    // Check saved theme on load to keep it consistent with other pages
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('owl-theme') === 'light') {
+            document.body.classList.add('light-theme');
+        }
+    });
   window.closeAuthModalViaOverlay = function(event) {
     if (event.target.id === 'auth-overlay') {
         closeAuthModal();
