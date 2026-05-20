@@ -9,33 +9,38 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-:root {
-  --bg: #09090b;         
-  --card: #141415;       
-  --section: #202023;    
-  --border: #27272a;     
-  --text: #f4f4f5;       
-  --muted: #a1a1aa;      
-  --accent: #3b82f6;     
-  --accent-glow: rgba(59, 130, 246, 0.4);
-  --gold: #f59e0b;         
-  --green: #10b981;        
-  --red: #ef4444;          
-  --itm-ce: #0e1411;       
-  --itm-pe: #161011;       
-}
+:root { 
+        /* 🟢 Synchronized with Footprint App Dark Theme */
+        --bg: #0b0f19; 
+        --card: #131b2c; 
+        --section: #1e293b; 
+        --border: #334155; 
+        --text: #f8fafc; 
+        --muted: #94a3b8; 
+        --accent: #3b82f6; 
+        --accent-glow: rgba(59, 130, 246, 0.4);
+        --gold: #fbbf24; 
+        --green: #22c55e; 
+        --red: #ef4444; 
+        --itm-ce: #0a111a; 
+        --itm-pe: #110c14; 
+    }
 
-.light-theme {
-  --bg: #f8fafc; 
-  --card: #ffffff; 
-  --section: #f1f5f9; 
-  --border: #e2e8f0;
-  --text: #0f172a; 
-  --muted: #64748b; 
-  --itm-ce: #f0fdf4; 
-  --itm-pe: #fef2f2;
-  --accent: #2563eb;
-}
+    .light-theme {
+        /* 🟢 Synchronized with Footprint App Light Theme */
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --section: #f1f5f9;
+        --border: #e2e8f0;
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #2563eb;
+        --gold: #d97706;
+        --green: #16a34a;
+        --red: #dc2626;
+        --itm-ce: #f0fdf4; 
+        --itm-pe: #fef2f2;
+    }
 
 body { 
     /* 2. DISABLE TEXT SELECTION (HIGHLIGHTING) */
@@ -202,29 +207,34 @@ table { width: 100%;
        font-variant-numeric: tabular-nums; 
        table-layout: auto; 
       }
-th { background: rgba(0, 0, 0, 0.3); 
-    padding: 10px 4px; 
-    color: #fafafc;
-    border-bottom: 1px solid var(--border); 
-    border-right: 1px solid var(--border); 
-   font-weight: 700;
-    font-size: 11px; 
-    position: sticky; 
-    top: 0; 
-    z-index: 10; 
-    letter-spacing: 0.5px;
-   }
-.light-theme th { background-color: var(--red); color: var(--text); }
-th.strike-cell { background: #1e293b !important; color: #f8fafc !important; border-bottom: 1px solid var(--accent); }
-.light-theme th.strike-cell { background: #cbd5e1 !important; color: var(--text) !important; }
+th { 
+        background: var(--card); /* Blends into the header smoothly */
+        padding: 10px 4px; 
+        color: var(--muted);
+        border-bottom: 1px solid var(--border); 
+        border-right: 1px solid var(--border); 
+        font-weight: 700;
+        font-size: 11px; 
+        position: sticky; 
+        top: 0; 
+        z-index: 10; 
+        letter-spacing: 0.5px;
+    }
+.light-theme th { background-color: var(--section); color: var(--text); }
+    
+    th.strike-cell { background: var(--section) !important; color: var(--text) !important; border-bottom: 1px solid var(--accent); }
+    .light-theme th.strike-cell { background: #e2e8f0 !important; color: var(--text) !important; }
 
-th.ce-header { background-color: var(--red) !important; color: #fff !important; border-bottom: 1px solid rgba(239, 68, 68, 0.3) !important; }
-th.pe-header { background-color: var(--green) !important; color: #fff !important; border-bottom: 1px solid rgba(16, 185, 129, 0.3) !important; }
-.light-theme th.ce-header { background-color: var(--red) !important; color: #fff !important; }
-.light-theme th.pe-header { background-color: var(--green) !important; color: #fff !important; }
+    th.ce-header { background-color: rgba(239, 68, 68, 0.1) !important; color: var(--red) !important; }
+    th.pe-header { background-color: rgba(34, 197, 94, 0.1) !important; color: var(--green) !important; }
+    
+    .light-theme th.ce-header { background-color: rgba(220, 38, 38, 0.1) !important; color: var(--red) !important; }
+    .light-theme th.pe-header { background-color: rgba(22, 163, 74, 0.1) !important; color: var(--green) !important; }
 
-tr { height: 38px; border-bottom: 1px solid var(--border); transition: background 0.1s;}
-tr:hover { background: var(--section) !important; }
+    tr { height: 38px; border-bottom: 1px solid var(--border); transition: background 0.1s;}
+/* 🟢 Subtler Row Hover */
+    tr:hover { background: rgba(255,255,255,0.03) !important; }
+    .light-theme tr:hover { background: rgba(0,0,0,0.03) !important; }
 td { padding: 0 4px; 
     border-right: 1px solid var(--border); 
     text-align: center; 
@@ -250,9 +260,9 @@ td:last-child { border-right: none; }
 .light-theme .heat-75 { background-color: #cbd5e1 !important; color: #000 !important; }
 .pct-tag { font-size: 9px; color: var(--accent); background: rgba(59, 130, 246, 0.1); padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; font-weight: 700; border: 1px solid rgba(59, 130, 246, 0.2);}
 
-td.strike-cell { color: var(--text); font-weight: 700; background: #1e293b !important; border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
-.light-theme td.strike-cell { background: #f1f5f9 !important; color: var(--text) !important; }
-td.strike-cell:hover { background: rgba(59, 130, 246, 0.2) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow); cursor: pointer; }
+td.strike-cell { color: var(--text); font-weight: 700; background: var(--section) !important; border-left: 1px solid var(--border); border-right: 1px solid var(--border); transition: 0.2s;}
+    .light-theme td.strike-cell { background: #e2e8f0 !important; color: var(--text) !important; }
+    td.strike-cell:hover { background: rgba(59, 130, 246, 0.15) !important; color: var(--accent) !important; cursor: pointer; }
 
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
 .modal-content { 
