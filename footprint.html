@@ -59,12 +59,18 @@
     .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
 
 .left-nav {
-        /* 🟢 CHANGED: Removed overflow-x: hidden so the panel can escape the box! */
-        width: 52px; min-width: 52px; max-width: 250px;
-        background: var(--card); border-right: 1px solid var(--border); 
-        display: flex; flex-direction: column; align-items: center; padding-top: 16px; gap: 12px; flex-shrink: 0; z-index: 20;
-        /* No overflow rules here! */
+        width: 52px; background: var(--card); border-right: 1px solid var(--border); 
+        display: flex; flex-direction: column; align-items: center; 
+        padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 100; position: relative;
+        /* Critical: ensure overflow is visible so settings panel shows! */
+        overflow: visible; 
     }
+    width: 52px; background: var(--card); border-right: 1px solid var(--border); 
+    display: flex; flex-direction: column; align-items: center; 
+    padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 100; position: relative;
+    /* Critical: ensure overflow is visible so settings panel shows! */
+    overflow: visible; 
+}
 
     /* 🟢 NEW: The Draggable Resizer Bar */
     .resizer-x {
@@ -159,69 +165,100 @@
         --green: #16a34a;
         --red: #dc2626;
     }
-    /* 🟢 SETTINGS PANEL STYLES */
-    .settings-panel {
+    /* --- 🟢 FANCY CALENDAR ACTIVE STATE --- */
+    .date-active-glow {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border: 1px solid var(--gold) !important;
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        animation: pulseGold 2s infinite alternate;
+    }
+
+    .date-active-glow svg {
+        color: var(--gold) !important;
+    }
+
+    @keyframes pulseGold {
+        0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
+        100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
+    }
+  /* 🟢 SETTINGS PANEL FIX: Push to the right so it doesn't get hidden */
+.settings-panel {
         display: none; 
         position: absolute; 
-        left: 60px; 
-        bottom: 10px; /* Anchored to bottom since button is at bottom */
+        left: 55px; /* Pushes it out of the left-nav cleanly */
+        bottom: -5px; 
         background: var(--card); 
         border: 1px solid var(--border); 
         border-radius: 8px; 
         width: 190px; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
         flex-direction: column; 
-        z-index: 9999; 
+        z-index: 10000; 
     }
+
     .light-theme .settings-panel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     .settings-header { padding: 10px 16px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); background: var(--section); border-radius: 8px 8px 0 0; }
     .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; }
     .settings-row:hover { background: var(--section); border-radius: 0 0 8px 8px; }
     .settings-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; transform: scale(1.2); }
 
-  .hamburger-btn { display: none; background: transparent; border: none; color: var(--text); cursor: pointer; padding: 0; }
+/* 🟢 Desktop overrides for the new Nav structure */
+    .hamburger-btn { display: none; background: transparent; border: none; color: var(--text); cursor: pointer; padding: 0; }
 
-    /* --- 📱 MOBILE OPTIMIZATION --- */
+   .nav-content { display: flex; flex-direction: column; width: 100%; align-items: stretch; height: 100%; }
+    .nav-btn { display: none; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; transition: 0.2s; text-align: center; }
+    .nav-btn:hover { background: var(--section); color: var(--text); }
+    .divider { display: none; } /* Hide divider on desktop */
+    .mobile-menu-toggle { display: none; }
+
+/* --- 📱 MOBILE SPECIFIC OPTIMIZATION --- */
     @media (max-width: 768px) {
-        .hamburger-btn { display: flex; align-items: center; justify-content: center; }
         .logo { font-size: 15px; }
-        .logo span { display: none; } /* Hide "Greek" word to save space */
+        .logo span { display: none; } 
         .header-prices { gap: 10px; font-size: 11px; flex-direction: column; align-items: flex-end; gap: 2px;}
-
-        /* Turn Left Nav into an Off-Canvas Mobile Menu */
-        .left-nav { 
-            position: absolute; 
-            left: -100%; 
-            top: 0; 
-            height: 100%; 
-            width: 52px !important; 
-            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 1000; 
-            padding-top: 15px;
-            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+        
+        /* 🟢 Match Live-Market Vertical Dropdown Nav */
+        .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;}
+        
+        .nav-content { display: none; flex-direction: column; gap: 16px; padding-bottom: 12px; }
+        
+        /* Transform the PC Sidebar into a Mobile Dropdown Hamburger */
+        .left-nav {
+            width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; 
+            left: 0; background: var(--card); transition: height 0.3s ease; overflow: visible; z-index: 1000;
+            box-shadow: none;
         }
-        .light-theme .left-nav { box-shadow: 5px 0 25px rgba(0,0,0,0.1); }
-        .left-nav.mobile-open { left: 0; }
-
-        .resizer-x { display: none; } /* Disable manual dragging on mobile */
-        .tool-btn { width: 32px; height: 32px; }
-        .stats-panel { display: none !important; } /* Hide heavy stats on mobile */
+        
+        .left-nav.menu-open { height: auto !important; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .left-nav.menu-open .nav-content { display: flex; }
+        
+        /* Force settings panel to popup differently on mobile */
+        .settings-panel {
+            position: fixed !important; 
+            left: 50px !important; 
+            top: 65px !important;  
+            bottom: auto !important; 
+            width: 220px !important; 
+            max-height: calc(100vh - 80px) !important;
+            overflow-y: auto !important; 
+            overflow-x: hidden !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            z-index: 9999 !important; 
+        }
+        
+        .tool-btn { width: 32px !important; height: 32px !important; }
+        .resizer-x { display: none; }
+        .stats-panel { display: none !important; } 
     }
 </style>
 </head>
 <body>
 
 <header>
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <button class="hamburger-btn" onclick="toggleMobileNav(event)" title="Menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <a href="index.html" class="logo"><span>Greek</span> Calculator</a>
-    </div>
+    <a href="/" class="logo"><span>GC</span></a>
 
     <div class="header-prices">
-        <input type="date" id="history-date" style="background: var(--section); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 11px; outline: none; cursor: pointer; margin-right: 15px;">
-        
         <div class="price-box">
             <span class="price-label">SPOT:</span>
             <span class="price-val" id="hdr-spot">--</span>
@@ -234,41 +271,70 @@
 </header>
 
 <div class="workspace">
-    <div class="left-nav" id="left-nav"><div class="resizer-x" id="resizer"></div>
-        <button class="tool-btn active" title="Cursor">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>
-        </button>
-        <button class="tool-btn" title="Measure">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21L3 3"></path><path d="M21 3v6"></path><path d="M21 3h-6"></path></svg>
+    
+    <div class="left-nav" id="left-nav">
+        
+        <button class="tool-btn mobile-menu-toggle" onclick="toggleMobileNav(event)" title="Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
 
-        <div class="tool-btn" title="Historical Date" style="position: relative; overflow: hidden; cursor: pointer;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <input type="date" id="history-date" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
-        </div>
+        <div class="resizer-x" id="resizer"></div>
+        
+        <div class="nav-content" id="nav-content" style="align-items: center;">
+            <a href="/" class="tool-btn" title="Return to Home">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </a>
+            
+            <a href="/education" class="tool-btn" title="Learn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            </a>
 
-        <div style="position: relative; margin-top: auto; margin-bottom: 10px;" id="settings-wrapper">
-            <button class="tool-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <a href="/live-market" class="tool-btn" title="Live Market">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            </a>
+            
+            <a href="/backtester" class="tool-btn" title="Backtester">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </a>
+
+            <div class="divider" style="display: block; width: 60%; height: 1px; margin: 8px 0; background: var(--border);"></div>
+
+            <button class="tool-btn active" title="Cursor" style="align-self: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>
             </button>
-            <div class="settings-panel" id="settings-panel">
-            </button>            <div class="settings-panel" id="settings-panel">
-                <div class="settings-header">General</div>
-                <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
-                <div class="settings-header" style="border-radius: 0;">Components</div>
-                <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
-                <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
-                <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
+            <button class="tool-btn" title="Measure" style="align-self: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21L3 3"></path><path d="M21 3v6"></path><path d="M21 3h-6"></path></svg>
+            </button>
+
+            <div class="tool-btn" id="date-btn-wrapper" title="Historical Date" style="position: relative; cursor: pointer; align-self: center; transition: all 0.3s ease;">
+                <svg id="date-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; z-index: 1; pointer-events: none; transition: all 0.3s ease;">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <input type="date" id="history-date" onchange="triggerDateChange(this.value)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+            </div>
+
+            <div style="position: relative; margin-top: auto; margin-bottom: 10px;" id="settings-wrapper">
+                <button class="tool-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+                
+                <div class="settings-panel" id="settings-panel">
+                    <div class="settings-header">General</div>
+                    <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
+                    <div class="settings-header" style="border-radius: 0;">Components</div>
+                    <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
+                    <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
+                    <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
+                </div>
             </div>
         </div>
-    </div> 
+    </div>
 
     <div id="chart-container">
+
         <canvas id="orderflowCanvas"></canvas>
 
         <div class="stats-panel" id="stats-panel">
@@ -343,20 +409,71 @@
     let showDOM = true;
 
     // --- UI & THEME TOGGLE LOGIC ---
-  // 🟢 Mobile Nav Toggle
-    window.toggleMobileNav = function(event) {
-        if (event) event.stopPropagation();
+ // 🟢 Mobile Nav Toggle
+   window.toggleMobileNav = function(event) {
+        if(event) event.stopPropagation();
         const nav = document.getElementById('left-nav');
-        nav.classList.toggle('mobile-open');
+        if (!nav) return; 
+
+        nav.classList.toggle('menu-open');
+
+        if (nav.classList.contains('menu-open')) {
+            document.addEventListener('click', function closeMenu(e) {
+                // Check if clicked inside settings to prevent closing
+                const settingsPanel = document.getElementById('settings-panel');
+                if (settingsPanel && settingsPanel.contains(e.target)) return;
+
+                if (!nav.contains(e.target)) {
+                    nav.classList.remove('menu-open');
+                    document.removeEventListener('click', closeMenu);
+                }
+            }, { capture: true });
+        }
     };
 
+// 🟢 The Date Picker Bridge
+// 🟢 The Date Picker Bridge
+    window.triggerDateChange = function(val) {
+        // 1. Trigger the gold glow effect
+        window.updateDateUI(val); 
+        
+        // 2. Auto-close menu on mobile
+        const nav = document.getElementById('left-nav');
+        if (nav && nav.classList.contains('menu-open')) {
+            nav.classList.remove('menu-open');
+        }
+    };
+
+    // Close settings and mobile nav when clicking outside
+    document.addEventListener('click', function(event) {
+        const panel = document.getElementById('settings-panel');
+        const btn = document.getElementById('btn-settings');
+        const nav = document.getElementById('left-nav');
+        const hamburger = document.querySelector('.hamburger-btn');
+
+        // Close Settings
+        if (panel && panel.style.display === 'flex') {
+            if (!panel.contains(event.target) && (!btn || !btn.contains(event.target))) {
+                panel.style.display = 'none';
+                if (btn) btn.classList.remove('active');
+            }
+        }
+
+        // Close Mobile Menu
+        if (nav && nav.classList.contains('mobile-open')) {
+            if (!nav.contains(event.target) && (!hamburger || !hamburger.contains(event.target))) {
+                nav.classList.remove('mobile-open');
+            }
+        }
+    });
+
+// 🟢 Toggle Settings
     window.toggleSettings = function(event) {
         if(event) event.stopPropagation();
         const panel = document.getElementById('settings-panel');
         const btn = document.getElementById('btn-settings');
-        const isVisible = panel.style.display === 'flex';
 
-        if (isVisible) {
+        if (panel.style.display === 'flex') {
             panel.style.display = 'none';
             btn.classList.remove('active');
         } else {
@@ -364,7 +481,6 @@
             btn.classList.add('active');
         }
     };
-
     window.toggleTheme = function() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
@@ -388,29 +504,17 @@
         renderCanvas();
     };
 
-// Close settings and mobile nav when clicking outside
+// Click outside to close settings
     document.addEventListener('click', function(event) {
         const panel = document.getElementById('settings-panel');
         const btn = document.getElementById('btn-settings');
-        const nav = document.getElementById('left-nav');
-        const hamburger = document.querySelector('.hamburger-btn');
-
-        // Close Settings
         if (panel && panel.style.display === 'flex') {
-            if (!panel.contains(event.target) && !btn.contains(event.target)) {
+            if (!panel.contains(event.target) && (!btn || !btn.contains(event.target))) {
                 panel.style.display = 'none';
-                btn.classList.remove('active');
-            }
-        }
-
-        // Close Mobile Menu
-        if (nav && nav.classList.contains('mobile-open')) {
-            if (!nav.contains(event.target) && (!hamburger || !hamburger.contains(event.target))) {
-                nav.classList.remove('mobile-open');
+                if(btn) btn.classList.remove('active');
             }
         }
     });
-
     // Check saved theme on load
     document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('owl-theme') === 'light') {
@@ -1008,6 +1112,25 @@ const parseTime = (t) => {
             }
         }
     } // <--- END OF renderCanvas
+
+    // 🟢 FANCY: Update UI when a date is selected
+    window.updateDateUI = function(selectedDate) {
+        const wrapper = document.getElementById('date-btn-wrapper');
+
+        // Generate today's date in IST
+        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+        if (!selectedDate || selectedDate === today) {
+            wrapper.classList.remove('date-active-glow');
+            wrapper.title = "Historical Date";
+        } 
+        else {
+            wrapper.classList.add('date-active-glow');
+            const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            wrapper.title = `Viewing: ${formattedDate} (Tap to reset)`;
+        }
+    };
 
 </script>
 </body>
