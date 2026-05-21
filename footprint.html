@@ -22,7 +22,7 @@
         --red: #ef4444; 
     }
 
-    
+
     /* 🟢 Flex Layout prevents overlapping and handles screen sizes automatically */
     body { margin: 0; padding: 0; 
           background-color: var(--bg); 
@@ -40,7 +40,7 @@
     -ms-user-select: none;     /* IE10+/Edge */
     user-select: none;         /* Standard */
          }
-    
+
     /* --- 1. CLEANED HEADER --- */
     header { 
         height: 52px; background: var(--card); border-bottom: 1px solid var(--border); 
@@ -48,7 +48,7 @@
     }
     .logo { font-weight: 900; font-size: 18px; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;}
     .logo span { color: var(--accent); }
-    
+
     .header-prices { display: flex; align-items: center; gap: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; }
     .price-box { display: flex; align-items: center; gap: 8px; }
     .price-label { color: var(--muted); font-size: 10px; }
@@ -57,15 +57,21 @@
 
 /* --- 2. WORKSPACE & LEFT NAV --- */
     .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
-    
+
 .left-nav {
+        width: 52px; background: var(--card); border-right: 1px solid var(--border); 
+        display: flex; flex-direction: column; align-items: center; 
+        padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 100; position: relative;
+        /* Critical: ensure overflow is visible so settings panel shows! */
+        overflow: visible; 
+    }
     width: 52px; background: var(--card); border-right: 1px solid var(--border); 
     display: flex; flex-direction: column; align-items: center; 
     padding-top: 16px; gap: 16px; flex-shrink: 0; z-index: 100; position: relative;
     /* Critical: ensure overflow is visible so settings panel shows! */
     overflow: visible; 
 }
-    
+
     /* 🟢 NEW: The Draggable Resizer Bar */
     .resizer-x {
         width: 4px; /* The hit-area for the mouse */
@@ -106,7 +112,7 @@
         --green: #22c55e; 
         --red: #ef4444; 
     }
-    
+
     .light-theme {
         /* 🟢 Light Theme (Clean Paper/Silver) */
         --bg: #f8fafc;
@@ -133,19 +139,19 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         pointer-events: none;
     }
-    
+
     /* 🟢 NEW: Clean, flat styling for the light theme stats box */
     .light-theme .stats-panel {
         background: rgba(255, 255, 255, 0.95);
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
-    
+
     .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
     .stat-row:last-child { margin-bottom: 0; }
     .stat-label { color: var(--muted); }
     .stat-val { font-weight: 700; color: var(--text); }
     /* 🟢 LIGHT THEME VARIABLES */
-    
+
     .light-theme {
         /* 🟢 Light Theme (Clean Paper/Silver) */
         --bg: #f8fafc;
@@ -166,16 +172,29 @@
         box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
         animation: pulseGold 2s infinite alternate;
     }
-    
+
     .date-active-glow svg {
         color: var(--gold) !important;
     }
-    
+
     @keyframes pulseGold {
         0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
         100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
     }
   /* 🟢 SETTINGS PANEL FIX: Push to the right so it doesn't get hidden */
+    .settings-panel {
+        display: none; 
+        position: absolute; 
+        left: 55px; /* Pushes it out of the left-nav cleanly */
+        bottom: -5px; 
+        background: var(--card); 
+        border: 1px solid var(--border); 
+        border-radius: 8px; 
+        width: 190px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+        flex-direction: column; 
+        z-index: 10000; 
+    }
 .settings-panel {
     display: none; 
     position: absolute; 
@@ -197,7 +216,7 @@
 
 /* 🟢 Desktop overrides for the new Nav structure */
     .hamburger-btn { display: none; background: transparent; border: none; color: var(--text); cursor: pointer; padding: 0; }
-    
+
    .nav-content { display: flex; flex-direction: column; width: 100%; align-items: stretch; height: 100%; }
     .nav-btn { display: none; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; padding: 10px; border-radius: 6px; transition: 0.2s; text-align: center; }
     .nav-btn:hover { background: var(--section); color: var(--text); }
@@ -209,22 +228,37 @@
         .logo { font-size: 15px; }
         .logo span { display: none; } 
         .header-prices { gap: 10px; font-size: 11px; flex-direction: column; align-items: flex-end; gap: 2px;}
-        
+
         /* 🟢 Match Live-Market Vertical Dropdown Nav */
+        .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;}
+        
+        .nav-content { display: none; flex-direction: column; gap: 16px; padding-bottom: 12px; }
        .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;} 
        .nav-content { display: none; flex-direction: column; gap: 16px; padding-bottom: 12px; }
-        
+
         .left-nav {
             width: 40px !important; height: 40px !important; top: 65px; padding-top: 0 !important; border-radius: 0 8px 8px 0;
             display: flex; flex-direction: column; justify-content: flex-start; align-items: center; position: absolute; 
             left: 0; background: var(--card); transition: height 0.3s ease; overflow: visible; z-index: 1000;
             box-shadow: none;
         }
-        
+
         .left-nav.menu-open { height: auto !important; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .left-nav.menu-open .nav-content { display: flex; }
-        
+
         /* Force settings panel to popup differently on mobile */
+        .settings-panel {
+            position: fixed !important; 
+            left: 50px !important; 
+            top: 65px !important;  
+            bottom: auto !important; 
+            width: 220px !important; 
+            max-height: calc(100vh - 80px) !important;
+            overflow-y: auto !important; 
+            overflow-x: hidden !important; 
+            -webkit-overflow-scrolling: touch !important; 
+            z-index: 9999 !important; 
+        }
 .settings-panel {
         position: fixed !important; 
         left: 50px !important; 
@@ -237,7 +271,7 @@
         -webkit-overflow-scrolling: touch !important; 
         z-index: 9999 !important; 
     }
-        
+
         .tool-btn { width: 32px !important; height: 32px !important; }
         .resizer-x { display: none; }
         .stats-panel { display: none !important; } 
@@ -248,7 +282,7 @@
 
 <header>
     <a href="/" class="logo"><span>GC</span></a>
-    
+
     <div class="header-prices">
         <div class="price-box">
             <span class="price-label">SPOT:</span>
@@ -263,10 +297,13 @@
 
 <div class="workspace">
     <div class="left-nav" id="left-nav">
+        
         <button class="tool-btn mobile-menu-toggle" onclick="toggleMobileNav(event)" title="Menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
 
+        <div class="resizer-x" id="resizer"></div>
+        
         <div class="nav-content" id="nav-content" style="align-items: center;">
             <a href="/" class="tool-btn" title="Return to Home">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -279,7 +316,10 @@
             <a href="/live-market" class="tool-btn" title="Live Market">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
             </a>
-            
+            <a href="/backtester" class="tool-btn" title="Backtester">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </a>
+
             <a href="/footprint" class="tool-btn" title="Footprint Orderflow">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
             </a>
@@ -289,19 +329,40 @@
             </a>
 
             <div class="divider" style="display: block; width: 60%; height: 1px; margin: 8px 0; background: var(--border);"></div>
-            
+
+            <button class="tool-btn active" title="Cursor" style="align-self: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>
+            </button>
+            <button class="tool-btn" title="Measure" style="align-self: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21L3 3"></path><path d="M21 3v6"></path><path d="M21 3h-6"></path></svg>
             <button class="tool-btn" onclick="toggleIntelPanel()" title="Quick View" style="color: var(--gold);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </button>
 
+            <div class="tool-btn" id="date-btn-wrapper" title="Historical Date" style="position: relative; cursor: pointer; align-self: center; transition: all 0.3s ease;">
+                <svg id="date-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; z-index: 1; pointer-events: none; transition: all 0.3s ease;">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <input type="date" id="history-date" onchange="triggerDateChange(this.value)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+            </div>
+
+            <div style="position: relative; margin-top: auto; margin-bottom: 10px; align-self: center;" id="settings-wrapper">
             <div style="position: relative; margin-top: auto; margin-bottom: 10px;" id="settings-wrapper">
                 <button class="tool-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
-                
+
                 <div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
                     <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
+                    <div class="settings-header" style="border-radius: 0;">Components</div>
+                    <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
+                    <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
+                    <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
                     <label class="settings-row">Flip Strikes <input type="checkbox" id="flip-cb" onchange="toggleTableFlip()"></label>
                     <label class="settings-row">Abbreviate Numbers <input type="checkbox" id="abbrev-cb" onchange="toggleAbbrev()"></label>
                     <label class="settings-row" style="cursor: default;">
@@ -322,20 +383,22 @@
                 </div>
             </div>
         </div>
+    </div> 
+
     </div>
     <div id="chart-container">
-        
+
         <canvas id="orderflowCanvas"></canvas>
-        
+
         <div class="stats-panel" id="stats-panel">
             <div style="font-size: 9px; color: var(--accent); margin-bottom: 10px; font-weight: 800; letter-spacing: 0.5px;">SESSION STATS</div>
             <div class="stat-row"><span class="stat-label">VWAP</span><span class="stat-val" id="st-vwap">--</span></div>
             <div class="stat-row"><span class="stat-label">Cum Delta</span><span class="stat-val" id="st-delta">--</span></div>
             <div class="stat-row"><span class="stat-label">VPOC</span><span class="stat-val" id="st-vpoc" style="color: var(--gold);">--</span></div>
             <div class="stat-row"><span class="stat-label">VAH/VAL</span><span class="stat-val" id="st-va">-- / --</span></div>
-            
+
             <div style="height: 1px; background: var(--border); margin: 10px 0;"></div>
-            
+
             <div class="stat-row"><span class="stat-label">OR High (15m)</span><span class="stat-val" id="st-orh" style="color: var(--green);">--</span></div>
             <div class="stat-row"><span class="stat-label">OR Low (15m)</span><span class="stat-val" id="st-orl" style="color: var(--red);">--</span></div>
         </div>
@@ -344,7 +407,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-    
+
     const app = initializeApp({ apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo", authDomain: "insideoptionchain.firebaseapp.com", projectId: "insideoptionchain" });
     const auth = getAuth(app);
 
@@ -358,7 +421,7 @@
     // ==========================================
     const resizer = document.getElementById('resizer');
     const leftNav = document.getElementById('left-nav');
-    
+
     let isResizingWorkspace = false;
 
     resizer.addEventListener('mousedown', (e) => {
@@ -370,16 +433,16 @@
 
     window.addEventListener('mousemove', (e) => {
         if (!isResizingWorkspace) return;
-        
+
         // Calculate the new width based on the mouse X position
         let newWidth = e.clientX;
-        
+
         // Enforce the bounds (Min 52px, Max 250px)
         if (newWidth < 52) newWidth = 52;
         if (newWidth > 250) newWidth = 250;
-        
+
         leftNav.style.width = `${newWidth}px`;
-        
+
         // Immediately force the canvas to redraw to fill the new space
         resizeCanvas();
     });
@@ -392,7 +455,7 @@
         }
     });
     // ==========================================
-    
+
 
     // --- TOGGLES STATE ---
     let showVP = true;
@@ -400,35 +463,35 @@
 
     // --- UI & THEME TOGGLE LOGIC ---
  // 🟢 Mobile Nav Toggle
-  window.toggleMobileNav = function(event) {
-    if(event) event.stopPropagation();
-    const nav = document.getElementById('left-nav');
-    if (!nav) return; 
-    
-    nav.classList.toggle('menu-open');
-    
-    if (nav.classList.contains('menu-open')) {
-        document.addEventListener('click', function closeMenu(e) {
-            // Check if clicked inside settings to prevent closing
-            const settingsPanel = document.getElementById('settings-panel');
-            if (settingsPanel && settingsPanel.contains(e.target)) return;
-            
-            if (!nav.contains(e.target)) {
-                nav.classList.remove('menu-open');
-                document.removeEventListener('click', closeMenu);
-            }
-        }, { capture: true });
-    }
-};
-    
+   window.toggleMobileNav = function(event) {
+        if(event) event.stopPropagation();
+        const nav = document.getElementById('left-nav');
+        if (!nav) return; 
+
+        nav.classList.toggle('menu-open');
+
+        if (nav.classList.contains('menu-open')) {
+            document.addEventListener('click', function closeMenu(e) {
+                // Check if clicked inside settings to prevent closing
+                const settingsPanel = document.getElementById('settings-panel');
+                if (settingsPanel && settingsPanel.contains(e.target)) return;
+
+                if (!nav.contains(e.target)) {
+                    nav.classList.remove('menu-open');
+                    document.removeEventListener('click', closeMenu);
+                }
+            }, { capture: true });
+        }
+    };
+
 // 🟢 The Date Picker Bridge
     window.triggerDateChange = function(val) {
         // 1. Trigger the gold glow effect
         window.updateDateUI(val); 
-        
+
         // (We removed the dispatchEvent here because the browser natively 
         // alerts the Firebase loop that the date was changed!)
-        
+
         // 2. Auto-close menu on mobile
         const nav = document.getElementById('left-nav');
         if (nav && nav.classList.contains('menu-open')) {
@@ -442,7 +505,7 @@
         const btn = document.getElementById('btn-settings');
         const nav = document.getElementById('left-nav');
         const hamburger = document.querySelector('.hamburger-btn');
-        
+
         // Close Settings
         if (panel && panel.style.display === 'flex') {
             if (!panel.contains(event.target) && (!btn || !btn.contains(event.target))) {
@@ -450,7 +513,7 @@
                 if (btn) btn.classList.remove('active');
             }
         }
-        
+
         // Close Mobile Menu
         if (nav && nav.classList.contains('mobile-open')) {
             if (!nav.contains(event.target) && (!hamburger || !hamburger.contains(event.target))) {
@@ -458,24 +521,21 @@
             }
         }
     });
-    
+
 // 🟢 Toggle Settings
-window.toggleSettings = function(event) {
-    if(event) event.stopPropagation();
-    const panel = document.getElementById('settings-panel');
-    const btn = document.getElementById('btn-settings');
-    
-    // Close other custom menus first
-    document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    
-    if (panel.style.display === 'flex') {
-        panel.style.display = 'none';
-        btn.classList.remove('active');
-    } else {
-        panel.style.display = 'flex';
-        btn.classList.add('active');
-    }
-};
+    window.toggleSettings = function(event) {
+        if(event) event.stopPropagation();
+        const panel = document.getElementById('settings-panel');
+        const btn = document.getElementById('btn-settings');
+
+        if (panel.style.display === 'flex') {
+            panel.style.display = 'none';
+            btn.classList.remove('active');
+        } else {
+            panel.style.display = 'flex';
+            btn.classList.add('active');
+        }
+    };
     window.toggleTheme = function() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
@@ -500,30 +560,16 @@ window.toggleSettings = function(event) {
     };
 
 // Click outside to close settings
-document.addEventListener('click', function(event) {
-    let clickedInsideMenu = false;
-    let clickedOnButton = false;
-
-    // Handle Header Dropdowns
-    document.querySelectorAll('.custom-menu').forEach(menu => {
-        if (menu.contains(event.target)) clickedInsideMenu = true;
-    });
-    if (event.target.closest('.custom-dropdown-wrapper')) clickedOnButton = true;
-
-    if (!clickedInsideMenu && !clickedOnButton) {
-        document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-    }
-
-    // Handle Settings Panel
-    const settingsPanel = document.getElementById('settings-panel');
-    const settingsBtn = document.getElementById('btn-settings');
-    if (settingsPanel && settingsPanel.style.display === 'flex') {
-        if (!settingsPanel.contains(event.target) && (!settingsBtn || !settingsBtn.contains(event.target))) {
-            settingsPanel.style.display = 'none';
-            if(settingsBtn) settingsBtn.classList.remove('active');
+    document.addEventListener('click', function(event) {
+        const panel = document.getElementById('settings-panel');
+        const btn = document.getElementById('btn-settings');
+        if (panel && panel.style.display === 'flex') {
+            if (!panel.contains(event.target) && (!btn || !btn.contains(event.target))) {
+                panel.style.display = 'none';
+                if(btn) btn.classList.remove('active');
+            }
         }
-    }
-});
+    });
     // Check saved theme on load
     document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('owl-theme') === 'light') {
@@ -531,7 +577,7 @@ document.addEventListener('click', function(event) {
             const cb = document.getElementById('theme-cb');
             if (cb) cb.checked = true;
         }
-        
+
         // Mobile layout defaults
         if(window.innerWidth <= 768) {
              document.getElementById('stats-cb').checked = false;
@@ -550,13 +596,13 @@ document.addEventListener('click', function(event) {
     let offsetX = 0; 
     let offsetY = 0; 
     let priceScale = 25; 
-    
+
     let isDraggingChart = false;
     let isDraggingYScale = false;
     let isDraggingXScale = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
-    
+
     let latestDataCache = {};
     let latestDomCache = { bids: {}, asks: {} }; 
     let volumeProfile = {};
@@ -568,7 +614,7 @@ document.addEventListener('click', function(event) {
         renderCanvas(); 
     }
     window.addEventListener('resize', resizeCanvas); 
-    
+
     resizeCanvas();
     setTimeout(resizeCanvas, 100);
 
@@ -576,11 +622,11 @@ document.addEventListener('click', function(event) {
     function handlePointerDown(e) {
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
+
         const rect = canvas.getBoundingClientRect();
         const x = clientX - rect.left;
         const y = clientY - rect.top;
-        
+
         if (x > width - Y_AXIS_WIDTH && y < height - X_AXIS_HEIGHT) {
             isDraggingYScale = true;
             document.body.style.cursor = 'ns-resize';
@@ -591,7 +637,7 @@ document.addEventListener('click', function(event) {
             isDraggingChart = true;
             document.body.style.cursor = 'grabbing';
         }
-        
+
         lastMouseX = clientX;
         lastMouseY = clientY;
     }
@@ -602,21 +648,21 @@ document.addEventListener('click', function(event) {
             const rect = canvas.getBoundingClientRect();
             const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
             const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-            
+
             if (x > width - Y_AXIS_WIDTH && y < height - X_AXIS_HEIGHT) canvas.style.cursor = 'ns-resize';
             else if (y > height - X_AXIS_HEIGHT && x < width - Y_AXIS_WIDTH) canvas.style.cursor = 'ew-resize';
             else canvas.style.cursor = 'crosshair';
             return;
         }
-        
+
         if (e.cancelable) e.preventDefault(); 
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
+
         const dx = clientX - lastMouseX;
         const dy = clientY - lastMouseY;
-        
+
         // 🟢 UPGRADED: Exponential Scaling Math
         if (isDraggingChart) {
             offsetX += dx;
@@ -631,7 +677,7 @@ document.addEventListener('click', function(event) {
             COL_WIDTH = Math.max(40, Math.min(COL_WIDTH, 400));
             GAP = COL_WIDTH * (15/180); // Maintain aspect ratio of the gap
         }
-        
+
         renderCanvas();
         lastMouseX = clientX;
         lastMouseY = clientY;
@@ -674,23 +720,23 @@ document.addEventListener('click', function(event) {
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
-        
+
         document.getElementById('history-date').addEventListener('change', async (e) => {
             const selectedDate = e.target.value;
-            
+
             // 🟢 BULLETPROOF IST DATE GENERATOR
             const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
             const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
             if (!selectedDate || selectedDate === today) {
                 isLiveMode = true;
-                
+
                 // 🟢 Force a clean UI refresh when jumping back to live mode
                 latestDataCache = {};
                 latestDomCache = { bids: {}, asks: {} };
                 processSessionData();
                 renderCanvas();
-                
+
                 return;
             }
 
@@ -698,27 +744,27 @@ document.addEventListener('click', function(event) {
             try {
                 const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
-                
+
                 latestDataCache = data.data || {};
                 latestDomCache = { bids: {}, asks: {} }; 
-                
+
                 processSessionData(); 
                 renderCanvas();
             } catch(err) { console.error("History fetch failed", err); }
         });
         setInterval(async () => {
             if (!isLiveMode) return; 
-            
+
             try {
                 const tResp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
                 const tData = await tResp.json();
-                
+
                 if (tData["NIFTY 50"]) document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
                 if (tData["NIFTY FUT"]) document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2); 
 
                 const r = await fetch('https://api.greekcalculator.in/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
-                
+
                 if (data.status === "success") {
                     latestDataCache = data.data;
                     if (data.dom) latestDomCache = data.dom;
@@ -749,13 +795,13 @@ const parseTime = (t) => {
 
         times.forEach(t => {
             if (!latestDataCache[t]) return;
-            
+
             const min = parseTime(t);
             const isOR = min < firstTimeMin + 15; 
             const isIB = min < firstTimeMin + 60; 
 
             const matrix = latestDataCache[t].volumes || latestDataCache[t] || {};
-            
+
             Object.keys(matrix).forEach(pStr => {
                 const p = parseFloat(pStr);
                 const cell = matrix[pStr];
@@ -764,7 +810,7 @@ const parseTime = (t) => {
 
                 if (!volumeProfile[p]) volumeProfile[p] = 0;
                 volumeProfile[p] += vol;
-                
+
                 totalVol += vol; totalVolPrice += p * vol; totalDelta += delta;
 
                 if(isOR) { if(p > orHigh) orHigh = p; if(p < orLow) orLow = p; }
@@ -801,13 +847,13 @@ const parseTime = (t) => {
         } else if (statsCb.checked) {
              statsPanel.style.display = 'block';
         }
-        
+
         document.getElementById('st-vwap').innerText = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
-        
+
         const dEl = document.getElementById('st-delta');
         dEl.innerText = (totalDelta > 0 ? '+' : '') + totalDelta;
         dEl.style.color = totalDelta > 0 ? 'var(--green)' : 'var(--red)';
-        
+
         document.getElementById('st-vpoc').innerText = sessionStats.vpoc;
         document.getElementById('st-va').innerText = `${sessionStats.vah} / ${sessionStats.val}`;
         document.getElementById('st-orh').innerText = sessionStats.orHigh;
@@ -817,12 +863,12 @@ const parseTime = (t) => {
 // --- CORE RENDERING ENGINE ---
     function renderCanvas() {
         ctx.clearRect(0, 0, width, height);
-        
+
         const isLight = document.body.classList.contains('light-theme');
         document.getElementById('chart-container').style.background = isLight ? '#f8fafc' : '#0c0c0f';
 
         const timeKeys = Object.keys(latestDataCache).sort();
-        
+
         if (timeKeys.length === 0) {
             ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
             ctx.font = "600 14px 'Inter'";
@@ -832,21 +878,21 @@ const parseTime = (t) => {
         }
 
         let minPrice = Infinity, maxPrice = -Infinity;
-        
+
         timeKeys.forEach(t => {
             const candle = latestDataCache[t];
             let cHigh = -Infinity;
             let cLow = Infinity;
-            
+
             const prices = Object.keys(candle.volumes || {}).map(Number);
             if (prices.length > 0) {
                 cHigh = Math.max(...prices);
                 cLow = Math.min(...prices);
             }
-            
+
             if (cHigh === -Infinity && candle.high > 0) cHigh = candle.high;
             if (cLow === Infinity && candle.low > 0) cLow = candle.low;
-            
+
             if (cHigh !== -Infinity && cHigh > maxPrice) maxPrice = cHigh;
             if (cLow !== Infinity && cLow < minPrice) minPrice = cLow;
         });
@@ -861,10 +907,10 @@ const parseTime = (t) => {
             // 🟢 Adjusted padding to match the new smaller X-axis
             return height - X_AXIS_HEIGHT - 20 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
-        
+
         const priceAtTop = minPrice + ((height - X_AXIS_HEIGHT - 20 + offsetY) / priceScale) * TICK_SIZE;
         const priceAtBottom = minPrice + ((-20 + offsetY - height) / priceScale) * TICK_SIZE;
-        
+
         const topBound = Math.max(priceAtTop, priceAtBottom);
         const botBound = Math.min(priceAtTop, priceAtBottom);
 
@@ -889,15 +935,15 @@ const parseTime = (t) => {
 
         for (let i = timeKeys.length - 1; i >= 0; i--) {
             if (currentX + COL_WIDTH < (showVP ? VP_WIDTH : 0)) break; 
-            
+
             const timeKey = timeKeys[i];
             const candleData = latestDataCache[timeKey];
             const matrix = candleData.volumes || {}; 
             const prices = Object.keys(matrix).map(Number).sort((a,b) => b-a);
-            
+
             let maxVol = 0, pocPrice = null, candleDelta = 0;
             let totalBuyVol = 0, totalSellVol = 0;
-            
+
             prices.forEach(p => {
                 const b = matrix[p].buy_vol, s = matrix[p].sell_vol;
                 candleDelta += (b - s);
@@ -910,10 +956,10 @@ const parseTime = (t) => {
 
             const isBullish = candleData.close >= candleData.open;
             const candleColor = isBullish ? '#10b981' : '#ef4444';
-            
+
             // 🟢 GoCharting Style: Anchor the candle visually to the far left of the column
             const candleX = currentX + 6; 
-            
+
             ctx.strokeStyle = candleColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -924,7 +970,7 @@ const parseTime = (t) => {
             const bodyTop = getPriceY(Math.max(candleData.open, candleData.close));
             const bodyBottom = getPriceY(Math.min(candleData.open, candleData.close));
             const bodyHeight = Math.max(3, bodyBottom - bodyTop); 
-            
+
             ctx.fillStyle = candleColor;
             ctx.fillRect(candleX - 3, bodyTop - (priceScale/2), 6, bodyHeight + priceScale);
 
@@ -946,15 +992,15 @@ const parseTime = (t) => {
 
                 const b = matrix[price].buy_vol;
                 const s = matrix[price].sell_vol;
-                
+
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
-                
+
                 const isBuyImb = (b > bidBelow * 3) && (b > 50);
                 const isSellImb = (s > askAbove * 3) && (s > 50);
 
                 const volIntensity = (b + s) / maxVol;
-                
+
                 ctx.fillStyle = `rgba(59, 130, 246, ${volIntensity * 0.3})`;
                 ctx.fillRect(boxLeft, y - priceScale/2, boxWidth, priceScale);
 
@@ -976,7 +1022,7 @@ const parseTime = (t) => {
                 ctx.fillStyle = isBuyImb ? '#10b981' : (isLight ? '#475569' : '#d4d4d8');
                 ctx.fillText(b, center + 4, y);
             });
-            
+
             // 🟢 NEW: Dynamic Canvas Stats (Pinned directly below the candle's lowest point)
             const lowestPrice = Math.min(...prices, candleData.low);
             let statsY = getPriceY(lowestPrice) + priceScale / 2 + 15;
@@ -1005,7 +1051,7 @@ const parseTime = (t) => {
             const panelY = height - X_AXIS_HEIGHT;
             ctx.fillStyle = isLight ? '#f8fafc' : '#0c0c0f';
             ctx.fillRect(currentX, panelY, COL_WIDTH, X_AXIS_HEIGHT);
-            
+
             ctx.fillStyle = isLight ? '#475569' : '#a1a1aa';
             ctx.font = "bold 11px 'JetBrains Mono'";
             ctx.textAlign = "center";
@@ -1055,7 +1101,7 @@ const parseTime = (t) => {
         if (showDOM) {
             const DOM_WIDTH = 100; 
             const domStartX = width - Y_AXIS_WIDTH; 
-            
+
             let maxDomVol = 0;
             Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
             Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
@@ -1069,11 +1115,11 @@ const parseTime = (t) => {
                     if (y < -50 || y > height - X_AXIS_HEIGHT) return;
 
                     const barW = (vol / maxDomVol) * DOM_WIDTH;
-                    
+
                     // 1. Draw the bar first
                     ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; 
                     ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
-                    
+
                     // 2. THEN draw the text on top
                     ctx.fillStyle = isLight ? '#ef4444' : '#fca5a5';
                     ctx.font = "bold 9px 'JetBrains Mono'";
@@ -1090,11 +1136,11 @@ const parseTime = (t) => {
                     if (y < -50 || y > height - X_AXIS_HEIGHT) return;
 
                     const barW = (vol / maxDomVol) * DOM_WIDTH;
-                    
+
                     // 1. Draw the bar first
                     ctx.fillStyle = 'rgba(16, 185, 129, 0.3)'; 
                     ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
-                    
+
                     // 2. THEN draw the text on top
                     ctx.fillStyle = isLight ? '#10b981' : '#6ee7b7';
                     ctx.font = "bold 9px 'JetBrains Mono'";
@@ -1112,7 +1158,7 @@ const parseTime = (t) => {
 
         ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5'; 
         ctx.font = "bold 11px 'JetBrains Mono'"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-        
+
         for (let p = startPrice; p <= endPrice; p += gridStep) {
             const y = getPriceY(p);
             if (y > 0 && y < height - X_AXIS_HEIGHT) { 
@@ -1125,7 +1171,7 @@ const parseTime = (t) => {
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
-        
+
         // Generate today's date in IST
         const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
         const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
