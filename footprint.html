@@ -362,29 +362,6 @@
         const nav = document.getElementById('left-nav');
         nav.classList.toggle('mobile-open');
     };
-
-    // 🟢 FANCY: Update UI when a date is selected
-    window.updateDateUI = function(selectedDate) {
-        const wrapper = document.getElementById('date-btn-wrapper');
-        
-        // Generate today's date in IST
-        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-
-        // If the date is empty, or it's today, we are in LIVE mode. Turn off the glow.
-        if (!selectedDate || selectedDate === today) {
-            wrapper.classList.remove('date-active-glow');
-            wrapper.title = "Historical Date";
-        } 
-        // If a past date is selected, we are in REPLAY mode. Turn ON the gold glow!
-        else {
-            wrapper.classList.add('date-active-glow');
-            
-            // Format the date to look nice in the tooltip (e.g. "May 20, 2026")
-            const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            wrapper.title = `Viewing: ${formattedDate} (Tap to reset)`;
-        }
-    };
     
     window.toggleSettings = function(event) {
         if(event) event.stopPropagation();
@@ -1044,6 +1021,25 @@ const parseTime = (t) => {
             }
         }
     } // <--- END OF renderCanvas
+
+    // 🟢 FANCY: Update UI when a date is selected
+    window.updateDateUI = function(selectedDate) {
+        const wrapper = document.getElementById('date-btn-wrapper');
+        
+        // Generate today's date in IST
+        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+        if (!selectedDate || selectedDate === today) {
+            wrapper.classList.remove('date-active-glow');
+            wrapper.title = "Historical Date";
+        } 
+        else {
+            wrapper.classList.add('date-active-glow');
+            const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            wrapper.title = `Viewing: ${formattedDate} (Tap to reset)`;
+        }
+    };
 
 </script>
 </body>
