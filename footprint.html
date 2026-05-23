@@ -211,6 +211,40 @@
     .divider { display: none; } /* Hide divider on desktop */
     .mobile-menu-toggle { display: none; }
 
+    /* 🟢 Footprint Imbalance Glows */
+    .imb-buy { background: rgba(16, 185, 129, 0.2); border-radius: 4px; padding: 0 2px; }
+    .imb-sell { background: rgba(239, 68, 68, 0.2); border-radius: 4px; padding: 0 2px; }
+    
+    .light-theme .imb-buy { background: rgba(22, 163, 74, 0.2); }
+    .light-theme .imb-sell { background: rgba(220, 38, 38, 0.2); }
+
+    /* 🟢 Crosshair & Sub-Chart Stats Panel */
+    .crosshair-stats {
+        position: absolute;
+        top: 15px;
+        right: 15px; /* Pinned to the top right */
+        background: rgba(19, 27, 44, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        pointer-events: none;
+        display: none; /* Hidden by default until hover */
+        flex-direction: column;
+        gap: 4px;
+        text-align: right;
+    }
+    .light-theme .crosshair-stats {
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .ch-label { color: var(--muted); margin-right: 8px;}
+    .ch-val { font-weight: 800; color: var(--text); }
+    
 /* --- 📱 MOBILE SPECIFIC OPTIMIZATION --- */
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
@@ -334,10 +368,16 @@
     </div>
 
     <div id="chart-container">
-
         <canvas id="orderflowCanvas"></canvas>
+        
+        <div class="crosshair-stats" id="crosshair-stats">
+            <div><span class="ch-label">Time:</span><span class="ch-val" id="ch-time">--</span></div>
+            <div><span class="ch-label">CumΔ:</span><span class="ch-val" id="ch-cumdelta">--</span></div>
+            <div><span class="ch-label">Volume:</span><span class="ch-val" id="ch-vol">--</span></div>
+        </div>
 
         <div class="stats-panel" id="stats-panel">
+            
             <div style="font-size: 9px; color: var(--accent); margin-bottom: 10px; font-weight: 800; letter-spacing: 0.5px;">SESSION STATS</div>
             <div class="stat-row"><span class="stat-label">VWAP</span><span class="stat-val" id="st-vwap">--</span></div>
             <div class="stat-row"><span class="stat-label">Cum Delta</span><span class="stat-val" id="st-delta">--</span></div>
@@ -529,13 +569,37 @@
         }
     });
 
-// --- CHART CONFIGURATION ---
-    let COL_WIDTH = 110;       // 🟢 Slimmed down from 180
+// --- CHART CONFIGURATION & LAYOUT ---
+    let COL_WIDTH = 110;       
     const Y_AXIS_WIDTH = 60;   
     const VP_WIDTH = 120;      
-    const X_AXIS_HEIGHT = 25;  // 🟢 Shrunk down! Now it only holds the time
-    let GAP = 8;               // 🟢 Tighter gap between candles
+    const X_AXIS_HEIGHT = 25;  
+    let GAP = 8;               
     const TICK_SIZE = 1;     
+    
+    // 🟢 PHASE 2: SUB-CHART DIMENSIONS
+    const SUBCHART_HEIGHT = 80;  // Height for Volume and CumDelta panes
+    const SUBCHART_SPACING = 15; // Gap between panes
+    const TOTAL_BOTTOM_RESERVE = (SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT; 
+
+  // --- CAMERA / INTERACTION STATE ---
+    let offsetX = 0; 
+    let offsetY = 0; 
+    let priceScale = 25; 
+
+    let isDraggingChart = false;
+    let isDraggingYScale = false;
+    let isDraggingXScale = false;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    
+    // 🟢 PHASE 2: CROSSHAIR STATE
+    let currentHoverX = -1;
+    let currentHoverY = -1;
+    let isHovering = false;
+    
+    // 🟢 PHASE 2: ACCUMULATION ZONE DATA
+    let accumulationZones = [];
 
   // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
@@ -587,46 +651,56 @@
         lastMouseY = clientY;
     }
 
-    function handlePointerMove(e) {
+function handlePointerMove(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        
+        // 🟢 Track mouse for the crosshair
+        currentHoverX = x;
+        currentHoverY = y;
+        isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < height - TOTAL_BOTTOM_RESERVE);
+
         if (!isDraggingChart && !isDraggingYScale && !isDraggingXScale) {
             // Hover cursors
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-            const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-            if (x > width - Y_AXIS_WIDTH && y < height - X_AXIS_HEIGHT) canvas.style.cursor = 'ns-resize';
-            else if (y > height - X_AXIS_HEIGHT && x < width - Y_AXIS_WIDTH) canvas.style.cursor = 'ew-resize';
+            if (x > width - Y_AXIS_WIDTH && y < height - TOTAL_BOTTOM_RESERVE) canvas.style.cursor = 'ns-resize';
+            else if (y > height - TOTAL_BOTTOM_RESERVE && x < width - Y_AXIS_WIDTH) canvas.style.cursor = 'ew-resize';
             else canvas.style.cursor = 'crosshair';
+            
+            renderCanvas(); // Force redraw to move the crosshair
             return;
         }
 
         if (e.cancelable) e.preventDefault(); 
 
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
         const dx = clientX - lastMouseX;
         const dy = clientY - lastMouseY;
 
-        // 🟢 UPGRADED: Exponential Scaling Math
         if (isDraggingChart) {
             offsetX += dx;
             offsetY += dy;
         } else if (isDraggingYScale) {
-            // Dragging down stretches the Y axis
             priceScale *= (1 - dy * 0.005);
             priceScale = Math.max(2, Math.min(priceScale, 150));
         } else if (isDraggingXScale) {
-            // Dragging right stretches the X axis
             COL_WIDTH *= (1 + dx * 0.005);
             COL_WIDTH = Math.max(40, Math.min(COL_WIDTH, 400));
-            GAP = COL_WIDTH * (15/180); // Maintain aspect ratio of the gap
+            GAP = COL_WIDTH * (15/180); 
         }
 
         renderCanvas();
         lastMouseX = clientX;
         lastMouseY = clientY;
     }
+    
+    // Make sure the crosshair disappears when the mouse leaves the canvas
+    canvas.addEventListener('mouseleave', () => {
+        isHovering = false;
+        handlePointerUp();
+        renderCanvas();
+    });
 
     function handlePointerUp() { 
         isDraggingChart = false; 
@@ -779,11 +853,62 @@ const parseTime = (t) => {
             else { currentVol += downVol; val = down; down -= TICK_SIZE; }
         }
 
-        sessionStats = {
+      sessionStats = {
             vwap: totalVolPrice / totalVol, cumDelta: totalDelta, vpoc, vah, val, maxVPVol,
             orHigh: orHigh === -Infinity ? '--' : orHigh, orLow: orLow === Infinity ? '--' : orLow,
             ibHigh: ibHigh === -Infinity ? '--' : ibHigh, ibLow: ibLow === Infinity ? '--' : ibLow
         };
+
+        // 🟢 PHASE 2: ACCUMULATION / DISTRIBUTION ZONE DETECTOR
+        accumulationZones = [];
+        let consecutiveChop = 0;
+        let zoneStartIdx = -1;
+        let runningZoneDelta = 0;
+        let zoneHigh = -Infinity;
+        let zoneLow = Infinity;
+        
+        for (let i = 0; i < times.length; i++) {
+            const candle = latestDataCache[times[i]];
+            if(!candle) continue;
+            
+            const range = candle.high - candle.low;
+            
+            // Logic: Price range < 50 points
+            if (range < 50) {
+                if (consecutiveChop === 0) {
+                    zoneStartIdx = i;
+                    zoneHigh = candle.high;
+                    zoneLow = candle.low;
+                    runningZoneDelta = 0;
+                }
+                consecutiveChop++;
+                zoneHigh = Math.max(zoneHigh, candle.high);
+                zoneLow = Math.min(zoneLow, candle.low);
+                
+                // Calculate delta for this candle
+                let cDelta = 0;
+                const matrix = candle.volumes || {};
+                Object.values(matrix).forEach(cell => { cDelta += (cell.buy_vol - cell.sell_vol); });
+                runningZoneDelta += cDelta;
+                
+            } else {
+                // Breakout occurred. Did we have 3+ candles of chop with > 100k delta buildup?
+                if (consecutiveChop >= 3 && Math.abs(runningZoneDelta) > 100000) {
+                    accumulationZones.push({
+                        startIdx: zoneStartIdx,
+                        endIdx: i - 1, // Ended on the previous candle
+                        high: zoneHigh,
+                        low: zoneLow,
+                        delta: runningZoneDelta
+                    });
+                }
+                consecutiveChop = 0;
+            }
+        }
+        // Check if a zone is active at the very end of the day
+        if (consecutiveChop >= 3 && Math.abs(runningZoneDelta) > 100000) {
+             accumulationZones.push({ startIdx: zoneStartIdx, endIdx: times.length - 1, high: zoneHigh, low: zoneLow, delta: runningZoneDelta });
+        }
 
         const statsPanel = document.getElementById('stats-panel');
         const statsCb = document.getElementById('stats-cb');
@@ -823,60 +948,131 @@ const parseTime = (t) => {
         }
 
         let minPrice = Infinity, maxPrice = -Infinity;
+        
+        // 🟢 PRE-COMPUTE DATA FOR SUB-CHARTS
+        const cumDeltaTimeline = [];
+        const volumeTimeline = [];
+        let maxCumDelta = -Infinity, minCumDelta = Infinity;
+        let maxSessionVol = 0;
+        let runningCumDelta = 0;
 
         timeKeys.forEach(t => {
             const candle = latestDataCache[t];
-            let cHigh = -Infinity;
-            let cLow = Infinity;
+            let cHigh = -Infinity, cLow = Infinity;
+            let cDelta = 0, cVol = 0;
 
-            const prices = Object.keys(candle.volumes || {}).map(Number);
-            if (prices.length > 0) {
-                cHigh = Math.max(...prices);
-                cLow = Math.min(...prices);
-            }
+            const matrix = candle.volumes || {};
+            const prices = Object.keys(matrix).map(Number);
+            
+            prices.forEach(p => {
+                cHigh = Math.max(cHigh, p);
+                cLow = Math.min(cLow, p);
+                cDelta += (matrix[p].buy_vol - matrix[p].sell_vol);
+                cVol += (matrix[p].buy_vol + matrix[p].sell_vol);
+            });
 
             if (cHigh === -Infinity && candle.high > 0) cHigh = candle.high;
             if (cLow === Infinity && candle.low > 0) cLow = candle.low;
-
             if (cHigh !== -Infinity && cHigh > maxPrice) maxPrice = cHigh;
             if (cLow !== Infinity && cLow < minPrice) minPrice = cLow;
+            
+            runningCumDelta += cDelta;
+            cumDeltaTimeline.push(runningCumDelta);
+            volumeTimeline.push({ vol: cVol, delta: cDelta });
+            
+            maxCumDelta = Math.max(maxCumDelta, runningCumDelta);
+            minCumDelta = Math.min(minCumDelta, runningCumDelta);
+            maxSessionVol = Math.max(maxSessionVol, cVol);
         });
 
-        if (minPrice === Infinity || maxPrice === -Infinity) {
-            minPrice = 22000;
-            maxPrice = 22100;
-        }
+        if (minPrice === Infinity || maxPrice === -Infinity) { minPrice = 22000; maxPrice = 22100; }
+
+        // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE
+        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE;
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
-            // 🟢 Adjusted padding to match the new smaller X-axis
-            return height - X_AXIS_HEIGHT - 20 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
+            return MAIN_CHART_BOTTOM - 20 - (diffFromMin / TICK_SIZE * priceScale) + offsetY;
         };
 
-        const priceAtTop = minPrice + ((height - X_AXIS_HEIGHT - 20 + offsetY) / priceScale) * TICK_SIZE;
-        const priceAtBottom = minPrice + ((-20 + offsetY - height) / priceScale) * TICK_SIZE;
-
+        const priceAtTop = minPrice + ((MAIN_CHART_BOTTOM - 20 + offsetY) / priceScale) * TICK_SIZE;
+        const priceAtBottom = minPrice + ((-20 + offsetY - MAIN_CHART_BOTTOM) / priceScale) * TICK_SIZE;
         const topBound = Math.max(priceAtTop, priceAtBottom);
         const botBound = Math.min(priceAtTop, priceAtBottom);
 
         let gridStep = TICK_SIZE;
-        if (priceScale < 8) gridStep = TICK_SIZE * 10;      
+        if (priceScale < 8) gridStep = TICK_SIZE * 10;     
         else if (priceScale < 15) gridStep = TICK_SIZE * 4; 
         else if (priceScale < 30) gridStep = TICK_SIZE * 2; 
-
-        const startPrice = Math.floor(botBound / gridStep) * gridStep;
-        const endPrice = Math.ceil(topBound / gridStep) * gridStep;
 
         ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
         ctx.lineWidth = 1; ctx.beginPath();
         for (let p = startPrice; p <= endPrice; p += gridStep) {
             const y = getPriceY(p);
-            if (y > 0 && y < height - X_AXIS_HEIGHT) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
+            if (y > 0 && y < MAIN_CHART_BOTTOM) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
         }
         ctx.stroke();
 
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
+        
+        // --- PRE-CALCULATE X POSITIONS FOR ZONES AND CROSSHAIR ---
+        const xPositions = [];
+        for (let i = timeKeys.length - 1; i >= 0; i--) {
+            xPositions[i] = currentX;
+            currentX -= (COL_WIDTH + GAP);
+        }
+        
+        // 🟢 PHASE 2: DRAW ACCUMULATION ZONES
+        accumulationZones.forEach(zone => {
+            const startX = xPositions[zone.startIdx];
+            const endX = xPositions[zone.endIdx];
+            
+            // Only draw if visible on screen
+            if (startX > 0 && endX < width - Y_AXIS_WIDTH) {
+                const yTop = getPriceY(zone.high);
+                const yBot = getPriceY(zone.low);
+                
+                // Color based on Delta buildup (Green = Accumulation, Red = Distribution)
+                const isAccum = zone.delta > 0;
+                ctx.fillStyle = isAccum ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+                
+                // Draw the Box
+                const boxW = Math.abs(startX - endX) + COL_WIDTH;
+                const boxH = Math.abs(yBot - yTop);
+                // Math.min is required because Y grows downwards
+                ctx.fillRect(Math.min(startX, endX), Math.min(yTop, yBot), boxW, boxH);
+                
+                // Draw Trigger Lines
+                ctx.strokeStyle = isAccum ? '#10b981' : '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                
+                // Breakout Top
+                ctx.beginPath();
+                ctx.moveTo(Math.min(startX, endX), Math.min(yTop, yBot));
+                ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.min(yTop, yBot));
+                ctx.stroke();
+                
+                // Breakdown Bottom
+                ctx.beginPath();
+                ctx.moveTo(Math.min(startX, endX), Math.max(yTop, yBot));
+                ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.max(yTop, yBot));
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Zone Tag
+                ctx.fillStyle = isAccum ? '#10b981' : '#ef4444';
+                ctx.font = "bold 10px 'JetBrains Mono'";
+                ctx.textAlign = "left";
+                const mStr = (zone.delta / 100000).toFixed(1) + 'L';
+                ctx.fillText(`ZONE: ${isAccum ? '+' : ''}${mStr} Δ`, Math.min(startX, endX) + 5, Math.min(yTop, yBot) - 5);
+            }
+        });
+
+        // Reset currentX for the main drawing loop
+        currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         let cumulativeDelta = 0;
+        let activeHoverData = null; // Store data for the crosshair panel
 
         for (let i = timeKeys.length - 1; i >= 0; i--) {
             if (currentX + COL_WIDTH < (showVP ? VP_WIDTH : 0)) break; 
@@ -898,9 +1094,9 @@ const parseTime = (t) => {
             });
 
             cumulativeDelta += candleDelta;
-
             const isBullish = candleData.close >= candleData.open;
             const candleColor = isBullish ? '#10b981' : '#ef4444';
+            const totalVol = totalBuyVol + totalSellVol;
 
             // 🟢 GoCharting Style: Anchor the candle visually to the far left of the column
             const candleX = currentX + 6; 
@@ -919,7 +1115,24 @@ const parseTime = (t) => {
             ctx.fillStyle = candleColor;
             ctx.fillRect(candleX - 3, bodyTop - (priceScale/2), 6, bodyHeight + priceScale);
 
-            // 🟢 GoCharting Style: Draw a subtle center divider for the footprint
+            // 🟢 PHASE 1: Bullish/Bearish Divergence Detector
+            const isDivergent = (isBullish && candleDelta < 0) || (!isBullish && candleDelta > 0);
+            if (isDivergent && Math.abs(candleDelta) > 50) { 
+                ctx.beginPath();
+                if (isBullish) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.moveTo(candleX, getPriceY(candleData.high) - 15);
+                    ctx.lineTo(candleX - 5, getPriceY(candleData.high) - 25);
+                    ctx.lineTo(candleX + 5, getPriceY(candleData.high) - 25);
+                } else {
+                    ctx.fillStyle = '#10b981';
+                    ctx.moveTo(candleX, getPriceY(candleData.low) + 15);
+                    ctx.lineTo(candleX - 5, getPriceY(candleData.low) + 25);
+                    ctx.lineTo(candleX + 5, getPriceY(candleData.low) + 25);
+                }
+                ctx.fill();
+            }
+
             const boxLeft = currentX + 16;
             const boxWidth = COL_WIDTH - 20;
             const center = boxLeft + (boxWidth / 2);
@@ -933,11 +1146,10 @@ const parseTime = (t) => {
 
             prices.forEach(price => {
                 const y = getPriceY(price);
-                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return;
+                if (y < -50 || y > MAIN_CHART_BOTTOM + 50) return;
 
                 const b = matrix[price].buy_vol;
                 const s = matrix[price].sell_vol;
-
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
 
@@ -957,40 +1169,65 @@ const parseTime = (t) => {
                 ctx.font = "bold 10px 'JetBrains Mono'"; 
                 ctx.textBaseline = "middle";
 
-                // Sell Side (Left)
+                // Sell Side
                 ctx.textAlign = "right";
-                ctx.fillStyle = isSellImb ? '#ef4444' : (isLight ? '#475569' : '#d4d4d8');
+                if (isSellImb) {
+                    ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.2)' : 'rgba(239, 68, 68, 0.2)'; 
+                    ctx.fillRect(center - 32, y - 7, 30, 14);
+                    ctx.fillStyle = '#ef4444'; 
+                } else { ctx.fillStyle = isLight ? '#475569' : '#d4d4d8'; }
                 ctx.fillText(s, center - 4, y);
 
-                // Buy Side (Right)
+                // Buy Side
                 ctx.textAlign = "left";
-                ctx.fillStyle = isBuyImb ? '#10b981' : (isLight ? '#475569' : '#d4d4d8');
+                if (isBuyImb) {
+                    ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.2)' : 'rgba(16, 185, 129, 0.2)'; 
+                    ctx.fillRect(center + 2, y - 7, 30, 14);
+                    ctx.fillStyle = '#10b981'; 
+                } else { ctx.fillStyle = isLight ? '#475569' : '#d4d4d8'; }
                 ctx.fillText(b, center + 4, y);
             });
 
-            // 🟢 NEW: Dynamic Canvas Stats (Pinned directly below the candle's lowest point)
-            const lowestPrice = Math.min(...prices, candleData.low);
-            let statsY = getPriceY(lowestPrice) + priceScale / 2 + 15;
-
-            // Only draw if the stats are visible above the time axis
-            if (statsY < height - X_AXIS_HEIGHT) {
-                ctx.font = "bold 10px 'JetBrains Mono'";
-                ctx.textAlign = "center";
-
-                // Delta
-                ctx.fillStyle = candleDelta > 0 ? '#10b981' : '#ef4444';
-                ctx.fillText(`Δ: ${candleDelta > 0 ? '+' : ''}${candleDelta}`, center, statsY);
-                statsY += 14;
-
-                // Cumulative Delta
-                ctx.fillStyle = cumulativeDelta > 0 ? '#6ee7b7' : '#fca5a5';
-                ctx.fillText(`ΣΔ: ${cumulativeDelta > 0 ? '+' : ''}${cumulativeDelta}`, center, statsY);
-                statsY += 14;
-
-                // Total Volumes
-                ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
-                ctx.fillText(`${totalSellVol} x ${totalBuyVol}`, center, statsY);
+            // 🟢 PHASE 2: SUB-CHARTS (CumDelta & Volume)
+            const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
+            const volBaseY = height - X_AXIS_HEIGHT;
+            
+            // 1. Plot CumDelta Line Segment
+            const cdVal = cumDeltaTimeline[i];
+            const prevCdVal = (i > 0) ? cumDeltaTimeline[i-1] : 0;
+            
+            // Normalize CumDelta to fit the 80px pane
+            const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
+            const getYForCD = (val) => {
+                const norm = val / cdRange; // between -1 and 1
+                return cDeltaBaseY - (SUBCHART_HEIGHT/2) - (norm * (SUBCHART_HEIGHT/2));
+            };
+            
+            const cdY = getYForCD(cdVal);
+            const prevCdY = getYForCD(prevCdVal);
+            const nextX = currentX + COL_WIDTH + GAP; // The candle to the right
+            
+            ctx.strokeStyle = cdVal >= prevCdVal ? '#10b981' : '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // Draw line from Previous Candle Center to This Candle Center
+            if (i < timeKeys.length -1) {
+                ctx.moveTo(nextX + (COL_WIDTH/2), prevCdY);
+                ctx.lineTo(currentX + (COL_WIDTH/2), cdY);
+                ctx.stroke();
             }
+            // Draw a dot on current
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.beginPath();
+            ctx.arc(currentX + (COL_WIDTH/2), cdY, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. Plot Volume Bar (Colored by Delta)
+            const vData = volumeTimeline[i];
+            const vH = (vData.vol / maxSessionVol) * SUBCHART_HEIGHT;
+            ctx.fillStyle = vData.delta >= 0 ? '#10b981' : '#ef4444';
+            // Draw bar starting from the bottom
+            ctx.fillRect(currentX + 16, volBaseY - vH, COL_WIDTH - 20, vH);
 
             // 🟢 Minimal Bottom Timeline
             const panelY = height - X_AXIS_HEIGHT;
@@ -1002,100 +1239,22 @@ const parseTime = (t) => {
             ctx.textAlign = "center";
             ctx.fillText(timeKey, center, panelY + 16);
 
+            // 🟢 PHASE 2: CROSSHAIR INTERSECTION CHECK
+            // If the mouse X is within this candle's column width, record it
+            if (isHovering && currentHoverX >= currentX && currentHoverX <= currentX + COL_WIDTH) {
+                activeHoverData = {
+                    x: currentX + (COL_WIDTH / 2), // Center of column
+                    time: timeKey,
+                    cumDelta: cdVal,
+                    vol: vData.vol,
+                    delta: vData.delta
+                };
+            }
+
             currentX -= (COL_WIDTH + GAP);
         }
 
-        if (showVP && sessionStats.maxVPVol) {
-            ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b'; 
-            ctx.fillRect(0, 0, VP_WIDTH, height - X_AXIS_HEIGHT);
-            ctx.strokeStyle = isLight ? '#cbd5e1' : '#27272a'; 
-            ctx.beginPath(); ctx.moveTo(VP_WIDTH, 0); ctx.lineTo(VP_WIDTH, height - X_AXIS_HEIGHT); ctx.stroke();
-
-            const maxVPBarWidth = VP_WIDTH - 20;
-
-            Object.keys(volumeProfile).forEach(pStr => {
-                const p = parseFloat(pStr);
-                const y = getPriceY(p);
-                if (y < -50 || y > height - X_AXIS_HEIGHT + 50) return;
-
-                const vol = volumeProfile[p];
-                const barW = (vol / sessionStats.maxVPVol) * maxVPBarWidth;
-
-                if (p <= sessionStats.vah && p >= sessionStats.val) {
-                    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)'; 
-                } else {
-                    ctx.fillStyle = 'rgba(161, 161, 170, 0.15)'; 
-                }
-                ctx.fillRect(0, y - priceScale/2 + 1, barW, priceScale - 2);
-            });
-
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; ctx.lineWidth = 1;
-            const vahY = getPriceY(sessionStats.vah);
-            const valY = getPriceY(sessionStats.val);
-            if (vahY > 0) { ctx.beginPath(); ctx.moveTo(0, vahY); ctx.lineTo(width - Y_AXIS_WIDTH, vahY); ctx.stroke(); }
-            if (valY > 0) { ctx.beginPath(); ctx.moveTo(0, valY); ctx.lineTo(width - Y_AXIS_WIDTH, valY); ctx.stroke(); }
-
-            const vpocY = getPriceY(sessionStats.vpoc);
-            if (vpocY > 0) {
-                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-                ctx.beginPath(); ctx.moveTo(0, vpocY); ctx.lineTo(width - Y_AXIS_WIDTH, vpocY); ctx.stroke();
-                ctx.setLineDash([]); 
-            }
-        }
-
-        if (showDOM) {
-            const DOM_WIDTH = 100; 
-            const domStartX = width - Y_AXIS_WIDTH; 
-
-            let maxDomVol = 0;
-            Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
-            Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
-
-            if (maxDomVol > 0) {
-              // Asks (Red)
-                Object.keys(latestDomCache.asks).forEach(pStr => {
-                    const p = parseFloat(pStr);
-                    const vol = latestDomCache.asks[pStr];
-                    const y = getPriceY(p);
-                    if (y < -50 || y > height - X_AXIS_HEIGHT) return;
-
-                    const barW = (vol / maxDomVol) * DOM_WIDTH;
-
-                    // 1. Draw the bar first
-                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; 
-                    ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
-
-                    // 2. THEN draw the text on top
-                    ctx.fillStyle = isLight ? '#ef4444' : '#fca5a5';
-                    ctx.font = "bold 9px 'JetBrains Mono'";
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
-                });
-
-                // Bids (Green)
-                Object.keys(latestDomCache.bids).forEach(pStr => {
-                    const p = parseFloat(pStr);
-                    const vol = latestDomCache.bids[pStr];
-                    const y = getPriceY(p);
-                    if (y < -50 || y > height - X_AXIS_HEIGHT) return;
-
-                    const barW = (vol / maxDomVol) * DOM_WIDTH;
-
-                    // 1. Draw the bar first
-                    ctx.fillStyle = 'rgba(16, 185, 129, 0.3)'; 
-                    ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
-
-                    // 2. THEN draw the text on top
-                    ctx.fillStyle = isLight ? '#10b981' : '#6ee7b7';
-                    ctx.font = "bold 9px 'JetBrains Mono'";
-                    ctx.textAlign = "right";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
-                });
-            }
-        }
-
+        // 🟢 DRAW THE MAIN PRICE AXIS
         ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b';
         ctx.fillRect(width - Y_AXIS_WIDTH, 0, Y_AXIS_WIDTH, height);
         ctx.strokeStyle = isLight ? '#cbd5e1' : '#27272a'; 
@@ -1106,13 +1265,77 @@ const parseTime = (t) => {
 
         for (let p = startPrice; p <= endPrice; p += gridStep) {
             const y = getPriceY(p);
-            if (y > 0 && y < height - X_AXIS_HEIGHT) { 
+            if (y > 0 && y < MAIN_CHART_BOTTOM) { 
                 ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, y); ctx.lineTo(width - Y_AXIS_WIDTH + 4, y); ctx.stroke();
                 ctx.fillText(p, width - Y_AXIS_WIDTH + 8, y); 
             }
         }
-    } // <--- END OF renderCanvas
+        
+        // 🟢 DRAW SUB-CHART DIVIDERS
+        ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        // CumDelta Divider
+        ctx.beginPath();
+        ctx.moveTo(0, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
+        ctx.lineTo(width - Y_AXIS_WIDTH, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Sub-Chart Labels on Y Axis
+        ctx.fillStyle = 'var(--muted)';
+        ctx.font = "bold 9px 'JetBrains Mono'";
+        ctx.textAlign = "center";
+        ctx.fillText("CUM Δ", width - (Y_AXIS_WIDTH/2), height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - (SUBCHART_SPACING/2));
+        ctx.fillText("VOL", width - (Y_AXIS_WIDTH/2), height - (X_AXIS_HEIGHT/2));
 
+        // 🟢 PHASE 2: SYNCHRONIZED CROSSHAIR
+        const chPanel = document.getElementById('crosshair-stats');
+        
+        if (isHovering && activeHoverData) {
+            // Draw Vertical Sync Line
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; // Gray dashed line
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(activeHoverData.x, 0);
+            ctx.lineTo(activeHoverData.x, height - X_AXIS_HEIGHT); // Stop at timeline
+            ctx.stroke();
+            
+            // Draw Horizontal Price Line
+            ctx.beginPath();
+            ctx.moveTo(0, currentHoverY);
+            ctx.lineTo(width, currentHoverY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Highlight Price on Y-Axis
+            if (currentHoverY < MAIN_CHART_BOTTOM) {
+                const hoverPrice = minPrice + ((MAIN_CHART_BOTTOM - 20 - currentHoverY + offsetY) / priceScale) * TICK_SIZE;
+                ctx.fillStyle = 'var(--accent)';
+                ctx.fillRect(width - Y_AXIS_WIDTH, currentHoverY - 10, Y_AXIS_WIDTH, 20);
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'left';
+                ctx.fillText(Math.round(hoverPrice), width - Y_AXIS_WIDTH + 8, currentHoverY);
+            }
+
+            // Update Panel Text
+            document.getElementById('ch-time').innerText = activeHoverData.time;
+            
+            const cdEl = document.getElementById('ch-cumdelta');
+            cdEl.innerText = (activeHoverData.cumDelta > 0 ? '+' : '') + activeHoverData.cumDelta;
+            cdEl.style.color = activeHoverData.cumDelta > 0 ? 'var(--green)' : 'var(--red)';
+            
+            const volEl = document.getElementById('ch-vol');
+            volEl.innerText = activeHoverData.vol;
+            volEl.style.color = activeHoverData.delta >= 0 ? 'var(--green)' : 'var(--red)';
+            
+            chPanel.style.display = 'flex';
+        } else {
+            chPanel.style.display = 'none';
+        }
+        
+    } // <--- END OF renderCanvas
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
