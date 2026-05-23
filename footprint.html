@@ -612,16 +612,6 @@
     // 🟢 PHASE 2: ACCUMULATION ZONE DATA
     let accumulationZones = [];
 
-    function resizeCanvas() { 
-        width = canvas.width = container.clientWidth; 
-        height = canvas.height = container.clientHeight; 
-        renderCanvas(); 
-    }
-    window.addEventListener('resize', resizeCanvas); 
-
-    resizeCanvas();
-    setTimeout(resizeCanvas, 100);
-
     // 🟢 UPGRADED: TV-Style Axis Hit Detection
     function handlePointerDown(e) {
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -722,19 +712,29 @@ function handlePointerMove(e) {
     window.addEventListener('mouseup', handlePointerUp);
     canvas.addEventListener('mouseleave', handlePointerUp);
 
-    canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
     window.addEventListener('touchmove', handlePointerMove, { passive: false });
     window.addEventListener('touchend', handlePointerUp);
     window.addEventListener('touchcancel', handlePointerUp);
 
-// --- DATA POLLING ---
-let isLiveMode = true;
+    // 🟢 FIX: DECLARE GLOBAL DATA CONTAINERS **BEFORE** CALLING resizeCanvas()
+    let latestDataCache = {};
+    let latestDomCache = { bids: {}, asks: {} };
+    let volumeProfile = {};
+    let sessionStats = {};
 
-// 🟢 FIX: DECLARE GLOBAL DATA CONTAINERS
-let latestDataCache = {};
-let latestDomCache = { bids: {}, asks: {} };
-let volumeProfile = {};
-let sessionStats = {};
+    function resizeCanvas() { 
+        width = canvas.width = container.clientWidth; 
+        height = canvas.height = container.clientHeight; 
+        renderCanvas(); 
+    }
+    window.addEventListener('resize', resizeCanvas); 
+
+    resizeCanvas();
+    setTimeout(resizeCanvas, 100);
+
+// --- DATA POLLING ---
+    let isLiveMode = true;
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
