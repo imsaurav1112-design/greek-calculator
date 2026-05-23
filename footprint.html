@@ -497,7 +497,7 @@
     window.triggerDateChange = function(val) {
         // 1. Trigger the gold glow effect
         window.updateDateUI(val); 
-        
+        needsAutoCenter = true; // 🟢 NEW: Re-center the chart when a new date loads
         // 2. Auto-close menu on mobile
         const nav = document.getElementById('left-nav');
         if (nav && nav.classList.contains('menu-open')) {
@@ -645,6 +645,7 @@
     let isDraggingXScale = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
+    let needsAutoCenter = true;
     
     // 🟢 PHASE 2: CROSSHAIR STATE
     let currentHoverX = -1;
@@ -1031,6 +1032,25 @@ const parseTime = (t) => {
             : X_AXIS_HEIGHT; 
             
         const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
+        // =========================================================
+        // 🟢 NEW: AUTO-CENTER LOGIC
+        // Automatically focuses the camera on the latest traded price
+        // =========================================================
+        if (needsAutoCenter && timeKeys.length > 0) {
+            // Get the close price of the most recent footprint candle
+            const latestCandle = latestDataCache[timeKeys[timeKeys.length - 1]];
+            const targetPrice = latestCandle.close;
+            
+            // Calculate where this price WOULD be drawn without moving the camera
+            const unoffsetY = MAIN_CHART_BOTTOM - 20 - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
+            
+            // Adjust the camera Y offset to push the target price exactly to the middle
+            offsetY = (MAIN_CHART_BOTTOM / 2) - unoffsetY;
+            
+            // Turn off auto-center so the user can now drag the chart manually
+            needsAutoCenter = false; 
+        }
+        // =========================================================
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
