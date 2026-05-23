@@ -93,11 +93,22 @@
     .tool-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.3); }
 
     /* --- 3. CHART CONTAINER --- */
-    #chart-container { 
-        flex: 1; position: relative; background: #0c0c0f; cursor: crosshair; 
-        touch-action: none; /* 🟢 CRITICAL: Stops mobile browser from pulling-to-refresh when dragging chart */
+#chart-container { 
+        flex: 1; 
+        position: relative; 
+        background: #0c0c0f; 
+        cursor: crosshair; 
+        /* 🟢 CRITICAL: Allow the container to scroll vertically if needed */
+        overflow-y: auto; 
+        overflow-x: hidden;
+        touch-action: pan-y; /* Allow vertical scrolling on mobile, but block horizontal swipe-to-go-back */
     }
-    canvas { display: block; width: 100%; height: 100%; }
+    canvas { 
+        display: block; 
+        width: 100%; 
+        min-height: 800px; /* Force minimum height for Phase 2 subcharts */
+        height: 100%; 
+    }
 
    :root { 
         /* 🟢 Dark Theme (Refined Obsidian/Slate) */
