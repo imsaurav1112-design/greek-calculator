@@ -98,18 +98,16 @@
         position: relative; 
         background: #0c0c0f; 
         cursor: crosshair; 
-        /* 🟢 CRITICAL: Allow the container to scroll vertically if needed */
         overflow-y: auto; 
         overflow-x: hidden;
-        touch-action: pan-y; /* Allow vertical scrolling on mobile, but block horizontal swipe-to-go-back */
+        touch-action: pan-y; 
     }
-    canvas { 
+  canvas { 
         display: block; 
         width: 100%; 
-        min-height: 800px; /* Force minimum height for Phase 2 subcharts */
+        min-height: 800px; 
         height: 100%; 
     }
-
    :root { 
         /* 🟢 Dark Theme (Refined Obsidian/Slate) */
         --bg: #0b0f19; 
@@ -366,13 +364,20 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
                 
-                <div class="settings-panel" id="settings-panel">
+<div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
                     <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
                     <div class="settings-header" style="border-radius: 0;">Components</div>
                     <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
                     <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
                     <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
+                    
+                    <div class="settings-header" style="border-radius: 0;">Smart Orderflow</div>
+                    <label class="settings-row" title="Highlights diagonal volume imbalances">Imbalances <input type="checkbox" id="imb-cb" onchange="toggleImbalances(this)" checked></label>
+                    <label class="settings-row" title="Shows Bullish/Bearish Delta divergence triangles">Divergence <input type="checkbox" id="div-cb" onchange="toggleDivergence(this)" checked></label>
+                    <label class="settings-row" title="Highlights extreme delta values at bottom of columns">Delta Heatmap <input type="checkbox" id="heat-cb" onchange="toggleHeatmap(this)" checked></label>
+                    <label class="settings-row" title="Draws Accumulation/Distribution boxes">Zones <input type="checkbox" id="zones-cb" onchange="toggleZones(this)" checked></label>
+                    <label class="settings-row" title="Shows Cumulative Delta & Volume beneath chart">Sub-Charts <input type="checkbox" id="sub-cb" onchange="toggleSubCharts(this)" checked></label>
                 </div>
             </div>
         </div>
@@ -455,9 +460,14 @@
     // ==========================================
 
 
-    // --- TOGGLES STATE ---
+// --- TOGGLES STATE ---
     let showVP = true;
     let showDOM = true;
+    let showImbalances = true;
+    let showDivergence = true;
+    let showHeatmap = true;
+    let showZones = true;
+    let showSubCharts = true;
 
     // --- UI & THEME TOGGLE LOGIC ---
  // 🟢 Mobile Nav Toggle
@@ -555,6 +565,33 @@
         renderCanvas();
     };
 
+    window.toggleImbalances = function(cb) {
+        showImbalances = cb.checked;
+        renderCanvas();
+    };
+
+    window.toggleDivergence = function(cb) {
+        showDivergence = cb.checked;
+        renderCanvas();
+    };
+
+    window.toggleHeatmap = function(cb) {
+        showHeatmap = cb.checked;
+        renderCanvas();
+    };
+
+    window.toggleZones = function(cb) {
+        showZones = cb.checked;
+        renderCanvas();
+    };
+
+    window.toggleSubCharts = function(cb) {
+        showSubCharts = cb.checked;
+        
+        // When toggling subcharts, we need to completely recalculate the Main Chart bottom padding
+        resizeCanvas(); 
+    };
+
 // Click outside to close settings
     document.addEventListener('click', function(event) {
         const panel = document.getElementById('settings-panel');
@@ -591,7 +628,12 @@
     // 🟢 PHASE 2: SUB-CHART DIMENSIONS
     const SUBCHART_HEIGHT = 80;  // Height for Volume and CumDelta panes
     const SUBCHART_SPACING = 15; // Gap between panes
-    const TOTAL_BOTTOM_RESERVE = (SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT; 
+    // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE based on Toggle
+        const TOTAL_BOTTOM_RESERVE = showSubCharts 
+            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
+            : X_AXIS_HEIGHT; // If hidden, only reserve space for the timeline
+            
+        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
   // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
@@ -987,8 +1029,12 @@ const parseTime = (t) => {
 
         if (minPrice === Infinity || maxPrice === -Infinity) { minPrice = 22000; maxPrice = 22100; }
 
-     // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE
-        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE;
+        // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE based on Toggle
+        const TOTAL_BOTTOM_RESERVE = showSubCharts 
+            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
+            : X_AXIS_HEIGHT; 
+            
+        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
@@ -1026,56 +1072,50 @@ const parseTime = (t) => {
         }
         
         // 🟢 PHASE 2: DRAW ACCUMULATION ZONES
-        accumulationZones.forEach(zone => {
-            const startX = xPositions[zone.startIdx];
-            const endX = xPositions[zone.endIdx];
-            
-            // Only draw if visible on screen
-            if (startX > 0 && endX < width - Y_AXIS_WIDTH) {
-                const yTop = getPriceY(zone.high);
-                const yBot = getPriceY(zone.low);
+        if (showZones) {
+            accumulationZones.forEach(zone => {
+                const startX = xPositions[zone.startIdx];
+                const endX = xPositions[zone.endIdx];
                 
-                // Color based on Delta buildup (Green = Accumulation, Red = Distribution)
-                const isAccum = zone.delta > 0;
-                ctx.fillStyle = isAccum ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-                
-                // Draw the Box
-                const boxW = Math.abs(startX - endX) + COL_WIDTH;
-                const boxH = Math.abs(yBot - yTop);
-                // Math.min is required because Y grows downwards
-                ctx.fillRect(Math.min(startX, endX), Math.min(yTop, yBot), boxW, boxH);
-                
-                // Draw Trigger Lines
-                ctx.strokeStyle = isAccum ? '#10b981' : '#ef4444';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                
-                // Breakout Top
-                ctx.beginPath();
-                ctx.moveTo(Math.min(startX, endX), Math.min(yTop, yBot));
-                ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.min(yTop, yBot));
-                ctx.stroke();
-                
-                // Breakdown Bottom
-                ctx.beginPath();
-                ctx.moveTo(Math.min(startX, endX), Math.max(yTop, yBot));
-                ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.max(yTop, yBot));
-                ctx.stroke();
-                ctx.setLineDash([]);
-                
-                // Zone Tag
-                ctx.fillStyle = isAccum ? '#10b981' : '#ef4444';
-                ctx.font = "bold 10px 'JetBrains Mono'";
-                ctx.textAlign = "left";
-                const mStr = (zone.delta / 100000).toFixed(1) + 'L';
-                ctx.fillText(`ZONE: ${isAccum ? '+' : ''}${mStr} Δ`, Math.min(startX, endX) + 5, Math.min(yTop, yBot) - 5);
-            }
-        });
+                if (startX > 0 && endX < width - Y_AXIS_WIDTH) {
+                    const yTop = getPriceY(zone.high);
+                    const yBot = getPriceY(zone.low);
+                    
+                    const isAccum = zone.delta > 0;
+                    ctx.fillStyle = isAccum ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+                    
+                    const boxW = Math.abs(startX - endX) + COL_WIDTH;
+                    const boxH = Math.abs(yBot - yTop);
+                    ctx.fillRect(Math.min(startX, endX), Math.min(yTop, yBot), boxW, boxH);
+                    
+                    ctx.strokeStyle = isAccum ? '#10b981' : '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(Math.min(startX, endX), Math.min(yTop, yBot));
+                    ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.min(yTop, yBot));
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(Math.min(startX, endX), Math.max(yTop, yBot));
+                    ctx.lineTo(Math.max(startX, endX) + COL_WIDTH, Math.max(yTop, yBot));
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    ctx.fillStyle = isAccum ? '#10b981' : '#ef4444';
+                    ctx.font = "bold 10px 'JetBrains Mono'";
+                    ctx.textAlign = "left";
+                    const mStr = (zone.delta / 100000).toFixed(1) + 'L';
+                    ctx.fillText(`ZONE: ${isAccum ? '+' : ''}${mStr} Δ`, Math.min(startX, endX) + 5, Math.min(yTop, yBot) - 5);
+                }
+            });
+        }
 
         // Reset currentX for the main drawing loop
         currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         let cumulativeDelta = 0;
-        let activeHoverData = null; // Store data for the crosshair panel
+        let activeHoverData = null; 
 
         for (let i = timeKeys.length - 1; i >= 0; i--) {
             if (currentX + COL_WIDTH < (showVP ? VP_WIDTH : 0)) break; 
@@ -1101,7 +1141,6 @@ const parseTime = (t) => {
             const candleColor = isBullish ? '#10b981' : '#ef4444';
             const totalVol = totalBuyVol + totalSellVol;
 
-            // 🟢 GoCharting Style: Anchor the candle visually to the far left of the column
             const candleX = currentX + 6; 
 
             ctx.strokeStyle = candleColor;
@@ -1120,7 +1159,7 @@ const parseTime = (t) => {
 
             // 🟢 PHASE 1: Bullish/Bearish Divergence Detector
             const isDivergent = (isBullish && candleDelta < 0) || (!isBullish && candleDelta > 0);
-            if (isDivergent && Math.abs(candleDelta) > 50) { 
+            if (showDivergence && isDivergent && Math.abs(candleDelta) > 50) { 
                 ctx.beginPath();
                 if (isBullish) {
                     ctx.fillStyle = '#ef4444';
@@ -1156,8 +1195,9 @@ const parseTime = (t) => {
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
 
-                const isBuyImb = (b > bidBelow * 3) && (b > 50);
-                const isSellImb = (s > askAbove * 3) && (s > 50);
+                // 🟢 PHASE 1: Diagonal Imbalances 
+                const isBuyImb = showImbalances && (b > bidBelow * 3) && (b > 50);
+                const isSellImb = showImbalances && (s > askAbove * 3) && (s > 50);
 
                 const volIntensity = (b + s) / maxVol;
 
@@ -1191,48 +1231,87 @@ const parseTime = (t) => {
                 ctx.fillText(b, center + 4, y);
             });
 
-            // 🟢 PHASE 2: SUB-CHARTS (CumDelta & Volume)
-            const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
-            const volBaseY = height - X_AXIS_HEIGHT;
-            
-            // 1. Plot CumDelta Line Segment
-            const cdVal = cumDeltaTimeline[i];
-            const prevCdVal = (i > 0) ? cumDeltaTimeline[i-1] : 0;
-            
-            // Normalize CumDelta to fit the 80px pane
-            const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
-            const getYForCD = (val) => {
-                const norm = val / cdRange; // between -1 and 1
-                return cDeltaBaseY - (SUBCHART_HEIGHT/2) - (norm * (SUBCHART_HEIGHT/2));
-            };
-            
-            const cdY = getYForCD(cdVal);
-            const prevCdY = getYForCD(prevCdVal);
-            const nextX = currentX + COL_WIDTH + GAP; // The candle to the right
-            
-            ctx.strokeStyle = cdVal >= prevCdVal ? '#10b981' : '#ef4444';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            // Draw line from Previous Candle Center to This Candle Center
-            if (i < timeKeys.length -1) {
-                ctx.moveTo(nextX + (COL_WIDTH/2), prevCdY);
-                ctx.lineTo(currentX + (COL_WIDTH/2), cdY);
-                ctx.stroke();
+            // 🟢 PHASE 1: Delta Heatmap Logic
+            const lowestPrice = Math.min(...prices, candleData.low);
+            let statsY = getPriceY(lowestPrice) + priceScale / 2 + 15;
+
+            if (statsY < height - X_AXIS_HEIGHT) {
+                ctx.font = "bold 10px 'JetBrains Mono'";
+                ctx.textAlign = "center";
+
+                let deltaPct = totalVol > 0 ? (Math.abs(candleDelta) / totalVol) * 100 : 0;
+                let deltaBoxColor = 'transparent';
+                let deltaTextColor = candleDelta > 0 ? '#10b981' : '#ef4444';
+
+                if (showHeatmap) {
+                    if (deltaPct > 60) {
+                        if (candleDelta > 0) {
+                            deltaBoxColor = deltaPct > 80 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.15)';
+                        } else {
+                            deltaBoxColor = deltaPct > 80 ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.15)';
+                        }
+                    }
+                }
+
+                if (deltaBoxColor !== 'transparent') {
+                    ctx.fillStyle = deltaBoxColor;
+                    ctx.fillRect(center - 25, statsY - 7, 50, 14);
+                    if (deltaPct > 80) { 
+                        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1;
+                        ctx.strokeRect(center - 25, statsY - 7, 50, 14);
+                    }
+                }
+
+                ctx.fillStyle = deltaTextColor;
+                ctx.fillText(`Δ: ${candleDelta > 0 ? '+' : ''}${candleDelta}`, center, statsY);
+                statsY += 14;
+
+                ctx.fillStyle = cumulativeDelta > 0 ? '#6ee7b7' : '#fca5a5';
+                ctx.fillText(`ΣΔ: ${cumulativeDelta > 0 ? '+' : ''}${cumulativeDelta}`, center, statsY);
+                statsY += 14;
+
+                ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
+                ctx.fillText(`${totalSellVol} x ${totalBuyVol}`, center, statsY);
             }
-            // Draw a dot on current
-            ctx.fillStyle = ctx.strokeStyle;
-            ctx.beginPath();
-            ctx.arc(currentX + (COL_WIDTH/2), cdY, 3, 0, Math.PI * 2);
-            ctx.fill();
 
-            // 2. Plot Volume Bar (Colored by Delta)
-            const vData = volumeTimeline[i];
-            const vH = (vData.vol / maxSessionVol) * SUBCHART_HEIGHT;
-            ctx.fillStyle = vData.delta >= 0 ? '#10b981' : '#ef4444';
-            // Draw bar starting from the bottom
-            ctx.fillRect(currentX + 16, volBaseY - vH, COL_WIDTH - 20, vH);
 
-            // 🟢 Minimal Bottom Timeline
+            // 🟢 PHASE 2: SUB-CHARTS (CumDelta & Volume)
+            if (showSubCharts) {
+                const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
+                const volBaseY = height - X_AXIS_HEIGHT;
+                
+                const cdVal = cumDeltaTimeline[i];
+                const prevCdVal = (i > 0) ? cumDeltaTimeline[i-1] : 0;
+                
+                const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
+                const getYForCD = (val) => {
+                    const norm = val / cdRange; 
+                    return cDeltaBaseY - (SUBCHART_HEIGHT/2) - (norm * (SUBCHART_HEIGHT/2));
+                };
+                
+                const cdY = getYForCD(cdVal);
+                const prevCdY = getYForCD(prevCdVal);
+                const nextX = currentX + COL_WIDTH + GAP; 
+                
+                ctx.strokeStyle = cdVal >= prevCdVal ? '#10b981' : '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (i < timeKeys.length -1) {
+                    ctx.moveTo(nextX + (COL_WIDTH/2), prevCdY);
+                    ctx.lineTo(currentX + (COL_WIDTH/2), cdY);
+                    ctx.stroke();
+                }
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.beginPath();
+                ctx.arc(currentX + (COL_WIDTH/2), cdY, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                const vData = volumeTimeline[i];
+                const vH = (vData.vol / maxSessionVol) * SUBCHART_HEIGHT;
+                ctx.fillStyle = vData.delta >= 0 ? '#10b981' : '#ef4444';
+                ctx.fillRect(currentX + 16, volBaseY - vH, COL_WIDTH - 20, vH);
+            }
+
             const panelY = height - X_AXIS_HEIGHT;
             ctx.fillStyle = isLight ? '#f8fafc' : '#0c0c0f';
             ctx.fillRect(currentX, panelY, COL_WIDTH, X_AXIS_HEIGHT);
@@ -1242,15 +1321,13 @@ const parseTime = (t) => {
             ctx.textAlign = "center";
             ctx.fillText(timeKey, center, panelY + 16);
 
-            // 🟢 PHASE 2: CROSSHAIR INTERSECTION CHECK
-            // If the mouse X is within this candle's column width, record it
             if (isHovering && currentHoverX >= currentX && currentHoverX <= currentX + COL_WIDTH) {
                 activeHoverData = {
-                    x: currentX + (COL_WIDTH / 2), // Center of column
+                    x: currentX + (COL_WIDTH / 2), 
                     time: timeKey,
-                    cumDelta: cdVal,
-                    vol: vData.vol,
-                    delta: vData.delta
+                    cumDelta: cumDeltaTimeline[i],
+                    vol: volumeTimeline[i].vol,
+                    delta: volumeTimeline[i].delta
                 };
             }
 
@@ -1263,7 +1340,7 @@ const parseTime = (t) => {
         ctx.strokeStyle = isLight ? '#cbd5e1' : '#27272a'; 
         ctx.beginPath(); ctx.moveTo(width - Y_AXIS_WIDTH, 0); ctx.lineTo(width - Y_AXIS_WIDTH, height); ctx.stroke();
 
-ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5'; 
+        ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5'; 
         ctx.font = "bold 11px 'JetBrains Mono'"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
 
         for (let p = startPrice; p <= endPrice; p += gridStep) {
@@ -1275,44 +1352,41 @@ ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5';
         }
         
         // 🟢 DRAW SUB-CHART DIVIDERS
-        ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 2]);
-        // CumDelta Divider
-        ctx.beginPath();
-        ctx.moveTo(0, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
-        ctx.lineTo(width - Y_AXIS_WIDTH, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        // Sub-Chart Labels on Y Axis
-        ctx.fillStyle = 'var(--muted)';
-        ctx.font = "bold 9px 'JetBrains Mono'";
-        ctx.textAlign = "center";
-        ctx.fillText("CUM Δ", width - (Y_AXIS_WIDTH/2), height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - (SUBCHART_SPACING/2));
-        ctx.fillText("VOL", width - (Y_AXIS_WIDTH/2), height - (X_AXIS_HEIGHT/2));
+        if (showSubCharts) {
+            ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(0, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
+            ctx.lineTo(width - Y_AXIS_WIDTH, height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - SUBCHART_SPACING);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = 'var(--muted)';
+            ctx.font = "bold 9px 'JetBrains Mono'";
+            ctx.textAlign = "center";
+            ctx.fillText("CUM Δ", width - (Y_AXIS_WIDTH/2), height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - (SUBCHART_SPACING/2));
+            ctx.fillText("VOL", width - (Y_AXIS_WIDTH/2), height - (X_AXIS_HEIGHT/2));
+        }
 
         // 🟢 PHASE 2: SYNCHRONIZED CROSSHAIR
         const chPanel = document.getElementById('crosshair-stats');
         
         if (isHovering && activeHoverData) {
-            // Draw Vertical Sync Line
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; // Gray dashed line
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)'; 
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
             ctx.beginPath();
             ctx.moveTo(activeHoverData.x, 0);
-            ctx.lineTo(activeHoverData.x, height - X_AXIS_HEIGHT); // Stop at timeline
+            ctx.lineTo(activeHoverData.x, height - X_AXIS_HEIGHT); 
             ctx.stroke();
             
-            // Draw Horizontal Price Line
             ctx.beginPath();
             ctx.moveTo(0, currentHoverY);
             ctx.lineTo(width, currentHoverY);
             ctx.stroke();
             ctx.setLineDash([]);
             
-            // Highlight Price on Y-Axis
             if (currentHoverY < MAIN_CHART_BOTTOM) {
                 const hoverPrice = minPrice + ((MAIN_CHART_BOTTOM - 20 - currentHoverY + offsetY) / priceScale) * TICK_SIZE;
                 ctx.fillStyle = 'var(--accent)';
@@ -1322,7 +1396,6 @@ ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5';
                 ctx.fillText(Math.round(hoverPrice), width - Y_AXIS_WIDTH + 8, currentHoverY);
             }
 
-            // Update Panel Text
             document.getElementById('ch-time').innerText = activeHoverData.time;
             
             const cdEl = document.getElementById('ch-cumdelta');
@@ -1333,12 +1406,12 @@ ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5';
             volEl.innerText = activeHoverData.vol;
             volEl.style.color = activeHoverData.delta >= 0 ? 'var(--green)' : 'var(--red)';
             
-       chPanel.style.display = 'flex';
+            chPanel.style.display = 'flex';
         } else {
             chPanel.style.display = 'none';
         }
 
-        // --- DRAW DOM (Only if space allows) ---
+        // --- DRAW DOM ---
         if (showDOM) {
             const DOM_WIDTH = 100; 
             const domStartX = width - Y_AXIS_WIDTH; 
@@ -1384,8 +1457,45 @@ ctx.fillStyle = isLight ? '#0f172a' : '#f4f4f5';
             }
         }
         
-    } // <--- END OF renderCanvas
-    
+        if (showVP && sessionStats.maxVPVol) {
+            ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b'; 
+            ctx.fillRect(0, 0, VP_WIDTH, MAIN_CHART_BOTTOM);
+            ctx.strokeStyle = isLight ? '#cbd5e1' : '#27272a'; 
+            ctx.beginPath(); ctx.moveTo(VP_WIDTH, 0); ctx.lineTo(VP_WIDTH, MAIN_CHART_BOTTOM); ctx.stroke();
+
+            const maxVPBarWidth = VP_WIDTH - 20;
+
+            Object.keys(volumeProfile).forEach(pStr => {
+                const p = parseFloat(pStr);
+                const y = getPriceY(p);
+                if (y < -50 || y > MAIN_CHART_BOTTOM + 50) return;
+
+                const vol = volumeProfile[p];
+                const barW = (vol / sessionStats.maxVPVol) * maxVPBarWidth;
+
+                if (p <= sessionStats.vah && p >= sessionStats.val) {
+                    ctx.fillStyle = 'rgba(59, 130, 246, 0.35)'; 
+                } else {
+                    ctx.fillStyle = 'rgba(161, 161, 170, 0.15)'; 
+                }
+                ctx.fillRect(0, y - priceScale/2 + 1, barW, priceScale - 2);
+            });
+
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)'; ctx.lineWidth = 1;
+            const vahY = getPriceY(sessionStats.vah);
+            const valY = getPriceY(sessionStats.val);
+            if (vahY > 0 && vahY < MAIN_CHART_BOTTOM) { ctx.beginPath(); ctx.moveTo(0, vahY); ctx.lineTo(width - Y_AXIS_WIDTH, vahY); ctx.stroke(); }
+            if (valY > 0 && valY < MAIN_CHART_BOTTOM) { ctx.beginPath(); ctx.moveTo(0, valY); ctx.lineTo(width - Y_AXIS_WIDTH, valY); ctx.stroke(); }
+
+            const vpocY = getPriceY(sessionStats.vpoc);
+            if (vpocY > 0 && vpocY < MAIN_CHART_BOTTOM) {
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(0, vpocY); ctx.lineTo(width - Y_AXIS_WIDTH, vpocY); ctx.stroke();
+                ctx.setLineDash([]); 
+            }
+        }
+        
+    } // <--- END OF renderCanvas    
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
