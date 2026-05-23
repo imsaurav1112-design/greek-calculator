@@ -655,13 +655,12 @@
     let accumulationZones = [];
 
     // 🟢 UPGRADED: TV-Style Axis Hit Detection
-    function handlePointerDown(e) {
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
+ function handlePointerDown(e) {
         const rect = canvas.getBoundingClientRect();
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
+        
+        // Use native offsetX/Y for perfect mouse mapping, fallback to bounding math for Touch screens
+        const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
+        const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
 
         if (x > width - Y_AXIS_WIDTH && y < height - X_AXIS_HEIGHT) {
             isDraggingYScale = true;
@@ -674,16 +673,16 @@
             document.body.style.cursor = 'grabbing';
         }
 
-        lastMouseX = clientX;
-        lastMouseY = clientY;
+        // Keep clientX/Y for drag delta math
+        lastMouseX = e.touches ? e.touches[0].clientX : e.clientX;
+        lastMouseY = e.touches ? e.touches[0].clientY : e.clientY;
     }
-
 function handlePointerMove(e) {
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const x = clientX - rect.left;
-        const y = clientY - rect.top;
+        
+        // Use native offsetX/Y for perfect mouse mapping, fallback to bounding math for Touch screens
+        const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
+        const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
         
         // Track mouse for the crosshair
         currentHoverX = x;
@@ -701,6 +700,9 @@ function handlePointerMove(e) {
         }
 
         if (e.cancelable) e.preventDefault(); 
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
         const dx = clientX - lastMouseX;
         const dy = clientY - lastMouseY;
@@ -720,14 +722,7 @@ function handlePointerMove(e) {
         renderCanvas();
         lastMouseX = clientX;
         lastMouseY = clientY;
-    }    
-    // Make sure the crosshair disappears when the mouse leaves the canvas
-    canvas.addEventListener('mouseleave', () => {
-        isHovering = false;
-        handlePointerUp();
-        renderCanvas();
-    });
-
+    }
     function handlePointerUp() { 
         isDraggingChart = false; 
         isDraggingYScale = false; 
@@ -765,9 +760,10 @@ canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
     let volumeProfile = {};
     let sessionStats = {};
 
-    function resizeCanvas() { 
-        width = canvas.width = container.clientWidth; 
-        height = canvas.height = container.clientHeight; 
+function resizeCanvas() { 
+        // 🟢 FIX: Use the actual CSS-rendered size of the canvas to prevent stretching/misalignment
+        width = canvas.width = canvas.offsetWidth; 
+        height = canvas.height = canvas.offsetHeight; 
         renderCanvas(); 
     }
     window.addEventListener('resize', resizeCanvas); 
