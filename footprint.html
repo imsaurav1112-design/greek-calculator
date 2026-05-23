@@ -612,22 +612,6 @@
     // 🟢 PHASE 2: ACCUMULATION ZONE DATA
     let accumulationZones = [];
 
-  // --- CAMERA / INTERACTION STATE ---
-    let offsetX = 0; 
-    let offsetY = 0; 
-    let priceScale = 25; 
-
-    let isDraggingChart = false;
-    let isDraggingYScale = false;
-    let isDraggingXScale = false;
-    let lastMouseX = 0;
-    let lastMouseY = 0;
-
-    let latestDataCache = {};
-    let latestDomCache = { bids: {}, asks: {} }; 
-    let volumeProfile = {};
-    let sessionStats = {};
-
     function resizeCanvas() { 
         width = canvas.width = container.clientWidth; 
         height = canvas.height = container.clientHeight; 
@@ -669,7 +653,7 @@ function handlePointerMove(e) {
         const x = clientX - rect.left;
         const y = clientY - rect.top;
         
-        // 🟢 Track mouse for the crosshair
+        // Track mouse for the crosshair
         currentHoverX = x;
         currentHoverY = y;
         isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < height - TOTAL_BOTTOM_RESERVE);
@@ -704,8 +688,7 @@ function handlePointerMove(e) {
         renderCanvas();
         lastMouseX = clientX;
         lastMouseY = clientY;
-    }
-    
+    }    
     // Make sure the crosshair disappears when the mouse leaves the canvas
     canvas.addEventListener('mouseleave', () => {
         isHovering = false;
@@ -1341,12 +1324,59 @@ const parseTime = (t) => {
             volEl.innerText = activeHoverData.vol;
             volEl.style.color = activeHoverData.delta >= 0 ? 'var(--green)' : 'var(--red)';
             
-            chPanel.style.display = 'flex';
+       chPanel.style.display = 'flex';
         } else {
             chPanel.style.display = 'none';
         }
+
+        // --- DRAW DOM (Only if space allows) ---
+        if (showDOM) {
+            const DOM_WIDTH = 100; 
+            const domStartX = width - Y_AXIS_WIDTH; 
+
+            let maxDomVol = 0;
+            Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+            Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+
+            if (maxDomVol > 0) {
+                Object.keys(latestDomCache.asks).forEach(pStr => {
+                    const p = parseFloat(pStr);
+                    const vol = latestDomCache.asks[pStr];
+                    const y = getPriceY(p);
+                    if (y < -50 || y > MAIN_CHART_BOTTOM) return;
+
+                    const barW = (vol / maxDomVol) * DOM_WIDTH;
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)'; 
+                    ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
+                    
+                    ctx.fillStyle = isLight ? '#ef4444' : '#fca5a5';
+                    ctx.font = "bold 9px 'JetBrains Mono'";
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
+                });
+
+                Object.keys(latestDomCache.bids).forEach(pStr => {
+                    const p = parseFloat(pStr);
+                    const vol = latestDomCache.bids[pStr];
+                    const y = getPriceY(p);
+                    if (y < -50 || y > MAIN_CHART_BOTTOM) return;
+
+                    const barW = (vol / maxDomVol) * DOM_WIDTH;
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.3)'; 
+                    ctx.fillRect(domStartX - barW, y - priceScale/2 + 1, barW, priceScale - 2);
+                    
+                    ctx.fillStyle = isLight ? '#10b981' : '#6ee7b7';
+                    ctx.font = "bold 9px 'JetBrains Mono'";
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
+                });
+            }
+        }
         
     } // <--- END OF renderCanvas
+    
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
