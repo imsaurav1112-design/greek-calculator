@@ -514,24 +514,38 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
   
 /* --- PRICING SECTION --- */
 .pricing { padding: 50px 5%; max-width: 1200px; margin: 0 auto; margin-top: 20px; }
-.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 40px; }
-.price-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 40px 30px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column;}
+
+/* 🟢 The Billing Toggle Switch */
+.billing-toggle-container { display: flex; justify-content: center; margin-bottom: 40px; }
+.billing-toggle { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 4px; position: relative; }
+.toggle-btn { background: transparent; border: none; color: var(--muted); padding: 10px 24px; font-size: 14px; font-weight: 700; border-radius: 26px; cursor: pointer; transition: 0.3s; position: relative; z-index: 2; font-family: 'Inter', sans-serif;}
+.toggle-btn.active { background: var(--section); color: var(--text); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+.save-badge { position: absolute; top: -12px; right: -10px; background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.4); font-size: 9px; padding: 2px 6px; border-radius: 10px; }
+
+/* 🟢 Force 4 Columns on PC */
+.pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px; }
+
+.price-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 35px 25px; text-align: left; transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column;}
 .price-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(59,130,246,0.1); }
 .price-card.popular { border-color: var(--accent); background: linear-gradient(180deg, rgba(20,20,21,1) 0%, rgba(59,130,246,0.05) 100%); }
-.popular-badge { position: absolute; top: 12px; right: -30px; background: var(--accent); color: white; font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 30px; transform: rotate(45deg); letter-spacing: 1px;}
-.plan-name { font-size: 18px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
-.plan-price { font-size: 42px; font-weight: 900; color: var(--text); margin-bottom: 5px; }
-.plan-price span { font-size: 16px; color: var(--muted); font-weight: 500; }
-.plan-desc { font-size: 14px; color: var(--muted); margin-bottom: 30px; min-height: 44px;}
-.plan-features { list-style: none; padding: 0; margin: 0 0 30px 0; flex: 1; }
-.plan-features li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--text); }
+.popular-badge { position: absolute; top: 12px; right: -30px; background: var(--accent); color: white; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 30px; transform: rotate(45deg); letter-spacing: 1px;}
+
+.plan-name { font-size: 16px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+.plan-price { font-size: 38px; font-weight: 900; color: var(--text); margin-bottom: 5px; transition: 0.3s;}
+.plan-price span { font-size: 14px; color: var(--muted); font-weight: 500; }
+.plan-desc { font-size: 13px; color: var(--muted); margin-bottom: 25px; min-height: 40px;}
+.plan-features { list-style: none; padding: 0; margin: 0 0 25px 0; flex: 1; }
+.plan-features li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 13px; color: var(--text); }
 .plan-features li svg { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+
 .plan-btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; font-size: 14px; font-family: 'Inter', sans-serif;}
 .price-card:hover .plan-btn { background: var(--section); }
 .price-card.popular .plan-btn { background: var(--accent); color: white; border: none; }
 .price-card.popular:hover .plan-btn { background: #2563eb; box-shadow: 0 0 15px var(--accent-glow); }
-.bonus-tag { display: inline-block; background: rgba(245, 158, 11, 0.1); color: var(--gold); font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); font-weight: 700; margin-top: 4px;}
 
+/* Ensure 1 column on mobile, 2 columns on tablets */
+@media (max-width: 1100px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .pricing-grid { grid-template-columns: 1fr; } }
 /* --- FIXED RISK TICKER --- */
 .risk-ticker-wrap {
     position: fixed;
@@ -1099,53 +1113,73 @@ footer {
 </section>
   
 <section class="pricing" id="pricing">
-    
     <h2 style="text-align: center; margin-bottom: 10px;">Access Your Research Suite</h2>
-    <p style="text-align: center; color: var(--muted); margin-bottom: 40px;">Comprehensive market data streams tailored for in-depth technical study and analysis.</p>
+    <p style="text-align: center; color: var(--muted); margin-bottom: 25px;">Select the data streams that fit your trading style.</p>
     
+    <div class="billing-toggle-container">
+        <div class="billing-toggle">
+            <button class="toggle-btn active" id="btn-1mo" onclick="switchPricing(1)">1 Month</button>
+            <button class="toggle-btn" id="btn-3mo" onclick="switchPricing(3)">3 Months <span class="save-badge">Save 5%</span></button>
+            <button class="toggle-btn" id="btn-6mo" onclick="switchPricing(6)">6 Months <span class="save-badge">Save 10%</span></button>
+        </div>
+    </div>
+
     <div class="pricing-grid">
         <div class="price-card">
-            <div class="plan-name">1 Month</div>
-            <div class="plan-price">₹249<span>/mo</span></div>
-            <div class="plan-desc">Perfect for testing the waters and exploring the terminal.</div>
+            <div class="plan-name">Greek Basic</div>
+            <div class="plan-price">₹0<span>/forever</span></div>
+            <div class="plan-desc">Essential historical data and education to get you started.</div>
             <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Complete Derivatives Data Visualization</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Real-Time Options Data Analytics</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> "Real-Time Market State Modeling</li>
-                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Greek Academy Courses</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Historical Option Chain Access</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Intraday Backtester (EOD Data)</li>
+                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Live Option Chain is 15-min delayed</li>
             </ul>
-           <button class="plan-btn" onclick="startCheckout('1_month')">Get Started</button>
+            <button class="plan-btn" onclick="openAuthModal('signup')">Create Free Account</button>
+        </div>
+
+        <div class="price-card">
+            <div class="plan-name">Option Chain Pro</div>
+            <div class="plan-price" id="price-oc-display">₹249<span id="suffix-oc">/mo</span></div>
+            <div class="plan-desc">For option writers who need tick-by-tick derivatives data.</div>
+            <ul class="plan-features">
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <b>Everything in Free</b></li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Live Tick-by-Tick Option Chain</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Live Greeks & Max Pain Tracking</li>
+                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> No Footprint Charts</li>
+            </ul>
+            <button class="plan-btn" id="btn-oc-checkout" onclick="startCheckout('oc_1m')">Select Plan</button>
+        </div>
+
+        <div class="price-card">
+            <div class="plan-name">Footprint Pro</div>
+            <div class="plan-price" id="price-fp-display">₹249<span id="suffix-fp">/mo</span></div>
+            <div class="plan-desc">For aggressive scalpers relying purely on volume & orderflow.</div>
+            <ul class="plan-features">
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <b>Everything in Free</b></li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Live X-Ray Footprint Charts</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Depth 30 DOM Order Book</li>
+                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> No Live Option Chain</li>
+            </ul>
+            <button class="plan-btn" id="btn-fp-checkout" onclick="startCheckout('fp_1m')">Select Plan</button>
         </div>
 
         <div class="price-card popular">
-            <div class="popular-badge">Popular</div>
-            <div class="plan-name">3 Months</div>
-            <div class="plan-price">₹599<span>/qtr</span></div>
-            <div class="plan-desc">Optimal value for consistent intraday data analysis.</div>
+            <div class="popular-badge">Best Value</div>
+            <div class="plan-name">All-Access Bundle</div>
+            <div class="plan-price" id="price-combo-display">₹490<span id="suffix-combo">/mo</span></div>
+            <div class="plan-desc">The ultimate institutional suite. Combine orderflow and derivatives.</div>
             <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 1-Month Plan</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Intraday Backtester Access</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Priority Audio Alerts</li>
-                <li style="color: var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Community Access (Requires ₹499 fee)</li>
-            </ul>
-            <button class="plan-btn" onclick="startCheckout('3_months')">Get Started</button>
-        </div>
-
-        <div class="price-card">
-            <div class="plan-name">6 Months</div>
-            <div class="plan-price">₹999<span>/half-yr</span></div>
-            <div class="plan-desc">For comprehensive and long-term quantitative market research.</div>
-            <ul class="plan-features">
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in 3-Month Plan</li>
-                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Lifetime Platform Updates</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <b>Everything in OC & Footprint</b></li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Cross-reference Options with Volume</li>
+                <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> COA Reversal Zone Indicators</li>
                 <li>
                     <div>
-                        <div style="display:flex; align-items:center; gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Traders Community</div>
-                        <div class="bonus-tag">₹499 JOINING FEE WAIVED</div>
+                        <div style="display:flex; align-items:center; gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> Premium Discord Community</div>
                     </div>
                 </li>
             </ul>
-            <button class="plan-btn" onclick="startCheckout('6_months')">Get Started</button>
+            <button class="plan-btn" id="btn-combo-checkout" onclick="startCheckout('combo_1m')">Get All Access</button>
         </div>
     </div>
 </section>
@@ -1646,6 +1680,44 @@ if (heroBox) {
               errDiv.style.display = 'block';
           }
       }
+  };
+
+  // 🟢 PRICING TOGGLE LOGIC
+  window.switchPricing = function(months) {
+      // 1. Update active button styling
+      document.getElementById('btn-1mo').classList.remove('active');
+      document.getElementById('btn-3mo').classList.remove('active');
+      document.getElementById('btn-6mo').classList.remove('active');
+      document.getElementById(`btn-${months}mo`).classList.add('active');
+
+      // 2. Pricing Data (Uses your exact requested pricing)
+      const pricingData = {
+          1: { oc: 249, fp: 249, combo: 490, suffix: '/mo', plan_oc: 'oc_1m', plan_fp: 'fp_1m', plan_combo: 'combo_1m' },
+          3: { oc: 699, fp: 699, combo: 1399, suffix: '/qtr', plan_oc: 'oc_3m', plan_fp: 'fp_3m', plan_combo: 'combo_3m' },
+          6: { oc: 1299, fp: 1299, combo: 2799, suffix: '/half', plan_oc: 'oc_6m', plan_fp: 'fp_6m', plan_combo: 'combo_6m' }
+      };
+
+      const data = pricingData[months];
+
+      // 3. Update the text prices with a quick animation effect
+      const priceElements = [
+          { el: document.getElementById('price-oc-display'), val: data.oc, suf: data.suffix },
+          { el: document.getElementById('price-fp-display'), val: data.fp, suf: data.suffix },
+          { el: document.getElementById('price-combo-display'), val: data.combo, suf: data.suffix }
+      ];
+
+      priceElements.forEach(item => {
+          item.el.style.opacity = 0; // Fade out
+          setTimeout(() => {
+              item.el.innerHTML = `₹${item.val}<span>${item.suf}</span>`;
+              item.el.style.opacity = 1; // Fade in
+          }, 150);
+      });
+
+      // 4. Update the checkout buttons so they send the right Plan ID to your backend
+      document.getElementById('btn-oc-checkout').setAttribute('onclick', `startCheckout('${data.plan_oc}')`);
+      document.getElementById('btn-fp-checkout').setAttribute('onclick', `startCheckout('${data.plan_fp}')`);
+      document.getElementById('btn-combo-checkout').setAttribute('onclick', `startCheckout('${data.plan_combo}')`);
   };
 
   window.startCheckout = async function(planId) {
