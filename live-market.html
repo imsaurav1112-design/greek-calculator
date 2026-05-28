@@ -1396,21 +1396,23 @@ function updateMarketIntelligence(coa) {
     document.getElementById('coa-sup-state').innerText = formatState(coa.support);
     document.getElementById('coa-res-state').innerText = formatState(coa.resistance);
     
-    // 🟢 FIXED LOG HISTORY PARSER
     const logBody = document.getElementById('coa-logs-body');
+    
     if (coa.logs && Array.isArray(coa.logs) && coa.logs.length > 0) {
         
-        // Alert Sound Trigger Fix
-        const latestLog = coa.logs[0];
+        // 🟢 Fix Sound Trigger (Since we append in backend, newest is at the very end of the array)
+        const latestLog = coa.logs[coa.logs.length - 1]; 
         const currentSig = typeof latestLog === 'string' ? latestLog : JSON.stringify(latestLog);
         if (lastLogSignature !== "" && currentSig !== lastLogSignature) playAlertSound();
         lastLogSignature = currentSig;
 
-        logBody.innerHTML = coa.logs.map(log => {
+        // 🟢 FIX: Reverse the array so the newest updates appear at the top
+        const reversedLogs = [...coa.logs].reverse();
+
+        logBody.innerHTML = reversedLogs.map(log => {
             let time = "--:--";
             let msg = "";
             
-            // Handle if backend sends pure strings OR dictionaries
             if (typeof log === 'string') {
                 const parts = log.split(' - ');
                 if (parts.length >= 2) {
@@ -1424,12 +1426,15 @@ function updateMarketIntelligence(coa) {
                 msg = log.msg;
             }
 
-            // Dynamic Color Coding
             let msgColor = 'var(--text)';
             const lowerMsg = msg.toLowerCase();
-            if (lowerMsg.includes('bullish') || lowerMsg.includes('top') || lowerMsg.includes('support')) msgColor = 'var(--green)';
-            if (lowerMsg.includes('bearish') || lowerMsg.includes('bottom') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
-            if (lowerMsg.includes('challenger') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
+            
+            // Highlight specific events
+            if (lowerMsg.includes('bullish') || lowerMsg.includes('support') || lowerMsg.includes('consolidated')) msgColor = 'var(--green)';
+            if (lowerMsg.includes('bearish') || lowerMsg.includes('resistance')) msgColor = 'var(--red)';
+            if (lowerMsg.includes('weak') || lowerMsg.includes('shifting') || lowerMsg.includes('wtt') || lowerMsg.includes('wtb')) msgColor = 'var(--gold)';
+            if (lowerMsg.includes('strong')) msgColor = 'var(--accent)'; 
+            if (lowerMsg.includes('initial 9:15 am')) msgColor = 'var(--muted)'; 
             
             return `<tr><td style="color:var(--text); white-space: nowrap;">${time}</td><td colspan="2" style="color: ${msgColor}; line-height: 1.4;">${msg}</td></tr>`;
         }).join('');
@@ -1437,7 +1442,6 @@ function updateMarketIntelligence(coa) {
         logBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--muted); padding: 10px;">Waiting for scenario shifts...</td></tr>`;
     }
 }
-
 // 🟢 NEW: Key Levels Calculator
 function updateKeyLevels(chainData, coaData) {
     try {
