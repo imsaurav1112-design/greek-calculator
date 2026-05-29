@@ -478,6 +478,47 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 .status-indicator { display: flex; align-items: center; gap: 6px; font-weight: 500; color: var(--muted);}
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
 
+        /* --- 🟢 HOLIDAY OVERLAY STYLES --- */
+.holiday-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(11, 15, 25, 0.65); /* Matches Dark Theme */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 100;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+
+.light-theme .holiday-overlay {
+    background: rgba(248, 250, 252, 0.65); /* Matches Light Theme */
+}
+
+.holiday-msg {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.holiday-sub {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.blurred-table {
+    filter: blur(6px);
+    opacity: 0.5;
+    pointer-events: none; /* Prevent clicking strikes when closed */
+}
+
 /* Mobile App Layout */
 @media (max-width: 768px) {
     .nav-content { display: none; flex-direction: column; gap: 16px; }
@@ -728,6 +769,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         </div>
     </div>    
     <div class="table-wrapper" id="table-scroll-area">
+            
+            <div class="table-wrapper" id="table-scroll-area" style="position: relative;">
+        <div id="holiday-overlay" class="holiday-overlay">
+            <div class="holiday-msg" id="holiday-title">Market Closed</div>
+            <div class="holiday-sub" id="holiday-desc">Trading is offline.</div>
+        </div>
+                    
         <table id="main-table">
           <thead>
             <tr>
@@ -856,6 +904,64 @@ let tvIsCandle = true;
 let activePriceLines = []; 
 let lastChartSymbol = ''; 
 let tvResizeObserver = null; 
+
+        // 🟢 NSE MARKET HOLIDAYS (2026 List)
+// Add or remove dates here (Format: YYYY-MM-DD)
+const marketHolidays = {
+    "2026-01-26": "Republic Day",
+    "2026-03-03": "Maha Shivaratri",
+    "2026-03-20": "Holi",
+    "2026-03-29": "Id-ul-Fitr (Ramzan Id)",
+    "2026-04-03": "Good Friday",
+    "2026-04-14": "Dr. Baba Saheb Ambedkar Jayanti",
+    "2026-04-18": "Ram Navami",
+    "2026-05-01": "Maharashtra Day",
+    "2026-05-26": "Bakri Id",
+    "2026-08-15": "Independence Day",
+    "2026-09-17": "Ganesh Chaturthi",
+    "2026-10-02": "Mahatma Gandhi Jayanti",
+    "2026-10-18": "Dussehra",
+    "2026-11-08": "Diwali",
+    "2026-11-24": "Gurunanak Jayanti",
+    "2026-12-25": "Christmas"
+};
+
+function checkMarketHoliday() {
+    const now = new Date();
+    
+    // Get current Date & Day strictly in IST Timezone
+    const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const istDateParts = new Intl.DateTimeFormat('en-GB', options).format(now).split('/'); 
+    const dateStr = `${istDateParts[2]}-${istDateParts[1]}-${istDateParts[0]}`; // Formats to YYYY-MM-DD
+    
+    const dayOfWeek = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', weekday: 'short' }).format(now);
+    const isWeekend = (dayOfWeek === 'Sat' || dayOfWeek === 'Sun');
+    const festival = marketHolidays[dateStr];
+    
+    const overlay = document.getElementById('holiday-overlay');
+    const table = document.getElementById('main-table');
+    const title = document.getElementById('holiday-title');
+    const desc = document.getElementById('holiday-desc');
+    
+    if (festival) {
+        title.innerText = `Happy ${festival}! 🎉`;
+        desc.innerText = "The Indian stock market is closed today.";
+        overlay.style.display = 'flex';
+        table.classList.add('blurred-table');
+        return true;
+    } else if (isWeekend) {
+        title.innerText = "Weekend — Market Closed";
+        desc.innerText = "Enjoy your weekend! Markets will reopen on Monday.";
+        overlay.style.display = 'flex';
+        table.classList.add('blurred-table');
+        return true;
+    } else {
+        // Market is open, ensure overlay is hidden
+        overlay.style.display = 'none';
+        table.classList.remove('blurred-table');
+        return false;
+    }
+}
 
 function toggleMobileNav() {
     const nav = document.getElementById('left-nav');
@@ -1696,6 +1802,7 @@ document.getElementById('f-ce-oi').innerText = fmtVol(data.total_ce_oi);
 function abs(x) { return x < 0 ? -x : x; }
 
 // Terminal Initialization
+// Terminal Initialization
 window.initTerminal = async function() {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
@@ -1711,7 +1818,12 @@ window.initTerminal = async function() {
         console.error("Profile check failed", e);
     }
     
+    // 🟢 RUN THE HOLIDAY CHECKER
+    checkMarketHoliday();
+    
     window.loadExpiries(); 
+    
+    // ... rest of initTerminal
     
     // 🟢 THE FIX: 3-Second Interval
     setInterval(() => {
