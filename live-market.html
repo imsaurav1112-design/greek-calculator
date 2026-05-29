@@ -763,7 +763,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
 
 <div class="drawing-toolbar" id="drawing-toolbar">
-    <div class="drag-handle">⋮⋮</div>
+    <div class="drag-handle" id="draw-drag" title="Drag to Move">⋮⋮</div>
     <button class="draw-btn active" id="tool-pencil" onclick="setDrawTool('pencil')" title="Pencil">✏️</button>
     <button class="draw-btn" id="tool-line" onclick="setDrawTool('line')" title="Straight Line">📏</button>
     <div class="divider" style="height: 20px; background: var(--border);"></div>
@@ -1207,6 +1207,39 @@ canvas.addEventListener('mouseup', stopDraw);
 canvas.addEventListener('touchstart', startDraw, { passive: false });
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawing(e); }, { passive: false });
 canvas.addEventListener('touchend', stopDraw);
+
+        // ==========================================
+// 🟢 DRAGGABLE HOLIDAY OVERLAY LOGIC
+// ==========================================
+const holidayBox = document.getElementById("holiday-overlay");
+const holidayDrag = document.getElementById("holiday-drag");
+
+let isDraggingHoliday = false;
+let holidayOffsetX, holidayOffsetY;
+
+holidayDrag.addEventListener("mousedown", (e) => {
+    isDraggingHoliday = true;
+    
+    // Calculate where the mouse grabbed the box relative to the box's top-left corner
+    const rect = holidayBox.getBoundingClientRect();
+    holidayOffsetX = e.clientX - rect.left;
+    holidayOffsetY = e.clientY - rect.top;
+    
+    // Strip the initial CSS centering margin so JavaScript absolute coordinates take over cleanly
+    holidayBox.style.marginLeft = "0px"; 
+});
+
+document.addEventListener("mousemove", (e) => {
+    if (!isDraggingHoliday) return;
+    
+    // Move the box
+    holidayBox.style.left = `${e.clientX - holidayOffsetX}px`;
+    holidayBox.style.top = `${e.clientY - holidayOffsetY}px`;
+});
+
+document.addEventListener("mouseup", () => {
+    isDraggingHoliday = false;
+});
         
 function toggleTheme() {
     document.body.classList.toggle('light-theme');
