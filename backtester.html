@@ -68,9 +68,10 @@ body {
 .drawing-canvas.active { pointer-events: auto; }
 
 .drawing-toolbar {
-    position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 12px; display: flex;
+    border-radius: 8px; padding: 6px 12px; 
+    display: none; /* 🟢 FIX: Hidden by default! */
     align-items: center; gap: 8px; z-index: 8001;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
@@ -624,6 +625,14 @@ footer {
                 <button class="nav-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
+
+<button class="nav-btn" id="nav-btn-draw" onclick="toggleDrawingToolbar()" title="Toggle Drawing Tools">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+            </button>
+              
                     <div class="settings-panel" id="settings-panel">
                     <div class="settings-header">General</div>
                     <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
@@ -907,7 +916,31 @@ document.addEventListener("DOMContentLoaded", () => {
         document.addEventListener("mouseup", () => { isDraggingDraw = false; });
     }
 });
-  
+
+  // --- 🟢 TOGGLE TOOLBAR VISIBILITY LOGIC ---
+    window.toggleDrawingToolbar = function() {
+        const toolbar = document.getElementById('drawing-toolbar');
+        const navBtn = document.getElementById('nav-btn-draw');
+        
+        if (!toolbar) return;
+
+        // Check if it's currently hidden
+        if (toolbar.style.display === 'none' || toolbar.style.display === '') {
+            toolbar.style.display = 'flex'; // Show it
+            if (navBtn) navBtn.classList.add('active'); // Highlight the nav button
+        } else {
+            toolbar.style.display = 'none'; // Hide it
+            if (navBtn) navBtn.classList.remove('active'); // Un-highlight the nav button
+            
+            // 🟢 SMART FAILSAFE: If they hide the toolbar while Draw Mode is active, 
+            // automatically turn off Draw Mode so they don't get stuck unable to click the table!
+            if (isDrawingMode) {
+                const drawToggle = document.getElementById('draw-mode-toggle');
+                if (drawToggle) drawToggle.checked = false;
+                window.toggleDrawingMode(); 
+            }
+        }
+    };
 
 const BACKTEST_API = 'https://api.greekcalculator.in';
 
