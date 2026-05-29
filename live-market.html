@@ -523,26 +523,30 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
         /* --- 🟢 HOLIDAY OVERLAY STYLES --- */
 .holiday-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(11, 15, 25, 0.85); 
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 100;
+    position: fixed; /* 🟢 Keeps it centered even if the table scrolls */
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); /* Dead center math */
+    background: var(--card); /* Uses your solid card theme color */
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8); /* Heavy drop shadow to make it pop */
+    z-index: 999;
     display: none; 
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 20px;
+    padding: 30px 40px;
+    min-width: 300px;
 }
 
 .light-theme .holiday-overlay {
-    background: rgba(248, 250, 252, 0.65); /* Matches Light Theme */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15); /* Softer shadow for light mode */
 }
 
 .holiday-msg {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--accent);
     margin-bottom: 8px;
@@ -550,15 +554,15 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 }
 
 .holiday-sub {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--muted);
 }
 
 .blurred-table {
-    filter: blur(6px);
-    opacity: 0.5;
-    pointer-events: none; /* Prevent clicking strikes when closed */
+    /* 🟢 Blur is completely removed! */
+    opacity: 0.75; /* Just slightly dims the table so the eye focuses on the box */
+    pointer-events: none; /* Prevents clicking on the disabled table */
 }
 
 /* Mobile App Layout */
