@@ -949,15 +949,18 @@ footer {
             </div>
 
             <div class="hero-buttons" id="hero-actions">
-                <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
-                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+<!-- GREEN LIVE BUTTON -->
+                <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="openAuthModal('signup')">
+                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
                            LIVE OC
                 </button>
-                <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+<!-- BLUE FOOTPRINT BUTTON -->
+                <button class="btn" style="background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);" onclick="openAuthModal('signup')">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
                            FOOTPRINT
                 </button>
-                <button class="btn btn-primary" onclick="openAuthModal('signup')">
+ <!-- GREY BACKTESTER BUTTON -->
+                <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="openAuthModal('signup')">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
                          BACKTESTER
                 </button>
@@ -1527,16 +1530,16 @@ onAuthStateChanged(auth, async (user) => {
                     expiryText.style.display = "block";
                 }
                 
-                heroBox.innerHTML = `
-    <button class="btn btn-primary" onclick="window.location.href='live-market'">
+heroBox.innerHTML = `
+    <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="window.location.href='live-market'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
         LIVE OC
     </button>
-    <button class="btn btn-primary" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-color: #334155;" onclick="window.location.href='footprint'">
+    <button class="btn" style="background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);" onclick="window.location.href='footprint'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
         FOOTPRINT
     </button>
-    <button class="btn" style="background: var(--section); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
+    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
         BACKTESTER
     </button>
@@ -1546,16 +1549,16 @@ onAuthStateChanged(auth, async (user) => {
                 badge.className = "profile-tier tier-free";
                 expiryText.style.display = "none";
                 
-               heroBox.innerHTML = `
-    <button class="btn" style="background:#1e222d; color:var(--muted); border-color:var(--border);" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+heroBox.innerHTML = `
+    <button class="btn" style="background: var(--green); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
         LIVE OC (PRO)
     </button>
-    <button class="btn" style="background:#1e222d; color:var(--muted); border-color:var(--border);" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+    <button class="btn" style="background: var(--accent); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
         FOOTPRINT (PRO)
     </button>
-    <button class="btn btn-primary" onclick="window.location.href='backtester'">
+    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
         BACKTESTER (FREE)
     </button>
@@ -1574,16 +1577,16 @@ onAuthStateChanged(auth, async (user) => {
 const heroBox = document.getElementById('hero-actions');
 if (heroBox) {
             // 🟢 Show the 3 buttons to entice users, but require login to use them!
-           heroBox.innerHTML = `
-    <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+heroBox.innerHTML = `
+    <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="openAuthModal('signup')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
         LIVE OC
     </button>
-    <button class="btn" style="background:#1e222d; color:var(--text); border-color:var(--border);" onclick="openAuthModal('signup')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+    <button class="btn" style="background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);" onclick="openAuthModal('signup')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
         FOOTPRINT
     </button>
-    <button class="btn btn-primary" onclick="openAuthModal('signup')">
+    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="openAuthModal('signup')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
         BACKTESTER
     </button>
