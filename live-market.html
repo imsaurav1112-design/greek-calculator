@@ -798,6 +798,14 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     <button id="replay-play-btn" class="draw-btn" onclick="toggleReplayPlay()" style="color: var(--green);">▶</button>
     <input type="range" id="replay-slider" min="0" max="0" value="0" oninput="scrubReplay(this.value)">
     <span id="replay-time-display">--:--</span>
+
+  <select id="replay-speed" onchange="changeReplaySpeed()" style="background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 4px; font-size: 11px; padding: 4px; outline: none; cursor: pointer;">
+        <option value="1000">1x</option>
+        <option value="500">2x</option>
+        <option value="200">5x</option>
+        <option value="50">20x</option>
+    </select>
+                
     <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--green); font-weight: 700; font-size: 12px; font-family: 'Inter';">• LIVE</button>
 </div>
         
@@ -2168,11 +2176,12 @@ window.initTerminal = async function() {
     }, 3000); // 
 };
 
-        // ==========================================
+// ==========================================
 // 🟢 INTRADAY RAM REPLAY ENGINE
 // ==========================================
 let isReplaying = false;
 let replayTimer = null;
+let currentReplaySpeed = 1000; // Default: 1 frame per second
 
 function startIntradayReplay() {
     if (liveHistory.length === 0) {
@@ -2199,13 +2208,33 @@ function exitReplayMode() {
     if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
     
     document.getElementById('intraday-replay-bar').style.display = 'none';
-    document.getElementById('replay-play-btn').innerText = "▶";
+    
+    const playBtn = document.getElementById('replay-play-btn');
+    if (playBtn) {
+        playBtn.innerText = "▶";
+        playBtn.style.color = "var(--green)";
+    }
     
     // Instantly render the absolute latest live data we have in memory
     reRenderTable(); 
     setStatus('live', 'Live');
 }
 
+// 🟢 NEW: Handles changing speed mid-playback
+function changeReplaySpeed() {
+    const speedSelect = document.getElementById('replay-speed');
+    if (speedSelect) {
+        currentReplaySpeed = parseInt(speedSelect.value);
+    }
+    
+    // If it's already playing, restart the timer immediately with the new speed
+    if (replayTimer) {
+        clearInterval(replayTimer);
+        startReplayInterval();
+    }
+}
+
+// 🟢 UPDATED: Toggle function now uses the helper below
 function toggleReplayPlay() {
     const btn = document.getElementById('replay-play-btn');
     if (replayTimer) {
@@ -2216,22 +2245,29 @@ function toggleReplayPlay() {
     } else {
         btn.innerText = "⏸";
         btn.style.color = "var(--gold)";
+        startReplayInterval(); 
+    }
+}
+
+// 🟢 NEW: Helper function to run the loop
+function startReplayInterval() {
+    replayTimer = setInterval(() => {
+        let slider = document.getElementById('replay-slider');
+        let nextVal = parseInt(slider.value) + 1;
         
-        replayTimer = setInterval(() => {
-            let slider = document.getElementById('replay-slider');
-            let nextVal = parseInt(slider.value) + 1;
-            
-            if (nextVal >= liveHistory.length) {
-                clearInterval(replayTimer);
-                replayTimer = null;
+        if (nextVal >= liveHistory.length) {
+            clearInterval(replayTimer);
+            replayTimer = null;
+            const btn = document.getElementById('replay-play-btn');
+            if(btn) {
                 btn.innerText = "▶";
                 btn.style.color = "var(--green)";
-            } else {
-                slider.value = nextVal;
-                scrubReplay(nextVal);
             }
-        }, 1000); // Plays 1 recorded frame per second
-    }
+        } else {
+            slider.value = nextVal;
+            scrubReplay(nextVal);
+        }
+    }, currentReplaySpeed); // Uses dynamic speed
 }
 
 function scrubReplay(index) {
