@@ -798,7 +798,7 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     <button id="replay-play-btn" class="draw-btn" onclick="toggleReplayPlay()" style="color: var(--green);">▶</button>
     <input type="range" id="replay-slider" min="0" max="0" value="0" oninput="scrubReplay(this.value)">
     <span id="replay-time-display">--:--</span>
-    <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--red); font-weight: 700; font-size: 12px; font-family: 'Inter';">✖ LIVE</button>
+    <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--green); font-weight: 700; font-size: 12px; font-family: 'Inter';">• LIVE</button>
 </div>
         
 <header>
@@ -887,9 +887,6 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
 
             <button class="nav-btn" onclick="startIntradayReplay()" title="Replay Today's Action">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
-            </button>
-        <button class="nav-btn" onclick="exitReplayMode()" title="Sync to Live Market">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
             </button>
 
             <div class="divider" style="display: block; width: 60%; height: 1px; background: var(--border);"></div>
