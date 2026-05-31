@@ -632,6 +632,17 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     opacity: 0.75; /* Just slightly dims the table so the eye focuses on the box */
     pointer-events: none; /* Prevents clicking on the disabled table */
 }
+        /* --- 🟢 INTRADAY REPLAY BAR --- */
+.replay-bar {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 20px; display: flex; align-items: center; gap: 15px;
+    z-index: 9000; box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+}
+.light-theme .replay-bar { box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+#replay-slider { flex: 1; width: 300px; accent-color: var(--accent); cursor: pointer; }
+#replay-time-display { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: var(--accent); min-width: 75px; text-align: center; }
+
 
 /* Mobile App Layout */
 @media (max-width: 768px) {
@@ -734,6 +745,8 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .status-indicator { order: 2; margin-left: auto; margin-right: 10px; }
     .live-clock { order: 3; font-size: 11px; }
 }
+    .replay-bar { width: 90%; bottom: 120px; padding: 10px; }
+    #replay-slider { width: 100%; }
 
 .mobile-menu-toggle { display: none; }
 .mobile-market-stats { display: none; }
@@ -779,6 +792,13 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <input type="checkbox" id="draw-mode-toggle" onchange="toggleDrawingMode()">
         <span class="draw-toggle-text">Draw Mode</span>
     </label>
+</div>
+
+        <div id="intraday-replay-bar" class="replay-bar" style="display: none;">
+    <button id="replay-play-btn" class="draw-btn" onclick="toggleReplayPlay()" style="color: var(--green);">▶</button>
+    <input type="range" id="replay-slider" min="0" max="0" value="0" oninput="scrubReplay(this.value)">
+    <span id="replay-time-display">--:--</span>
+    <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--red); font-weight: 700; font-size: 12px; font-family: 'Inter';">✖ LIVE</button>
 </div>
         
 <header>
@@ -863,6 +883,10 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
             
             <button class="nav-btn" onclick="window.open('backtester', '_blank')" title="Open Backtester">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+            </button>
+
+            <button class="nav-btn" onclick="startIntradayReplay()" title="Replay Today's Action">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
             </button>
 
             <div class="divider" style="display: block; width: 60%; height: 1px; background: var(--border);"></div>
@@ -1595,7 +1619,7 @@ async function fetchUpstoxChain(quiet = false) {
     globalRows = data.chain || [];
     globalSym = sym; globalData = data;
     
-   const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+  const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
     // 🟢 THE FIX: Push the exact same structure the backend sends, so the chart parser never breaks!
@@ -1613,10 +1637,19 @@ async function fetchUpstoxChain(quiet = false) {
             }))
         });
     }
+
+    // 👇 STEP 4: THE GATEKEEPER GOES EXACTLY HERE 👇
+    if (typeof isReplaying !== 'undefined' && isReplaying) {
+        // Silently update the slider max so they can scrub into newly fetched data
+        const slider = document.getElementById('replay-slider');
+        if (slider) slider.max = liveHistory.length - 1;
+        return; 
+    }
+    // 👆 END OF GATEKEEPER 👆
+
     // 🟢 CLEANED UP: No more heavy charts, just the table and the Key Levels UI!
     renderTable(globalRows, sym, data, quiet); 
     updateKeyLevels(data.chain, data.coa);
-
     // 🟢 NEW: Fade out the loader once the first table render is complete!
     if (!initialLoadComplete) {
         initialLoadComplete = true;
@@ -2134,6 +2167,105 @@ window.initTerminal = async function() {
         }
     }, 3000); // 
 };
+
+        // ==========================================
+// 🟢 INTRADAY RAM REPLAY ENGINE
+// ==========================================
+let isReplaying = false;
+let replayTimer = null;
+
+function startIntradayReplay() {
+    if (liveHistory.length === 0) {
+        alert("Not enough data recorded yet. Let the live market run for a minute first!");
+        return;
+    }
+    isReplaying = true;
+    document.getElementById('intraday-replay-bar').style.display = 'flex';
+    
+    // Setup Slider parameters based on RAM array size
+    const slider = document.getElementById('replay-slider');
+    slider.max = liveHistory.length - 1;
+    slider.value = 0;
+    
+    setStatus('loading', 'REPLAY MODE');
+    document.getElementById('status-dot').style.background = 'var(--gold)';
+    document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.5)';
+    
+    scrubReplay(0); // Show first frame of the day immediately
+}
+
+function exitReplayMode() {
+    isReplaying = false;
+    if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
+    
+    document.getElementById('intraday-replay-bar').style.display = 'none';
+    document.getElementById('replay-play-btn').innerText = "▶";
+    
+    // Instantly render the absolute latest live data we have in memory
+    reRenderTable(); 
+    setStatus('live', 'Live');
+}
+
+function toggleReplayPlay() {
+    const btn = document.getElementById('replay-play-btn');
+    if (replayTimer) {
+        clearInterval(replayTimer);
+        replayTimer = null;
+        btn.innerText = "▶";
+        btn.style.color = "var(--green)";
+    } else {
+        btn.innerText = "⏸";
+        btn.style.color = "var(--gold)";
+        
+        replayTimer = setInterval(() => {
+            let slider = document.getElementById('replay-slider');
+            let nextVal = parseInt(slider.value) + 1;
+            
+            if (nextVal >= liveHistory.length) {
+                clearInterval(replayTimer);
+                replayTimer = null;
+                btn.innerText = "▶";
+                btn.style.color = "var(--green)";
+            } else {
+                slider.value = nextVal;
+                scrubReplay(nextVal);
+            }
+        }, 1000); // Plays 1 recorded frame per second
+    }
+}
+
+function scrubReplay(index) {
+    if (!liveHistory[index]) return;
+    const snap = liveHistory[index];
+    
+    document.getElementById('replay-time-display').innerText = snap.time;
+    
+    // 🟢 DECOMPRESSION: Map the compressed RAM data back into the complex globalRows format
+    const reconstructedRows = snap.rows.map(r => ({
+        strike: r.strike,
+        ce: { volume: r.ceVol, oi: r.ceOI, change_oi: r.ceOIChg, ltp: r.ceLTP, iv: 0 },
+        pe: { volume: r.peVol, oi: r.peOI, change_oi: r.peOIChg, ltp: r.peLTP, iv: 0 },
+        ce_prz: r.strike, pe_prz: r.strike // Fallbacks for old PRZ cells
+    }));
+    
+    // Create a dummy data object to feed PCR and Spot to the UI without crashing
+    const fakeDataObj = {
+        spot: snap.spot,
+        pcr: snap.pcr,
+        total_ce_oi: reconstructedRows.reduce((acc, r) => acc + r.ce.oi, 0),
+        total_pe_oi: reconstructedRows.reduce((acc, r) => acc + r.pe.oi, 0),
+        vix: globalData.vix, 
+        max_pain: globalData.max_pain, 
+        coa: null // Disable COA logs jumping around during replay
+    };
+    
+    // Temporarily update the hidden spot input so the Spot Divider line draws correctly
+    document.getElementById('inp-spot').value = snap.spot;
+    
+    // Pass true to 'quiet' so the screen doesn't auto-center annoyingly while you scrub
+    renderTable(reconstructedRows, globalSym, fakeDataObj, true); 
+}
+        
 </script>
 
 <script type="module">
