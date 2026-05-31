@@ -1662,7 +1662,7 @@ function renderBacktestSnapshot() {
          };
     }
     
-    renderTable(globalRows, globalSym, snap, true);
+    // 🟢 FIX: 'false' turns off quiet mode, forcing it to auto-center on every frame!         renderTable(globalRows, globalSym, snap, false);
     updateMarketIntelligence(coaData);
     updateKeyLevels(globalRows, coaData);
 }
