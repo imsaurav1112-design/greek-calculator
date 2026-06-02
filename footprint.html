@@ -269,18 +269,31 @@
     .light-theme .imb-buy { background: rgba(22, 163, 74, 0.2); }
     .light-theme .imb-sell { background: rgba(220, 38, 38, 0.2); }
 
-    /* --- 🟢 PHASE 3: SMART MONEY GAUGE --- */
-    .smart-gauge-panel {
-        position: absolute; bottom: 15px; right: 15px;
-        background: rgba(19, 27, 44, 0.85); border: 1px solid var(--border);
-        border-radius: 8px; padding: 12px 20px; text-align: center;
-        backdrop-filter: blur(10px); z-index: 10;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none;
+  /* --- 🟢 PHASE 3: HEADER BAR METER --- */
+    .header-gauge-container {
+        display: flex; align-items: center; gap: 12px; 
+        margin-left: auto; /* Pushes it to the far right of the header */
+        background: var(--section); padding: 6px 16px; 
+        border-radius: 6px; border: 1px solid var(--border);
+        flex-shrink: 0;
     }
-    .light-theme .smart-gauge-panel { background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    .gauge-title { font-size: 9px; font-weight: 800; color: var(--muted); letter-spacing: 1px; }
-    .gauge-score { font-size: 26px; font-weight: 900; margin: 4px 0; font-family: 'JetBrains Mono', monospace; transition: color 0.3s; }
-    .gauge-label { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+    .hg-text { 
+        font-family: 'JetBrains Mono', monospace; font-size: 11px; 
+        font-weight: 800; display: flex; gap: 8px; min-width: 90px; 
+        justify-content: flex-end; align-items: center;
+    }
+    .hg-bar-track {
+        width: 120px; height: 6px; border-radius: 4px; 
+        background: linear-gradient(90deg, #ef4444 0%, #3f3f46 50%, #10b981 100%);
+        position: relative;
+    }
+    .light-theme .hg-bar-track { background: linear-gradient(90deg, #ef4444 0%, #cbd5e1 50%, #10b981 100%); }
+    .hg-marker {
+        position: absolute; top: -4px; left: 50%; width: 4px; height: 14px; 
+        background: #fff; border-radius: 2px; box-shadow: 0 0 6px rgba(0,0,0,0.8); 
+        transition: left 0.2s ease, background 0.2s; transform: translateX(-50%);
+    }
+    .light-theme .hg-marker { background: #0f172a; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
 
     /* 🟢 Crosshair & Sub-Chart Stats Panel */
     .crosshair-stats {
@@ -1753,38 +1766,34 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
         } else {
             chPanel.style.display = 'none';
         }
-        // Add this directly below the existing crosshair-stats logic:
-            
-            const gaugePanel = document.getElementById('smart-gauge-panel');
-            if (gaugePanel) {
+      // 🟢 PHASE 3: Update Header Bar Meter
+            const hgContainer = document.getElementById('header-gauge');
+            if (hgContainer) {
                 const currentScore = latestDataCache[activeHoverData.time].smartScore || 0;
-                const scoreEl = document.getElementById('gauge-score');
-                const labelEl = document.getElementById('gauge-label');
+                const valEl = document.getElementById('hg-val');
+                const lblEl = document.getElementById('hg-lbl');
+                const marker = document.getElementById('hg-marker');
+
+                valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
+
+                let color = 'var(--muted)';
+                let lbl = 'NEUTRAL';
                 
-                scoreEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
+                if (currentScore >= 70) { color = 'var(--green)'; lbl = 'STRONG BUY'; }
+                else if (currentScore >= 40) { color = 'var(--green)'; lbl = 'BUY'; }
+                else if (currentScore <= -70) { color = 'var(--red)'; lbl = 'STRONG SELL'; }
+                else if (currentScore <= -40) { color = 'var(--red)'; lbl = 'SELL'; }
                 
-                if (currentScore >= 70) {
-                    scoreEl.style.color = 'var(--green)';
-                    labelEl.style.background = 'rgba(16, 185, 129, 0.2)'; labelEl.style.color = 'var(--green)';
-                    labelEl.innerText = "STRONG BUY";
-                } else if (currentScore >= 40) {
-                    scoreEl.style.color = 'var(--green)';
-                    labelEl.style.background = 'rgba(16, 185, 129, 0.1)'; labelEl.style.color = 'var(--green)';
-                    labelEl.innerText = "BUY";
-                } else if (currentScore <= -70) {
-                    scoreEl.style.color = 'var(--red)';
-                    labelEl.style.background = 'rgba(239, 68, 68, 0.2)'; labelEl.style.color = 'var(--red)';
-                    labelEl.innerText = "STRONG SELL";
-                } else if (currentScore <= -40) {
-                    scoreEl.style.color = 'var(--red)';
-                    labelEl.style.background = 'rgba(239, 68, 68, 0.1)'; labelEl.style.color = 'var(--red)';
-                    labelEl.innerText = "SELL";
-                } else {
-                    scoreEl.style.color = 'var(--text)';
-                    labelEl.style.background = 'var(--section)'; labelEl.style.color = 'var(--muted)';
-                    labelEl.innerText = "NEUTRAL";
-                }
-                gaugePanel.style.display = 'block';
+                valEl.style.color = color;
+                lblEl.style.color = color;
+                lblEl.innerText = lbl;
+                
+                // Math to slide the needle: Map the -100 to +100 score onto a 0% to 100% position
+                const pct = ((currentScore + 100) / 200) * 100;
+                marker.style.left = `${pct}%`;
+                
+                // Make the needle glow the corresponding color if it's a strong signal
+                marker.style.background = (currentScore >= 40 || currentScore <= -40) ? color : (isLight ? '#0f172a' : '#ffffff'); 
             }
 
         // --- DRAW DOM ---
