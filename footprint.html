@@ -270,9 +270,14 @@
     .light-theme .imb-sell { background: rgba(220, 38, 38, 0.2); }
 
   /* --- 🟢 PHASE 3: HEADER BAR METER --- */
-    .header-gauge-container {
+.header-gauge-container {
         display: flex; align-items: center; gap: 12px; 
-        margin-left: auto; /* Pushes it to the far right of the header */
+        
+        /* 🟢 FIX: Forces the gauge to the exact center of the screen */
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        
         background: var(--section); padding: 6px 16px; 
         border-radius: 6px; border: 1px solid var(--border);
         flex-shrink: 0;
@@ -327,6 +332,13 @@
         .logo { font-size: 15px; }
         .logo span { display: none; } 
         .header-prices { gap: 10px; font-size: 11px; flex-direction: column; align-items: flex-end; gap: 2px;}
+
+        .header-gauge-container {
+            position: relative;
+            left: auto;
+            transform: none;
+            margin-left: auto;
+        }
         
         /* 🟢 Match Live-Market Vertical Dropdown Nav */
         .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;}
@@ -381,7 +393,7 @@
     </label>
 </div>
 
-<header>
+<header style="position: relative; justify-content: flex-start; gap: 30px;">
     <a href="/" class="logo"><span>GC</span></a>
 
     <div class="header-prices">
@@ -395,7 +407,7 @@
         </div>
     </div>
 
-<!-- 🟢 NEW: Header Bar Meter -->
+    <!-- 🟢 NEW: Header Bar Meter (Now Centered!) -->
     <div class="header-gauge-container" id="header-gauge">
         <div class="hg-text">
             <span id="hg-lbl">NEUTRAL</span>
@@ -405,7 +417,6 @@
             <div class="hg-marker" id="hg-marker"></div>
         </div>
     </div>
-    
 </header>
 
 <div class="workspace">
