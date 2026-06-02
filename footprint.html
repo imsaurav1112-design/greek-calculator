@@ -896,18 +896,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🟢 PHASE 2: ACCUMULATION ZONE DATA
     let accumulationZones = [];
 
-    // 🟢 UPGRADED: TV-Style Axis Hit Detection
- function handlePointerDown(e) {
+ // 🟢 UPGRADED: TV-Style Axis Hit Detection (FIXED)
+    function handlePointerDown(e) {
         const rect = canvas.getBoundingClientRect();
-        
-        // Use native offsetX/Y for perfect mouse mapping, fallback to bounding math for Touch screens
         const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
         const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
 
-        if (x > width - Y_AXIS_WIDTH && y < height - X_AXIS_HEIGHT) {
+        // 🟢 FIX: Clean boundary checks so dragging axes takes priority over chart panning
+        if (x > width - Y_AXIS_WIDTH) {
             isDraggingYScale = true;
             document.body.style.cursor = 'ns-resize';
-        } else if (y > height - X_AXIS_HEIGHT && x < width - Y_AXIS_WIDTH) {
+        } else if (y > height - X_AXIS_HEIGHT) {
             isDraggingXScale = true;
             document.body.style.cursor = 'ew-resize';
         } else {
@@ -915,29 +914,31 @@ document.addEventListener("DOMContentLoaded", () => {
             document.body.style.cursor = 'grabbing';
         }
 
-        // Keep clientX/Y for drag delta math
         lastMouseX = e.touches ? e.touches[0].clientX : e.clientX;
         lastMouseY = e.touches ? e.touches[0].clientY : e.clientY;
     }
-function handlePointerMove(e) {
+
+    function handlePointerMove(e) {
         const rect = canvas.getBoundingClientRect();
-        
-        // Use native offsetX/Y for perfect mouse mapping, fallback to bounding math for Touch screens
         const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
         const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
         
-        // Track mouse for the crosshair
+        // 🟢 FIX: Dynamically calculate the bottom reserve so the crosshair knows exactly where the subcharts are!
+        const currentBottomReserve = showSubCharts 
+            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT) 
+            : X_AXIS_HEIGHT;
+
         currentHoverX = x;
         currentHoverY = y;
-        isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < height - TOTAL_BOTTOM_RESERVE);
+        isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < height - currentBottomReserve);
 
         if (!isDraggingChart && !isDraggingYScale && !isDraggingXScale) {
-            // Hover cursors
-            if (x > width - Y_AXIS_WIDTH && y < height - TOTAL_BOTTOM_RESERVE) canvas.style.cursor = 'ns-resize';
-            else if (y > height - TOTAL_BOTTOM_RESERVE && x < width - Y_AXIS_WIDTH) canvas.style.cursor = 'ew-resize';
+            // Hover cursors perfectly aligned with the drag boundaries
+            if (x > width - Y_AXIS_WIDTH) canvas.style.cursor = 'ns-resize';
+            else if (y > height - X_AXIS_HEIGHT) canvas.style.cursor = 'ew-resize';
             else canvas.style.cursor = 'crosshair';
             
-            renderCanvas(); // Force redraw to move the crosshair
+            renderCanvas(); 
             return;
         }
 
