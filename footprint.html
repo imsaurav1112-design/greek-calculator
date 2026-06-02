@@ -1791,10 +1791,11 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
                 let color = 'var(--muted)';
                 let lbl = 'NEUTRAL';
                 
-                if (currentScore >= 70) { color = 'var(--green)'; lbl = 'STRONG BUY'; }
-                else if (currentScore >= 40) { color = 'var(--green)'; lbl = 'BUY'; }
-                else if (currentScore <= -70) { color = 'var(--red)'; lbl = 'STRONG SELL'; }
-                else if (currentScore <= -40) { color = 'var(--red)'; lbl = 'SELL'; }
+                // 🟢 UPDATED: Changed from Buy/Sell to Positive/Negative
+                if (currentScore >= 70) { color = 'var(--green)'; lbl = 'STRONG POSITIVE'; }
+                else if (currentScore >= 40) { color = 'var(--green)'; lbl = 'POSITIVE'; }
+                else if (currentScore <= -70) { color = 'var(--red)'; lbl = 'STRONG NEGATIVE'; }
+                else if (currentScore <= -40) { color = 'var(--red)'; lbl = 'NEGATIVE'; }
                 
                 valEl.style.color = color;
                 lblEl.style.color = color;
