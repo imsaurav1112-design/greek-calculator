@@ -815,12 +815,12 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
             
             <span id="replay-time-display" style="margin: 0 10px;">--:--</span>
 
-            <select id="replay-speed" onchange="changeReplaySpeed()" style="background: var(--section); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 12px; font-weight: 600; padding: 4px 8px; outline: none; cursor: pointer; font-family: 'Inter', sans-serif;">
-                <option value="1000" style="background: var(--card); color: var(--text);">1x</option>
-                <option value="500" style="background: var(--card); color: var(--text);">2x</option>
-                <option value="200" style="background: var(--card); color: var(--text);">5x</option>
-            </select>
-                            
+            <div style="display: flex; gap: 4px;">
+                <button class="draw-btn" onclick="skipReplayMinutes(-5)" title="Rewind 5 Minutes" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;">-5m</button>
+                <button class="draw-btn" onclick="skipReplayMinutes(5)" title="Skip 5 Minutes" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;">+5m</button>
+                <button class="draw-btn" onclick="skipReplayMinutes(15)" title="Skip 15 Minutes" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;">+15m</button>
+            </div>   
+        
             <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--green); font-weight: 700; font-size: 12px; font-family: 'Inter';">• LIVE</button>
         </div>
         
@@ -2261,18 +2261,45 @@ function startReplayInterval() {
     }, currentReplaySpeed);
 }
 
-// 🟢 NEW: Manual Step Function for the Forward/Backward Buttons
-window.stepReplay = function(direction) {
+
+// 🟢 NEW: Instant Time Skip Engine
+window.skipReplayMinutes = function(minutesToSkip) {
     if (!liveHistory || liveHistory.length === 0) return;
     
-    currentReplayIndex += direction;
+    // 1. Get the current time in raw minutes from midnight
+    let currentSnap = liveHistory[currentReplayIndex];
+    let currentMins = parseTimeToMinutes(currentSnap.time);
+    let targetMins = currentMins + minutesToSkip;
     
-    // Clamp the bounds so it doesn't break
-    if (currentReplayIndex < 0) currentReplayIndex = 0;
-    if (currentReplayIndex >= liveHistory.length) {
-        currentReplayIndex = liveHistory.length - 1;
-        // Auto-pause if they force it past the end while playing
-        if (replayTimer) toggleReplayPlay(); 
+    let newIndex = currentReplayIndex;
+    
+    // 2. Scan the array to find the closest snapshot to our target time
+    if (minutesToSkip > 0) {
+        // Scrub Forward
+        for (let i = currentReplayIndex; i < liveHistory.length; i++) {
+            if (parseTimeToMinutes(liveHistory[i].time) >= targetMins) {
+                newIndex = i;
+                break;
+            }
+            newIndex = i; // Failsafe: if we hit the end of the day, stop on the last frame
+        }
+    } else {
+        // Scrub Backward
+        for (let i = currentReplayIndex; i >= 0; i--) {
+            if (parseTimeToMinutes(liveHistory[i].time) <= targetMins) {
+                newIndex = i;
+                break;
+            }
+            newIndex = i; // Failsafe: if we hit the start of the day, stop on the first frame
+        }
+    }
+    
+    // 3. Update the global index and immediately render the chart
+    currentReplayIndex = newIndex;
+    
+    // Auto-pause if they force it past the very end while playing
+    if (currentReplayIndex >= liveHistory.length - 1 && replayTimer) {
+        toggleReplayPlay(); 
     }
     
     scrubReplay(currentReplayIndex);
