@@ -1641,7 +1641,13 @@ async function fetchUpstoxChain(quiet = false) {
                 ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
                 ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
                 ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
-                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0,
+                
+                // 🟢 ADDED: Save Greeks and RPL/SPL for the Replay Engine
+                ceGreeks: { iv: r.ce.iv || 0, delta: r.ce.delta || 0, theta: r.ce.theta || 0, vega: r.ce.vega || 0, gamma: r.ce.gamma || 0 },
+                peGreeks: { iv: r.pe.iv || 0, delta: r.pe.delta || 0, theta: r.pe.theta || 0, vega: r.pe.vega || 0, gamma: r.pe.gamma || 0 },
+                ce_prz: r.ce_prz || 0,
+                pe_prz: r.pe_prz || 0
             }))
         });
     }
@@ -2296,12 +2302,28 @@ function scrubReplay(index) {
     
     document.getElementById('replay-time-display').innerText = snap.time;
     
-    // 🟢 DECOMPRESSION: Map the compressed RAM data back into the complex globalRows format
+   // 🟢 DECOMPRESSION: Map the compressed RAM data back into the complex globalRows format
     const reconstructedRows = snap.rows.map(r => ({
         strike: r.strike,
-        ce: { volume: r.ceVol, oi: r.ceOI, change_oi: r.ceOIChg, ltp: r.ceLTP, iv: 0 },
-        pe: { volume: r.peVol, oi: r.peOI, change_oi: r.peOIChg, ltp: r.peLTP, iv: 0 },
-        ce_prz: r.strike, pe_prz: r.strike // Fallbacks for old PRZ cells
+        ce: { 
+            volume: r.ceVol, oi: r.ceOI, change_oi: r.ceOIChg, ltp: r.ceLTP, 
+            iv: r.ceGreeks?.iv || 0, 
+            delta: r.ceGreeks?.delta || 0, 
+            theta: r.ceGreeks?.theta || 0, 
+            vega: r.ceGreeks?.vega || 0, 
+            gamma: r.ceGreeks?.gamma || 0 
+        },
+        pe: { 
+            volume: r.peVol, oi: r.peOI, change_oi: r.peOIChg, ltp: r.peLTP, 
+            iv: r.peGreeks?.iv || 0, 
+            delta: r.peGreeks?.delta || 0, 
+            theta: r.peGreeks?.theta || 0, 
+            vega: r.peGreeks?.vega || 0, 
+            gamma: r.peGreeks?.gamma || 0 
+        },
+        // 🟢 RESTORED: RPL and SPL values will now render correctly
+        ce_prz: r.ce_prz > 0 ? r.ce_prz : r.strike, 
+        pe_prz: r.pe_prz > 0 ? r.pe_prz : r.strike
     }));
     
     // Create a dummy data object to feed PCR and Spot to the UI without crashing
