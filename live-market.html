@@ -1667,11 +1667,9 @@ async function fetchUpstoxChain(quiet = false) {
         });
     }
 
-    // 👇 STEP 4: THE GATEKEEPER GOES EXACTLY HERE 👇
+// 👇 STEP 4: THE GATEKEEPER GOES EXACTLY HERE 👇
     if (typeof isReplaying !== 'undefined' && isReplaying) {
-        // Silently update the slider max so they can scrub into newly fetched data
-        const slider = document.getElementById('replay-slider');
-        if (slider) slider.max = liveHistory.length - 1;
+        // Just return so live background data doesn't override the replay screen.
         return; 
     }
     // 👆 END OF GATEKEEPER 👆
@@ -2201,7 +2199,6 @@ window.initTerminal = async function() {
 // 🟢 INTRADAY RAM REPLAY ENGINE
 // ==========================================
 
-// 🟢 NEW: Time conversion helper to fix chronological sorting
 function parseTimeToMinutes(tStr) {
     if (!tStr) return 0;
     let timePart = tStr, ampm = "";
@@ -2219,6 +2216,7 @@ function parseTimeToMinutes(tStr) {
 let isReplaying = false;
 let replayTimer = null;
 let currentReplaySpeed = 1000; 
+let currentReplayIndex = 0; // 🟢 NEW: Tracks the frame since we removed the slider
 
 function startIntradayReplay() {
     if (liveHistory.length === 0) {
@@ -2226,77 +2224,28 @@ function startIntradayReplay() {
         return;
     }
 
-    // 🟢 THE FIX: Force the RAM array to sort by actual chronological time!
     liveHistory.sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
 
     isReplaying = true;
     document.getElementById('intraday-replay-bar').style.display = 'flex';
     
-    // Setup Slider parameters based on RAM array size
-    const slider = document.getElementById('replay-slider');
-    slider.max = liveHistory.length - 1;
-    slider.value = 0;
+    currentReplayIndex = 0; // Reset index to the start of the day
     
     setStatus('loading', 'REPLAY MODE');
     document.getElementById('status-dot').style.background = 'var(--gold)';
     document.getElementById('status-dot').style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.5)';
     
-    scrubReplay(0); // Show first frame of the day immediately
+    scrubReplay(currentReplayIndex); // Show first frame of the day immediately
 }
 
-function exitReplayMode() {
-    isReplaying = false;
-    if (replayTimer) { clearInterval(replayTimer); replayTimer = null; }
-    
-    document.getElementById('intraday-replay-bar').style.display = 'none';
-    
-    const playBtn = document.getElementById('replay-play-btn');
-    if (playBtn) {
-        playBtn.innerText = "▶";
-        playBtn.style.color = "var(--green)";
-    }
-    
-    // Instantly render the absolute latest live data we have in memory
-    reRenderTable(); 
-    setStatus('live', 'Live');
-}
+// ... Keep your existing exitReplayMode, changeReplaySpeed, and toggleReplayPlay here ...
 
-// 🟢 NEW: Handles changing speed mid-playback
-function changeReplaySpeed() {
-    const speedSelect = document.getElementById('replay-speed');
-    if (speedSelect) {
-        currentReplaySpeed = parseInt(speedSelect.value);
-    }
-    
-    // If it's already playing, restart the timer immediately with the new speed
-    if (replayTimer) {
-        clearInterval(replayTimer);
-        startReplayInterval();
-    }
-}
-
-// 🟢 UPDATED: Toggle function now uses the helper below
-function toggleReplayPlay() {
-    const btn = document.getElementById('replay-play-btn');
-    if (replayTimer) {
-        clearInterval(replayTimer);
-        replayTimer = null;
-        btn.innerText = "▶";
-        btn.style.color = "var(--green)";
-    } else {
-        btn.innerText = "⏸";
-        btn.style.color = "var(--gold)";
-        startReplayInterval(); 
-    }
-}
-
-// 🟢 NEW: Helper function to run the loop
+// 🟢 UPDATED: Helper function to run the loop without a slider
 function startReplayInterval() {
     replayTimer = setInterval(() => {
-        let slider = document.getElementById('replay-slider');
-        let nextVal = parseInt(slider.value) + 1;
+        currentReplayIndex++;
         
-        if (nextVal >= liveHistory.length) {
+        if (currentReplayIndex >= liveHistory.length) {
             clearInterval(replayTimer);
             replayTimer = null;
             const btn = document.getElementById('replay-play-btn');
@@ -2304,12 +2253,30 @@ function startReplayInterval() {
                 btn.innerText = "▶";
                 btn.style.color = "var(--green)";
             }
+            // Keep index at the end of the array
+            currentReplayIndex = liveHistory.length - 1; 
         } else {
-            slider.value = nextVal;
-            scrubReplay(nextVal);
+            scrubReplay(currentReplayIndex);
         }
-    }, currentReplaySpeed); // Uses dynamic speed
+    }, currentReplaySpeed);
 }
+
+// 🟢 NEW: Manual Step Function for the Forward/Backward Buttons
+window.stepReplay = function(direction) {
+    if (!liveHistory || liveHistory.length === 0) return;
+    
+    currentReplayIndex += direction;
+    
+    // Clamp the bounds so it doesn't break
+    if (currentReplayIndex < 0) currentReplayIndex = 0;
+    if (currentReplayIndex >= liveHistory.length) {
+        currentReplayIndex = liveHistory.length - 1;
+        // Auto-pause if they force it past the end while playing
+        if (replayTimer) toggleReplayPlay(); 
+    }
+    
+    scrubReplay(currentReplayIndex);
+};
 
 function scrubReplay(index) {
     if (!liveHistory[index]) return;
