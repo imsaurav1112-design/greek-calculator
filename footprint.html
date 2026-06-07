@@ -1933,35 +1933,6 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
                 ctx.setLineDash([]); 
             }
         }
-        // 🟢 FIX: TRADINGVIEW STYLE CURRENT SPOT PRICE (LTP) LINE
-        // Keeps the horizontal price line and scale tag ALWAYS visible!
-        const currentSpot = parseFloat(document.getElementById('inp-spot').value);
-        if (currentSpot > 0) {
-            const spotY = getPriceY(currentSpot);
-            
-            if (spotY > 0 && spotY < MAIN_CHART_BOTTOM) {
-                // 1. Draw the horizontal dashed line across the entire chart
-                ctx.strokeStyle = 'var(--gold)'; 
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([4, 4]);
-                ctx.beginPath();
-                ctx.moveTo(0, spotY);
-                ctx.lineTo(width - Y_AXIS_WIDTH, spotY);
-                ctx.stroke();
-                ctx.setLineDash([]); // Reset dash
-                
-                // 2. Draw the highlighted Price Tag on the Right Scale
-                ctx.fillStyle = 'var(--gold)';
-                ctx.fillRect(width - Y_AXIS_WIDTH, spotY - 10, Y_AXIS_WIDTH, 20);
-                
-                // 3. Draw the text inside the tag
-                ctx.fillStyle = '#000000'; // Dark text so it pops on the gold background
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'middle';
-                ctx.font = "bold 11px 'JetBrains Mono'";
-                ctx.fillText(currentSpot.toFixed(2), width - Y_AXIS_WIDTH + 8, spotY);
-            }
-        }
     } // <--- END OF renderCanvas    
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
