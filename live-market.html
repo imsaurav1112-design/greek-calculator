@@ -794,20 +794,35 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     </label>
 </div>
 
-        <div id="intraday-replay-bar" class="replay-bar" style="display: none;">
-    <button id="replay-play-btn" class="draw-btn" onclick="toggleReplayPlay()" style="color: var(--green);">▶</button>
-    <input type="range" id="replay-slider" min="0" max="0" value="0" oninput="scrubReplay(this.value)">
-    <span id="replay-time-display">--:--</span>
+<div id="intraday-replay-bar" class="replay-bar" style="display: none;">
+            <!-- 🟢 NEW: Step Backward Button -->
+            <button class="draw-btn" onclick="stepReplay(-1)" title="Step Back">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                    <line x1="5" y1="19" x2="5" y2="5"></line>
+                </svg>
+            </button>
+            
+            <button id="replay-play-btn" class="draw-btn" onclick="toggleReplayPlay()" style="color: var(--green);" title="Play/Pause">▶</button>
+            
+            <!-- 🟢 NEW: Step Forward Button -->
+            <button class="draw-btn" onclick="stepReplay(1)" title="Step Forward">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                    <line x1="19" y1="5" x2="19" y2="19"></line>
+                </svg>
+            </button>
+            
+            <span id="replay-time-display" style="margin: 0 10px;">--:--</span>
 
-  <!-- 🟢 FIXED: PLAYBACK SPEED CONTROLLER (Dark Theme Friendly) -->
-    <select id="replay-speed" onchange="changeReplaySpeed()" style="background: var(--section); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 12px; font-weight: 600; padding: 4px 8px; outline: none; cursor: pointer; font-family: 'Inter', sans-serif;">
-        <option value="1000" style="background: var(--card); color: var(--text);">1x</option>
-        <option value="500" style="background: var(--card); color: var(--text);">2x</option>
-        <option value="200" style="background: var(--card); color: var(--text);">5x</option>
-    </select>
-                
-    <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--green); font-weight: 700; font-size: 12px; font-family: 'Inter';">• LIVE</button>
-</div>
+            <select id="replay-speed" onchange="changeReplaySpeed()" style="background: var(--section); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 12px; font-weight: 600; padding: 4px 8px; outline: none; cursor: pointer; font-family: 'Inter', sans-serif;">
+                <option value="1000" style="background: var(--card); color: var(--text);">1x</option>
+                <option value="500" style="background: var(--card); color: var(--text);">2x</option>
+                <option value="200" style="background: var(--card); color: var(--text);">5x</option>
+            </select>
+                            
+            <button class="draw-btn" onclick="exitReplayMode()" style="color: var(--green); font-weight: 700; font-size: 12px; font-family: 'Inter';">• LIVE</button>
+        </div>
         
 <header>
     <a href="/index" class="logo"><span>GC</span>Live</a>
