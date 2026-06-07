@@ -918,24 +918,21 @@ document.addEventListener("DOMContentLoaded", () => {
         lastMouseY = e.touches ? e.touches[0].clientY : e.clientY;
     }
 
-    function handlePointerMove(e) {
+function handlePointerMove(e) {
         const rect = canvas.getBoundingClientRect();
         const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
         const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
         
-        // 🟢 FIX: Dynamically calculate the bottom reserve so the crosshair knows exactly where the subcharts are!
-        const currentBottomReserve = showSubCharts 
-            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT) 
-            : X_AXIS_HEIGHT;
+        const currentBottomReserve = showSubCharts ? ((80 * 2) + (15 * 2) + 25) : 25;
+        const MAIN_CHART_BOTTOM = height - currentBottomReserve;
 
         currentHoverX = x;
         currentHoverY = y;
-        isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < height - currentBottomReserve);
+        isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < MAIN_CHART_BOTTOM);
 
         if (!isDraggingChart && !isDraggingYScale && !isDraggingXScale) {
-            // Hover cursors perfectly aligned with the drag boundaries
             if (x > width - Y_AXIS_WIDTH) canvas.style.cursor = 'ns-resize';
-            else if (y > height - X_AXIS_HEIGHT) canvas.style.cursor = 'ew-resize';
+            else if (y > MAIN_CHART_BOTTOM) canvas.style.cursor = 'ew-resize';
             else canvas.style.cursor = 'crosshair';
             
             renderCanvas(); 
@@ -954,18 +951,34 @@ document.addEventListener("DOMContentLoaded", () => {
             offsetX += dx;
             offsetY += dy;
         } else if (isDraggingYScale) {
-            priceScale *= (1 - dy * 0.005);
-            priceScale = Math.max(2, Math.min(priceScale, 150));
+            // TradingView smooth axis drag (Vertical)
+            const zoomFactor = 1 - dy * 0.003; 
+            const newPriceScale = Math.max(2, Math.min(priceScale * zoomFactor, 250));
+            
+            // Anchor to the center of the screen so the axis stretches evenly
+            const anchorY = MAIN_CHART_BOTTOM / 2;
+            const dY = MAIN_CHART_BOTTOM - 20 - anchorY;
+            offsetY = ((dY + offsetY) * (newPriceScale / priceScale)) - dY;
+            priceScale = newPriceScale;
+            
         } else if (isDraggingXScale) {
-            COL_WIDTH *= (1 + dx * 0.005);
-            COL_WIDTH = Math.max(40, Math.min(COL_WIDTH, 400));
-            GAP = COL_WIDTH * (15/180); 
+            // TradingView smooth axis drag (Horizontal)
+            const zoomFactor = 1 + dx * 0.003;
+            const oldTotal = COL_WIDTH + GAP;
+            
+            COL_WIDTH = Math.max(15, Math.min(COL_WIDTH * zoomFactor, 400));
+            GAP = COL_WIDTH * (15/180);
+            
+            // Anchor to the right edge
+            const dX = 0; 
+            offsetX = dX - (dX - offsetX) * ((COL_WIDTH + GAP) / oldTotal);
         }
 
         renderCanvas();
         lastMouseX = clientX;
         lastMouseY = clientY;
     }
+
     function handlePointerUp() { 
         isDraggingChart = false; 
         isDraggingYScale = false; 
@@ -974,16 +987,44 @@ document.addEventListener("DOMContentLoaded", () => {
         canvas.style.cursor = 'crosshair';
     }
 
-    // Scroll Wheel Zoom Support (Bonus)
+    // 🟢 TradingView Style Anchored Zoom (Scroll Wheel)
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
-        const zoomFactor = 1 - e.deltaY * 0.002;
-        if (e.ctrlKey || e.metaKey) {
-            COL_WIDTH = Math.max(40, Math.min(COL_WIDTH * zoomFactor, 400));
+        
+        // Much smoother multiplier for trackpads/mice
+        const zoomFactor = 1 - e.deltaY * 0.001; 
+        
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const currentBottomReserve = showSubCharts ? ((80 * 2) + (15 * 2) + 25) : 25;
+        const MAIN_CHART_BOTTOM = height - currentBottomReserve;
+
+        // 🟢 If NO Ctrl/Shift key is pressed -> Zoom Horizontally into Mouse (User Request)
+        if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
+            const oldTotal = COL_WIDTH + GAP;
+            
+            // Allowed to drop down to 15px so you can zoom way further out
+            COL_WIDTH = Math.max(15, Math.min(COL_WIDTH * zoomFactor, 400)); 
             GAP = COL_WIDTH * (15/180);
-        } else {
-            priceScale = Math.max(2, Math.min(priceScale * zoomFactor, 150));
+            
+            // MATH: Keep the exact candle under the mouse perfectly still while scaling
+            let clampedMouseX = Math.min(mouseX, width - Y_AXIS_WIDTH);
+            const dX = (width - Y_AXIS_WIDTH) - clampedMouseX;
+            offsetX = dX - (dX - offsetX) * ((COL_WIDTH + GAP) / oldTotal);
+        } 
+        // 🟢 If Ctrl/Shift key IS pressed -> Zoom Vertically into Mouse
+        else {
+            const newPriceScale = Math.max(2, Math.min(priceScale * zoomFactor, 250));
+            
+            // MATH: Keep the exact price under the mouse perfectly still while scaling
+            let clampedMouseY = Math.min(mouseY, MAIN_CHART_BOTTOM);
+            const dY = MAIN_CHART_BOTTOM - 20 - clampedMouseY;
+            offsetY = ((dY + offsetY) * (newPriceScale / priceScale)) - dY;
+            priceScale = newPriceScale;
         }
+
         renderCanvas();
     }, { passive: false });
 
