@@ -1819,10 +1819,17 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
         } else {
             chPanel.style.display = 'none';
         }
-      // 🟢 PHASE 3: Update Header Bar Meter
+// 🟢 PHASE 3: Update Header Bar Meter
             const hgContainer = document.getElementById('header-gauge');
             if (hgContainer) {
-                const currentScore = latestDataCache[activeHoverData.time].smartScore || 0;
+                // 🟢 THE FIX: Safely check if we are hovering. If not, default to the latest candle on the chart!
+                let targetTime = activeHoverData ? activeHoverData.time : (timeKeys.length > 0 ? timeKeys[timeKeys.length - 1] : null);
+                
+                let currentScore = 0;
+                if (targetTime && latestDataCache[targetTime]) {
+                    currentScore = latestDataCache[targetTime].smartScore || 0;
+                }
+
                 const valEl = document.getElementById('hg-val');
                 const lblEl = document.getElementById('hg-lbl');
                 const marker = document.getElementById('hg-marker');
