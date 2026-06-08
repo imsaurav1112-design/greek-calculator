@@ -632,12 +632,17 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     opacity: 0.75; /* Just slightly dims the table so the eye focuses on the box */
     pointer-events: none; /* Prevents clicking on the disabled table */
 }
-        /* --- 🟢 INTRADAY REPLAY BAR --- */
+/* --- 🟢 INTRADAY REPLAY BAR --- */
 .replay-bar {
     position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
     background: var(--card); border: 1px solid var(--border); border-radius: 8px;
-    padding: 10px 20px; display: flex; align-items: center; gap: 15px;
+    padding: 10px 20px; display: flex; align-items: center; justify-content: center; gap: 15px;
     z-index: 9000; box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    
+    /* 🟢 THE FIX: Forces the bar to shrink-wrap around the buttons */
+    width: max-content; 
+    max-width: 95vw; /* Failsafe so it never spills off a small phone screen */
+    flex-wrap: wrap; /* Allows it to stack neatly if the screen gets too narrow */
 }
 .light-theme .replay-bar { box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
 #replay-slider { flex: 1; width: 300px; accent-color: var(--accent); cursor: pointer; }
