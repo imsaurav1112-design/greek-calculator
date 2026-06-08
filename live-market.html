@@ -750,8 +750,8 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .status-indicator { order: 2; margin-left: auto; margin-right: 10px; }
     .live-clock { order: 3; font-size: 11px; }
 }
-    .replay-bar { width: 90%; bottom: 120px; padding: 10px; }
-    #replay-slider { width: 100%; }
+    /* 🟢 THE FIX: Removed the 90% stretch and tightened the gaps for mobile */
+    .replay-bar { width: max-content; bottom: 120px; padding: 8px 12px; gap: 10px; }
 
 .mobile-menu-toggle { display: none; }
 .mobile-market-stats { display: none; }
