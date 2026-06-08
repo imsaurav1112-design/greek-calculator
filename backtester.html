@@ -1652,7 +1652,7 @@ function renderBacktestSnapshot() {
     try { document.getElementById('play-time-display').innerText = snap.timestamp; } catch(e){}
     setStatus('backtest', backtestPlayInterval ? 'Playing' : 'Paused');
     
-    let coaData = snap.coa;
+let coaData = snap.coa;
     if (!coaData) {
          coaData = {
              scenario_id: "?", scenario_desc: "Data playback in progress.",
@@ -1662,7 +1662,9 @@ function renderBacktestSnapshot() {
          };
     }
     
-    // 🟢 FIX: 'false' turns off quiet mode, forcing it to auto-center on every frame!         renderTable(globalRows, globalSym, snap, false);
+    // 🟢 FIX: 'false' turns off quiet mode, forcing it to auto-center on every frame!         
+    renderTable(globalRows, globalSym, snap, false);
+    
     updateMarketIntelligence(coaData);
     updateKeyLevels(globalRows, coaData);
 }
