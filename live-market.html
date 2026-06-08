@@ -1502,6 +1502,8 @@ function selectSymbol(val, text) {
     document.getElementById('sel-symbol').value = val;
     document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
+    
+    // 🟢 CRITICAL: This must be called to update the expiry dropdown
     window.loadExpiries();
 }
 
@@ -1573,56 +1575,44 @@ async function fetchIntradayHistory(sym, expiry) {
 }
 
 window.loadExpiries = async function() {
-  if (!window.currentFirebaseToken) {
-      setTimeout(window.loadExpiries, 500); 
-      return;
-  }
-
-  const sym = document.getElementById('sel-symbol').value;
-  const menu = document.getElementById('expiry-menu');
-  const btn = document.getElementById('btn-expiry');
-  
-  menu.innerHTML = '<div class="custom-option">Loading...</div>';
-  btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
-  document.getElementById('sel-expiry').value = '';
-
-  try {
-    const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
-    const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
-    if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
-    
-    const d = await r.json();
-    if (d.error) { 
-        menu.innerHTML = `<div class="custom-option">Error</div>`; 
-        btn.innerHTML = 'Error ▾';
-        showErr(d.details || d.error); return; 
-    }
-
-    if (!d.expiries || d.expiries.length === 0) {
-        menu.innerHTML = `<div class="custom-option">No Data</div>`; 
-        btn.innerHTML = 'Upstox Login Needed ▾';
-        showErr("Upstox connection lost. Please go to your backend URL and login to Upstox.");
+    if (!window.currentFirebaseToken) {
+        setTimeout(window.loadExpiries, 500);
         return;
     }
 
-    // 🟢 OPTIMIZATION: Extract ONLY the very first (current) expiry date
-    const currentExpiry = d.expiries[0];
+    const sym = document.getElementById('sel-symbol').value;
+    const menu = document.getElementById('expiry-menu');
+    const btn = document.getElementById('btn-expiry');
     
-    // 🟢 OPTIMIZATION: Populate the dropdown with only this single date
-    menu.innerHTML = `<div class="custom-option" onclick="selectExpiry('${currentExpiry}')">${currentExpiry}</div>`;
-    
-    if (currentExpiry) {
-        selectExpiry(currentExpiry);
-        await fetchIntradayHistory(sym, currentExpiry); 
-        await fetchUpstoxChain(false); 
+    // Clear dropdown
+    menu.innerHTML = '<div class="custom-option">Loading...</div>';
+    btn.innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+
+    try {
+        const headers = { 'Authorization': `Bearer ${window.currentFirebaseToken}` };
+        // Fetch expiries
+        const r = await fetch(`${UPSTOX_API}/expiry-dates?symbol=${sym}`, { headers });
+        if (!r.ok) throw new Error(`HTTP Error ${r.status}`);
+        
+        const d = await r.json();
+        
+        // 🟢 FIX: Sort expiries descending (newest first)
+        const sortedExpiries = d.expiries.sort((a, b) => new Date(b) - new Date(a));
+        
+        menu.innerHTML = sortedExpiries.map((e) => 
+            `<div class="custom-option" onclick="selectExpiry('${e}')">${e}</div>`
+        ).join('');
+        
+        // Auto-select the newest expiry
+        if (sortedExpiries.length > 0) {
+            selectExpiry(sortedExpiries[0]);
+        }
+        clearErr();
+    } catch(e) {
+        menu.innerHTML = `<div class="custom-option">Failed</div>`;
+        showErr("Expiry fetch failed: " + e.message);
     }
-    clearErr();
-  } catch(e) { 
-      menu.innerHTML = `<div class="custom-option">Failed</div>`; 
-      btn.innerHTML = 'Auth Failed ▾';
-      showErr("Server says: " + e.message); 
-  }
-}
+};
 function getStrikeInterval(symbol) {
   switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'FINNIFTY': return 50; default: return 50; }
 }
