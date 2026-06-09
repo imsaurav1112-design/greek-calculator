@@ -850,11 +850,10 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)" style="display: flex; gap: 6px; align-items: center;">
             NIFTY 50 <span style="font-size: 10px; color: var(--muted);">▾</span>
         </button>
-<div class="custom-menu" id="symbol-menu">
+       <div class="custom-menu" id="symbol-menu">
             <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
             <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
             <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
-            <!-- 🟢 NEW: MCX Click Options -->
             <div class="custom-option" onclick="selectSymbol('CRUDEOIL', 'CRUDE OIL')">CRUDE OIL</div>
             <div class="custom-option" onclick="selectSymbol('NATURALGAS', 'NATURAL GAS')">NATURAL GAS</div>
         </div>
