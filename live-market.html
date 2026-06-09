@@ -181,6 +181,7 @@ header {
     gap: 12px; 
     transition: background-color 0.3s, border-color 0.3s;
     position: relative;
+    z-index: 9999; /* 🟢 FIX: Forces the header and menus to stay above the table */
 }
 
 .logo { text-decoration: none; font-weight: 800; font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px; padding-right: 12px; border-right: 1px solid var(--border);letter-spacing: 0.5px; white-space: nowrap;}
@@ -267,7 +268,16 @@ header button.primary-btn:hover { background: #2563eb; box-shadow: 0 0 10px var(
 
 .custom-dropdown-wrapper { position:static !important; display: flex; align-items: center; flex-shrink: 0;}
 .custom-menu {
-    display: none; position: absolute; left: 0; top: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 0; z-index: 1000; min-width: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; margin-top: 8px;
+    display: none; 
+    position: fixed; /* 🟢 FIX: Changed from absolute to fixed to stop the scrollbar bug */
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    padding: 8px 0; 
+    z-index: 10000; 
+    min-width: 140px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+    flex-direction: column; 
 }
 .light-theme .custom-menu { box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 .custom-option {
@@ -1354,7 +1364,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
 });
 
-// Global Click Listener for Menus and Settings
 document.addEventListener('click', function(event) {
     let clickedInsideMenu = false;
     let clickedOnButton = false;
@@ -1365,8 +1374,7 @@ document.addEventListener('click', function(event) {
 
     if (!clickedInsideMenu && !clickedOnButton) {
         document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
-        const header = document.querySelector('header');
-        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+        // 🟢 FIX: Deleted the header overflow auto code here
     }
 
     const settingsPanel = document.getElementById('settings-panel');
@@ -1481,6 +1489,7 @@ function toggleMenu(menuId, event) {
     const btn = event.currentTarget; 
     const isVisible = menu.style.display === 'flex';
     document.querySelectorAll('.custom-menu').forEach(m => m.style.display = 'none');
+    
     if (!isVisible) {
         const rect = btn.getBoundingClientRect();
         menu.style.display = 'flex';
@@ -1491,12 +1500,9 @@ function toggleMenu(menuId, event) {
         } else {
             menu.style.left = rect.left + 'px';
         }
-        const header = document.querySelector('header');
-        if (header) header.style.setProperty('overflow-x', 'hidden', 'important');
-    } else {
-        const header = document.querySelector('header');
-        if (header) header.style.setProperty('overflow-x', 'auto', 'important');
+        // 🟢 FIX: Deleted the header overflow hidden code here
     }
+    // 🟢 FIX: Deleted the "else" block that restored overflow
 }
 
 function selectSymbol(val, text) {
