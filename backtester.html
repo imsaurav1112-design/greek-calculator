@@ -1257,7 +1257,7 @@ window.reRenderTable = function() { if (globalRows.length > 0) renderTable(globa
 
 function abs(x) { return x < 0 ? -x : x; }
 function getStrikeInterval(symbol) {
-  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 10; default: return 50; }
+  switch(symbol) { case 'BANKNIFTY': case 'SENSEX': return 100; case 'MIDCPNIFTY': return 25; case 'NATURALGAS': return 5; case 'CRUDEOIL': return 50; default: return 50; }
 }
 
 let renderTable = function(rows, sym, data, quiet = false) {
