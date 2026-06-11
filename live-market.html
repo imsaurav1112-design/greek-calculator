@@ -2213,11 +2213,10 @@ window.initTerminal = async function() {
     // 🟢 THE FIX: 3-Second Interval
 setInterval(() => {
     const expiry = document.getElementById('sel-expiry').value;
-    if (globalSym && expiry && ...) {
-        fetchUpstoxChain(true); // Quiet fetch every 3 seconds
+    if (globalSym && expiry) { 
+        fetchUpstoxChain(true);
     }
-}, 3000); // 
-};
+}, 3000);
 
 // ==========================================
 // 🟢 INTRADAY RAM REPLAY ENGINE
