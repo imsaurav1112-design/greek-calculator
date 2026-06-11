@@ -310,7 +310,7 @@ window.handleGoogleLogin = async function() {
               }
           }
 
-          // ==========================================
+// ==========================================
           // 2. FETCH HISTORY SUMMARY (DuckDB)
           // ==========================================
           const histRes = await fetch('https://api.greekcalculator.in/api/admin/history-summary', { headers });
@@ -321,10 +321,19 @@ window.handleGoogleLogin = async function() {
               if (!histData.history || histData.history.length === 0) {
                   tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--muted);">No historical data recorded yet.</td></tr>`;
               } else {
-                  tbody.innerHTML = histData.history.map(h => `
+                  tbody.innerHTML = histData.history.map(h => {
+                      // 🟢 VISUAL UPGRADE: Auto-tag MCX commodities vs NSE indices
+                      const isMCX = (h.sym === 'CRUDEOIL' || h.sym === 'NATURALGAS');
+                      const badgeHtml = isMCX 
+                          ? `<span class="badge" style="background: rgba(245, 158, 11, 0.1); color: var(--gold); border: 1px solid rgba(245, 158, 11, 0.3);">MCX</span>`
+                          : `<span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--accent); border: 1px solid rgba(59, 130, 246, 0.3);">NSE</span>`;
+
+                      return `
                       <tr>
                           <td style="font-family:'Ubuntu Mono'; color:var(--accent); font-weight:700;">${h.date}</td>
-                          <td style="font-weight:600;">${h.sym}</td>
+                          <td style="font-weight:600; display: flex; align-items: center; gap: 8px;">
+                              ${h.sym} ${badgeHtml}
+                          </td>
                           <td>${h.exp}</td>
                           <td style="font-family:'Ubuntu Mono';">${h.records} Ticks</td>
                           <td>
@@ -332,10 +341,10 @@ window.handleGoogleLogin = async function() {
                               <button class="action-btn" onclick="deleteHistory('${h.sym}', '${h.exp}', '${h.date}')" style="color:var(--red); border-color:var(--red);">Delete</button>
                           </td>
                       </tr>
-                  `).join('');
+                  `}).join('');
               }
           }
-        // ==========================================
+          // ==========================================
           // 3. FETCH FOOTPRINT SUMMARY
           // ==========================================
           const footRes = await fetch('https://api.greekcalculator.in/api/admin/footprint-summary', { headers });
