@@ -545,7 +545,7 @@ footer {
 
 <header>
   <a href="/index" class="logo"><span>GC</span></a>
-    <div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
+<div class="custom-dropdown-wrapper" id="symbol-dropdown-wrapper">
         <button id="btn-symbol" onclick="toggleMenu('symbol-menu', event)">
             NIFTY 50 <span style="font-size: 10px; color: var(--muted); margin-left:4px;">▾</span>
         </button>
@@ -553,6 +553,8 @@ footer {
             <div class="custom-option" onclick="selectSymbol('NIFTY', 'NIFTY 50')">NIFTY 50</div>
             <div class="custom-option" onclick="selectSymbol('BANKNIFTY', 'BANK NIFTY')">BANK NIFTY</div>
             <div class="custom-option" onclick="selectSymbol('SENSEX', 'SENSEX')">SENSEX</div>
+            <div class="custom-option" onclick="selectSymbol('CRUDEOIL', 'CRUDE OIL')">CRUDE OIL</div>
+            <div class="custom-option" onclick="selectSymbol('NATURALGAS', 'NATURAL GAS')">NATURAL GAS</div>
         </div>
     </div>
     <input type="hidden" id="sel-symbol" value="NIFTY">
