@@ -1832,43 +1832,37 @@ const planPrices = {
   <script>
 // --- 1. 3D CARD ROTATOR LOGIC ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Use a slight delay or explicit element fetching to guarantee the DOM is ready
+        // Delay slightly to guarantee the DOM is fully loaded
         setTimeout(() => {
             const cardNifty = document.getElementById('card-nifty');
             const cardBank = document.getElementById('card-bank');
             const cardSensex = document.getElementById('card-sensex');
             
-            // Failsafe check
-            if (!cardNifty || !cardBank || !cardSensex) {
-                console.error("Could not find rotating cards in the DOM!");
-                return;
-            }
+            if (!cardNifty || !cardBank || !cardSensex) return;
             
             const cards = [cardNifty, cardBank, cardSensex];
-            let currentIndex = 0; // Starts with Nifty (index 0) as active
+            let currentIndex = 0;
 
             setInterval(() => {
-                // Move to the next index
                 currentIndex = (currentIndex + 1) % cards.length;
                 
-                // Calculate the positions for all three slots
                 const activeIndex = currentIndex;
                 const nextIndex = (currentIndex + 1) % cards.length;
                 const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
 
-                // Strip all position classes safely
+                // 🟢 THE FIX: Completely wipe the classes to prevent z-index crashing
                 cards.forEach(card => {
-                    card.className = "rot-card"; // Resets to base state
+                    card.className = "rot-card"; 
                 });
 
-                // Assign the new positions
                 cards[activeIndex].classList.add('active');
                 cards[nextIndex].classList.add('next');
                 cards[prevIndex].classList.add('prev');
 
-            }, 3500); // Cycles every 3.5 seconds
+            }, 3500);
         }, 100);
     });
+    
     // --- 2. LIVE PRICE FEEDER ---
     async function fetchLiveHeroPrices() {
         try {
