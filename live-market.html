@@ -1506,6 +1506,10 @@ function toggleMenu(menuId, event) {
 }
 
 function selectSymbol(val, text) {
+    // 🟢 THE FIX: Clear your previous asset's memory cache immediately on click!
+    globalRows = []; 
+    document.getElementById('oc-body').innerHTML = `<tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">Loading ${text} Option Chain matrix...</td></tr>`;
+    
     document.getElementById('sel-symbol').value = val;
     document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
@@ -2207,12 +2211,12 @@ window.initTerminal = async function() {
     // ... rest of initTerminal
     
     // 🟢 THE FIX: 3-Second Interval
-    setInterval(() => {
-        const expiry = document.getElementById('sel-expiry').value;
-        if (globalSym && expiry && expiry !== 'Loading...' && expiry !== 'Offline' && expiry !== 'Upstox Login Needed') {
-            fetchUpstoxChain(true);
-        }
-    }, 3000); // 
+setInterval(() => {
+    const expiry = document.getElementById('sel-expiry').value;
+    if (globalSym && expiry && ...) {
+        fetchUpstoxChain(true); // Quiet fetch every 3 seconds
+    }
+}, 3000); // 
 };
 
 // ==========================================
