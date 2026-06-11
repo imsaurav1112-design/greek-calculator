@@ -1830,35 +1830,44 @@ heroBox.innerHTML = `
   };
  </script> 
   <script>
-  // --- 1. 3D CARD ROTATOR LOGIC ---
+// --- 1. 3D CARD ROTATOR LOGIC ---
     document.addEventListener("DOMContentLoaded", () => {
-        const cards = [
-            document.getElementById('card-nifty'),
-            document.getElementById('card-bank'),
-            document.getElementById('card-sensex')
-        ];
-        let currentIndex = 0; // Starts with Nifty (index 0) as active
-
-        setInterval(() => {
-            // Move to the next index
-            currentIndex = (currentIndex + 1) % cards.length;
+        // Use a slight delay or explicit element fetching to guarantee the DOM is ready
+        setTimeout(() => {
+            const cardNifty = document.getElementById('card-nifty');
+            const cardBank = document.getElementById('card-bank');
+            const cardSensex = document.getElementById('card-sensex');
             
-            // Calculate the positions for all three slots
-            const activeIndex = currentIndex;
-            const nextIndex = (currentIndex + 1) % cards.length;
-            const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
+            // Failsafe check
+            if (!cardNifty || !cardBank || !cardSensex) {
+                console.error("Could not find rotating cards in the DOM!");
+                return;
+            }
+            
+            const cards = [cardNifty, cardBank, cardSensex];
+            let currentIndex = 0; // Starts with Nifty (index 0) as active
 
-            // Strip all position classes
-            cards.forEach(card => {
-                card.classList.remove('active', 'prev', 'next');
-            });
+            setInterval(() => {
+                // Move to the next index
+                currentIndex = (currentIndex + 1) % cards.length;
+                
+                // Calculate the positions for all three slots
+                const activeIndex = currentIndex;
+                const nextIndex = (currentIndex + 1) % cards.length;
+                const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
 
-            // Assign the new positions
-            cards[activeIndex].classList.add('active');
-            cards[nextIndex].classList.add('next');
-            cards[prevIndex].classList.add('prev');
+                // Strip all position classes safely
+                cards.forEach(card => {
+                    card.className = "rot-card"; // Resets to base state
+                });
 
-        }, 3500); // Cycles every 3.5 seconds
+                // Assign the new positions
+                cards[activeIndex].classList.add('active');
+                cards[nextIndex].classList.add('next');
+                cards[prevIndex].classList.add('prev');
+
+            }, 3500); // Cycles every 3.5 seconds
+        }, 100);
     });
     // --- 2. LIVE PRICE FEEDER ---
     async function fetchLiveHeroPrices() {
