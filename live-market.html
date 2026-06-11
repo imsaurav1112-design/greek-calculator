@@ -1522,15 +1522,6 @@ function selectSymbol(val, text) {
     window.loadExpiries();
 }
 
-// 🟢 STEP 3: Upgrade the auto-fetch loop to validate that the active selection matches the expiry
-setInterval(() => {
-    const activeExpiry = document.getElementById('sel-expiry').value;
-    
-    // Failsafe: Only fetch if we have an active symbol and a valid, non-placeholder expiry selected
-    if (globalSym && activeExpiry && activeExpiry !== 'Loading...' && activeExpiry !== 'Offline' && activeExpiry !== 'Upstox Login Needed') { 
-        fetchUpstoxChain(true); // Quiet background tick
-    }
-}, 3000);
 
 function selectExpiry(val) {
     document.getElementById('sel-expiry').value = val;
@@ -1705,6 +1696,7 @@ async function fetchUpstoxChain(quiet = false) {
                 pe_prz: r.pe_prz || 0
             }))
         });
+            if (liveHistory.length > 350) liveHistory.shift();
     }
 
 // 👇 STEP 4: THE GATEKEEPER GOES EXACTLY HERE 👇
@@ -2224,16 +2216,15 @@ window.initTerminal = async function() {
     
     window.loadExpiries(); 
     
-    // ... rest of initTerminal
-    
-    // 🟢 THE FIX: 3-Second Interval
-setInterval(() => {
-    const expiry = document.getElementById('sel-expiry').value;
-    if (globalSym && expiry) { 
-        fetchUpstoxChain(true);
-    }
-}, 3000);
-};
+// 🟢 THE FIX: The ONLY 3-Second Interval you need!
+    setInterval(() => {
+        const activeExpiry = document.getElementById('sel-expiry').value;
+        if (globalSym && activeExpiry && activeExpiry !== 'Loading...' && activeExpiry !== 'Offline' && activeExpiry !== 'Upstox Login Needed') { 
+            fetchUpstoxChain(true);
+        }
+    }, 3000);
+
+}; // 🔴 THE MISSING BRACKET HAS BEEN RESTORED HERE!
 // ==========================================
 // 🟢 INTRADAY RAM REPLAY ENGINE
 // ==========================================
