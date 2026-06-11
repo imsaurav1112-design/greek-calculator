@@ -1866,24 +1866,29 @@ const planPrices = {
     });
     
 // --- 2. LIVE PRICE FEEDER (Price Only) ---
-    async function fetchLiveHeroPrices() {
+async function fetchLiveHeroPrices() {
         try {
             const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
             const data = await resp.json();
             
-            const updateCard = (key, fallbackKey, idName) => {
-                const assetData = data[key] || data[fallbackKey];
+            // This function now handles mapping logic safely
+            const updateCard = (apiKeys, idName) => {
+                // Find the first key that exists in the API response
+                const keyFound = apiKeys.find(k => data[k] !== undefined);
+                const assetData = data[keyFound];
                 
                 if (assetData) {
                     const ltp = assetData.ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     document.getElementById(`rot-price-${idName}`).innerText = ltp;
+                } else {
+                    console.warn(`Ticker data not found for keys: ${apiKeys.join(', ')}`);
                 }
             };
 
-            // Route the backend data to the correct 3D cards
-            updateCard("NIFTY", "NIFTY 50", "nifty");
-            updateCard("BANKNIFTY", "NIFTY BANK", "bank"); 
-            updateCard("SENSEX", "SENSEX", "sensex");
+            // 🟢 Pass an array of possible keys to check (handles naming variations)
+            updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
+            updateCard(["BANKNIFTY", "NIFTY BANK"], "bank"); 
+            updateCard(["SENSEX"], "sensex");
 
         } catch(e) {
             console.error("Failed to fetch live hero prices:", e);
