@@ -226,8 +226,9 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     justify-content: center;
     align-items: center;
     position: relative;
-    height: 400px; /* 🟢 Changed from 300px to 400px */
+    height: 400px; 
     perspective: 1000px;
+    transform-style: preserve-3d; /* 🟢 ADD THIS */
 }
 
 
@@ -300,7 +301,8 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     position: relative;
     width: 280px;
     height: 80px;
-    margin-bottom: 20px; /* Space between cards and buttons */
+    margin-bottom: 20px;
+    transform-style: preserve-3d; /* 🟢 ADD THIS */
 }
 
 /* Base Card State */
@@ -1863,16 +1865,19 @@ const planPrices = {
         }, 100);
     });
     
-    // --- 2. LIVE PRICE FEEDER ---
+// --- 2. LIVE PRICE FEEDER ---
     async function fetchLiveHeroPrices() {
         try {
             const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
             const data = await resp.json();
             
-            const updateCard = (key, idName) => {
-                if (data[key]) {
-                    const ltp = data[key].ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    const pct = data[key].pct;
+            const updateCard = (key, fallbackKey, idName) => {
+                // 🟢 Safely check multiple dictionary key formats to prevent blank cards
+                const assetData = data[key] || data[fallbackKey];
+                
+                if (assetData) {
+                    const ltp = assetData.ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    const pct = assetData.pct;
                     
                     document.getElementById(`rot-price-${idName}`).innerText = ltp;
                     
@@ -1889,10 +1894,10 @@ const planPrices = {
                 }
             };
 
-            // Ensure your backend upstox_live.py is tracking these keys!
-            updateCard("NIFTY 50", "nifty");
-            updateCard("NIFTY BANK", "bank"); 
-            updateCard("SENSEX", "sensex");
+            // Route the backend data to the correct 3D cards
+            updateCard("NIFTY", "NIFTY 50", "nifty");
+            updateCard("BANKNIFTY", "NIFTY BANK", "bank"); 
+            updateCard("SENSEX", "SENSEX", "sensex");
 
         } catch(e) {
             console.error("Failed to fetch live hero prices:", e);
