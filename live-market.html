@@ -1506,15 +1506,31 @@ function toggleMenu(menuId, event) {
 }
 
 function selectSymbol(val, text) {
-    // 🟢 THE FIX: Clear your previous asset's memory cache immediately on click!
+    // 🟢 STEP 1: Immediately kill the row array and clear the table so old renders stop painting
     globalRows = []; 
     document.getElementById('oc-body').innerHTML = `<tr><td colspan="100%" style="padding: 40px; color: var(--muted); text-align: center;">Loading ${text} Option Chain matrix...</td></tr>`;
     
+    // 🟢 STEP 2: Explicitly clear out the expiry dropdown value so the background loop stops matching
+    document.getElementById('sel-expiry').value = '';
+    document.getElementById('btn-expiry').innerHTML = 'Loading... <span style="font-size: 10px; color: var(--muted);">▾</span>';
+    
     document.getElementById('sel-symbol').value = val;
+    globalSym = val; // Force sync global tracking variable instantly
     document.getElementById('btn-symbol').innerHTML = text + ' <span style="font-size: 10px; color: var(--muted);">▾</span>';
     document.getElementById('symbol-menu').style.display = 'none';
+    
     window.loadExpiries();
 }
+
+// 🟢 STEP 3: Upgrade the auto-fetch loop to validate that the active selection matches the expiry
+setInterval(() => {
+    const activeExpiry = document.getElementById('sel-expiry').value;
+    
+    // Failsafe: Only fetch if we have an active symbol and a valid, non-placeholder expiry selected
+    if (globalSym && activeExpiry && activeExpiry !== 'Loading...' && activeExpiry !== 'Offline' && activeExpiry !== 'Upstox Login Needed') { 
+        fetchUpstoxChain(true); // Quiet background tick
+    }
+}, 3000);
 
 function selectExpiry(val) {
     document.getElementById('sel-expiry').value = val;
