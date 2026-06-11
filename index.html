@@ -923,7 +923,7 @@ footer {
                     </div>
                     <div class="rot-right">
                         <div class="rot-price" id="rot-price-nifty">--</div>
-                        <div class="rot-pct up" id="rot-pct-nifty">--</div>
+                        
                     </div>
                 </div>
 
@@ -934,7 +934,7 @@ footer {
                     </div>
                     <div class="rot-right">
                         <div class="rot-price" id="rot-price-bank">--</div>
-                        <div class="rot-pct up" id="rot-pct-bank">--</div>
+                        
                     </div>
                 </div>
 
@@ -945,7 +945,7 @@ footer {
                     </div>
                     <div class="rot-right">
                         <div class="rot-price" id="rot-price-sensex">--</div>
-                        <div class="rot-pct up" id="rot-pct-sensex">--</div>
+                        
                     </div>
                 </div>
             </div>
@@ -1865,32 +1865,18 @@ const planPrices = {
         }, 100);
     });
     
-// --- 2. LIVE PRICE FEEDER ---
+// --- 2. LIVE PRICE FEEDER (Price Only) ---
     async function fetchLiveHeroPrices() {
         try {
             const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
             const data = await resp.json();
             
             const updateCard = (key, fallbackKey, idName) => {
-                // 🟢 Safely check multiple dictionary key formats to prevent blank cards
                 const assetData = data[key] || data[fallbackKey];
                 
                 if (assetData) {
                     const ltp = assetData.ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    const pct = assetData.pct;
-                    
                     document.getElementById(`rot-price-${idName}`).innerText = ltp;
-                    
-                    const pctEl = document.getElementById(`rot-pct-${idName}`);
-                    pctEl.innerText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-                    
-                    if (pct >= 0) {
-                        pctEl.classList.remove('down');
-                        pctEl.classList.add('up');
-                    } else {
-                        pctEl.classList.remove('up');
-                        pctEl.classList.add('down');
-                    }
                 }
             };
 
