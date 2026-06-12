@@ -924,28 +924,41 @@ footer {
         <div class="hero-widget">
             
            <div class="rotating-cards-container" id="rotator-box" style="margin-bottom: 90px;">
-                <div class="rot-card active" id="card-nifty">
-                    <div class="rot-left">
-                        <div class="rot-icon icon-nifty">N</div>
-                        <div class="rot-name">Nifty 50</div>
-                    </div>
-                </div>
+    <div class="rot-card active" id="card-nifty">
+        <div class="rot-left">
+            <div class="rot-icon icon-nifty">N</div>
+            <div class="rot-name">Nifty 50</div>
+        </div>
+    </div>
 
-                <div class="rot-card next" id="card-bank">
-                    <div class="rot-left">
-                        <div class="rot-icon icon-bank">B</div>
-                        <div class="rot-name">Bank Nifty</div>
-                    </div>
-                </div>
+    <div class="rot-card next" id="card-bank">
+        <div class="rot-left">
+            <div class="rot-icon icon-bank">B</div>
+            <div class="rot-name">Bank Nifty</div>
+        </div>
+    </div>
 
-                <div class="rot-card prev" id="card-sensex">
-                    <div class="rot-left">
-                        <div class="rot-icon icon-sensex">S</div>
-                        <div class="rot-name">Sensex</div>
-                    </div>
-                </div>
-            </div>
+    <div class="rot-card prev" id="card-sensex">
+        <div class="rot-left">
+            <div class="rot-icon icon-sensex">S</div>
+            <div class="rot-name">Sensex</div>
+        </div>
+    </div>
 
+    <div class="rot-card" id="card-crude">
+        <div class="rot-left">
+            <div class="rot-icon icon-crude">C</div>
+            <div class="rot-name">Crude Oil</div>
+        </div>
+    </div>
+
+    <div class="rot-card" id="card-ng">
+        <div class="rot-left">
+            <div class="rot-icon icon-ng">G</div>
+            <div class="rot-name">Natural Gas</div>
+        </div>
+    </div>
+</div>
             <div class="hero-buttons" id="hero-actions">
 <!-- GREEN LIVE BUTTON -->
                 <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="openAuthModal('signup')">
@@ -1828,17 +1841,19 @@ const planPrices = {
   };
  </script> 
   <script>
-// --- 1. 3D CARD ROTATOR LOGIC ---
+// --- 1. 5-CARD 3D ROTATOR LOGIC ---
     document.addEventListener("DOMContentLoaded", () => {
-        // Delay slightly to guarantee the DOM is fully loaded
         setTimeout(() => {
             const cardNifty = document.getElementById('card-nifty');
             const cardBank = document.getElementById('card-bank');
             const cardSensex = document.getElementById('card-sensex');
+            const cardCrude = document.getElementById('card-crude');
+            const cardNg = document.getElementById('card-ng');
             
-            if (!cardNifty || !cardBank || !cardSensex) return;
+            if (!cardNifty || !cardBank || !cardSensex || !cardCrude || !cardNg) return;
             
-            const cards = [cardNifty, cardBank, cardSensex];
+            // Added the 2 new cards to the array
+            const cards = [cardNifty, cardBank, cardSensex, cardCrude, cardNg];
             let currentIndex = 0;
 
             setInterval(() => {
@@ -1846,18 +1861,21 @@ const planPrices = {
                 
                 const activeIndex = currentIndex;
                 const nextIndex = (currentIndex + 1) % cards.length;
+                
+                // Use modulo math to grab the previous index safely
                 const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
 
-                // 🟢 THE FIX: Completely wipe the classes to prevent z-index crashing
+                // Reset all cards to hidden background state
                 cards.forEach(card => {
                     card.className = "rot-card"; 
                 });
 
+                // Apply active, next, and prev to the correct 3 cards
                 cards[activeIndex].classList.add('active');
                 cards[nextIndex].classList.add('next');
                 cards[prevIndex].classList.add('prev');
 
-            }, 3500);
+            }, 3000); // 🟢 Slightly faster rotation (3 seconds) to cycle through all 5 quicker
         }, 100);
     });
     
