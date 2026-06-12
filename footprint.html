@@ -859,27 +859,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 // --- CHART CONFIGURATION & LAYOUT ---
-    let COL_WIDTH = 110;       
+    let COL_WIDTH = 55;        // 🟢 Shrunk from 110 to 55 to fit 2x more candles by default
     const Y_AXIS_WIDTH = 60;   
     const VP_WIDTH = 120;      
     const X_AXIS_HEIGHT = 25;  
-    let GAP = 8;               
+    let GAP = 4.5;             // 🟢 Reduced gap proportionally
     const TICK_SIZE = 1;     
     
     // 🟢 PHASE 2: SUB-CHART DIMENSIONS
-    const SUBCHART_HEIGHT = 80;  // Height for Volume and CumDelta panes
-    const SUBCHART_SPACING = 15; // Gap between panes
-    // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE based on Toggle
-        const TOTAL_BOTTOM_RESERVE = showSubCharts 
-            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
-            : X_AXIS_HEIGHT; // If hidden, only reserve space for the timeline
-            
-        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
+    const SUBCHART_HEIGHT = 80;  
+    const SUBCHART_SPACING = 15; 
+    const TOTAL_BOTTOM_RESERVE = showSubCharts 
+        ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
+        : X_AXIS_HEIGHT; 
+        
+    const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
   // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
     let offsetY = 0; 
-    let priceScale = 25; 
+    let priceScale = 16;       // 🟢 Shrunk from 25 to 16 to fit more price ticks vertically
 
     let isDraggingChart = false;
     let isDraggingYScale = false;
@@ -887,6 +886,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastMouseX = 0;
     let lastMouseY = 0;
     let needsAutoCenter = true;
+    
+    // 🟢 NEW: Mobile Pinch-to-Zoom State Variables
+    let lastPinchDist = 0;
+    let pinchCenterX = 0;
+    let pinchCenterY = 0;
     
     // 🟢 PHASE 2: CROSSHAIR STATE
     let currentHoverX = -1;
@@ -896,13 +900,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🟢 PHASE 2: ACCUMULATION ZONE DATA
     let accumulationZones = [];
 
- // 🟢 UPGRADED: TV-Style Axis Hit Detection (FIXED)
-    function handlePointerDown(e) {
+function handlePointerDown(e) {
         const rect = canvas.getBoundingClientRect();
+        
+        // 🟢 MOBILE PINCH LOGIC: Catch 2 fingers instantly
+        if (e.touches && e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            lastPinchDist = Math.hypot(dx, dy);
+            
+            pinchCenterX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+            pinchCenterY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+            return; // Exit early so it doesn't trigger standard dragging
+        }
+
         const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
         const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
 
-        // 🟢 FIX: Clean boundary checks so dragging axes takes priority over chart panning
         if (x > width - Y_AXIS_WIDTH) {
             isDraggingYScale = true;
             document.body.style.cursor = 'ns-resize';
@@ -918,28 +932,60 @@ document.addEventListener("DOMContentLoaded", () => {
         lastMouseY = e.touches ? e.touches[0].clientY : e.clientY;
     }
 
-function handlePointerMove(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
-        const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
+    function handlePointerMove(e) {
+        if (e.cancelable) e.preventDefault(); 
         
         const currentBottomReserve = showSubCharts ? ((80 * 2) + (15 * 2) + 25) : 25;
         const MAIN_CHART_BOTTOM = height - currentBottomReserve;
 
-        currentHoverX = x;
-        currentHoverY = y;
+        // 🟢 MOBILE PINCH LOGIC: Calculate spread distance and apply zoom
+        if (e.touches && e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const currentDist = Math.hypot(dx, dy);
+            
+            if (lastPinchDist > 0) {
+                // Multiplier dictates zoom speed
+                const zoomFactor = currentDist / lastPinchDist;
+                
+                // 1. Horizontal Zoom (Scale Columns)
+                const oldTotal = COL_WIDTH + GAP;
+                COL_WIDTH = Math.max(12, Math.min(COL_WIDTH * zoomFactor, 400)); // Cap width
+                GAP = COL_WIDTH * (15/180);
+                
+                let clampedMouseX = Math.min(pinchCenterX, width - Y_AXIS_WIDTH);
+                const dX = (width - Y_AXIS_WIDTH) - clampedMouseX;
+                offsetX = dX - (dX - offsetX) * ((COL_WIDTH + GAP) / oldTotal);
+                
+                // 2. Vertical Zoom (Scale Price rows)
+                const oldPriceScale = priceScale;
+                priceScale = Math.max(2, Math.min(priceScale * zoomFactor, 250));
+                
+                let clampedMouseY = Math.min(pinchCenterY, MAIN_CHART_BOTTOM);
+                const dY = MAIN_CHART_BOTTOM - 20 - clampedMouseY;
+                offsetY = ((dY + offsetY) * (priceScale / oldPriceScale)) - dY;
+            }
+            
+            lastPinchDist = currentDist;
+            renderCanvas();
+            return;
+        }
+
+        // Standard Drag Logic (Continues Below)
+        const rect = canvas.getBoundingClientRect();
+        const x = e.offsetX !== undefined ? e.offsetX : (e.touches[0].clientX - rect.left);
+        const y = e.offsetY !== undefined ? e.offsetY : (e.touches[0].clientY - rect.top);
+
+        currentHoverX = x; currentHoverY = y;
         isHovering = (x > (showVP ? VP_WIDTH : 0) && x < width - Y_AXIS_WIDTH && y < MAIN_CHART_BOTTOM);
 
         if (!isDraggingChart && !isDraggingYScale && !isDraggingXScale) {
             if (x > width - Y_AXIS_WIDTH) canvas.style.cursor = 'ns-resize';
             else if (y > MAIN_CHART_BOTTOM) canvas.style.cursor = 'ew-resize';
             else canvas.style.cursor = 'crosshair';
-            
             renderCanvas(); 
             return;
         }
-
-        if (e.cancelable) e.preventDefault(); 
 
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -951,35 +997,27 @@ function handlePointerMove(e) {
             offsetX += dx;
             offsetY += dy;
         } else if (isDraggingYScale) {
-            // TradingView smooth axis drag (Vertical)
             const zoomFactor = 1 - dy * 0.003; 
             const newPriceScale = Math.max(2, Math.min(priceScale * zoomFactor, 250));
-            
-            // Anchor to the center of the screen so the axis stretches evenly
             const anchorY = MAIN_CHART_BOTTOM / 2;
             const dY = MAIN_CHART_BOTTOM - 20 - anchorY;
             offsetY = ((dY + offsetY) * (newPriceScale / priceScale)) - dY;
             priceScale = newPriceScale;
-            
         } else if (isDraggingXScale) {
-            // TradingView smooth axis drag (Horizontal)
             const zoomFactor = 1 + dx * 0.003;
             const oldTotal = COL_WIDTH + GAP;
-            
-            COL_WIDTH = Math.max(15, Math.min(COL_WIDTH * zoomFactor, 400));
+            COL_WIDTH = Math.max(12, Math.min(COL_WIDTH * zoomFactor, 400));
             GAP = COL_WIDTH * (15/180);
-            
-            // Anchor to the right edge
             const dX = 0; 
             offsetX = dX - (dX - offsetX) * ((COL_WIDTH + GAP) / oldTotal);
         }
 
         renderCanvas();
-        lastMouseX = clientX;
-        lastMouseY = clientY;
+        lastMouseX = clientX; lastMouseY = clientY;
     }
 
-    function handlePointerUp() { 
+    function handlePointerUp(e) { 
+        if (e && e.touches && e.touches.length < 2) lastPinchDist = 0; // Reset pinch if a finger lifts
         isDraggingChart = false; 
         isDraggingYScale = false; 
         isDraggingXScale = false;
@@ -1580,34 +1618,40 @@ const parseTime = (t) => {
                 ctx.font = "bold 10px 'JetBrains Mono'"; 
                 ctx.textBaseline = "middle";
 
-// 🟢 NEW: Dynamically shift text to pure white if the background heatmap gets too intense!
+// 🟢 NEW: Dynamically shift text to pure white if background is intense
                 const isHeavyBg = Math.abs(imbalanceRatio) * volIntensity > 0.6;
-                const neutralText = isLight ? '#0f172a' : '#f8fafc'; // Crisp black / Pure white
-                const heavyText = '#ffffff'; // Force white text on heavy colored backgrounds (even in light mode)
+                const neutralText = isLight ? '#0f172a' : '#f8fafc'; 
+                const heavyText = '#ffffff'; 
 
-                // Sell Side
-                ctx.textAlign = "right";
-                if (isSellImb) {
-                    ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.3)' : 'rgba(239, 68, 68, 0.3)'; 
-                    ctx.fillRect(center - 32, y - Math.floor(priceScale/2) + 2, 30, priceScale - 4); // Fits inside cell perfectly
-                    ctx.fillStyle = isLight ? '#b91c1c' : '#fca5a5'; // Deep red / Bright pink for extreme readability
-                } else { 
-                    ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
+                // 🟢 NEW: Hide text completely if the user zoomed out too far, preventing blurry overlaps
+                if (COL_WIDTH >= 35) {
+                    // Dynamically size font based on zoom level
+                    const fontSize = Math.max(8, Math.min(10, COL_WIDTH / 6));
+                    ctx.font = `bold ${fontSize}px 'JetBrains Mono'`; 
+                    ctx.textBaseline = "middle";
+
+                    // Sell Side Text
+                    ctx.textAlign = "right";
+                    if (isSellImb) {
+                        ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.3)' : 'rgba(239, 68, 68, 0.3)'; 
+                        ctx.fillRect(center - (COL_WIDTH/2) + 2, y - Math.floor(priceScale/2) + 2, (COL_WIDTH/2) - 4, priceScale - 4); 
+                        ctx.fillStyle = isLight ? '#b91c1c' : '#fca5a5'; 
+                    } else { 
+                        ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
+                    }
+                    ctx.fillText(s, center - 4, y);
+
+                    // Buy Side Text
+                    ctx.textAlign = "left";
+                    if (isBuyImb) {
+                        ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.3)' : 'rgba(16, 185, 129, 0.3)'; 
+                        ctx.fillRect(center + 2, y - Math.floor(priceScale/2) + 2, (COL_WIDTH/2) - 4, priceScale - 4); 
+                        ctx.fillStyle = isLight ? '#15803d' : '#6ee7b7'; 
+                    } else { 
+                        ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
+                    }
+                    ctx.fillText(b, center + 4, y);
                 }
-                ctx.fillText(s, center - 6, y);
-
-                // Buy Side
-                ctx.textAlign = "left";
-                if (isBuyImb) {
-                    ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.3)' : 'rgba(16, 185, 129, 0.3)'; 
-                    ctx.fillRect(center + 2, y - Math.floor(priceScale/2) + 2, 30, priceScale - 4); // Fits inside cell perfectly
-                    ctx.fillStyle = isLight ? '#15803d' : '#6ee7b7'; // Deep green / Bright mint
-                } else { 
-                    ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
-                }
-                ctx.fillText(b, center + 6, y);
-            });
-
             // 🟢 PHASE 1: Delta Heatmap Logic
             const lowestPrice = Math.min(...prices, candleData.low);
             let statsY = getPriceY(lowestPrice) + priceScale / 2 + 15;
