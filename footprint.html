@@ -92,7 +92,7 @@
     .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
 
 .left-nav {
-    width: 52px; 
+    width: 44px; 
     background: var(--card); 
     border-right: 1px solid var(--border); 
     display: flex; 
@@ -228,7 +228,7 @@
 .settings-panel {
         display: none; 
         position: absolute; 
-        left: 55px; /* Pushes it out of the left-nav cleanly */
+        left: 48px; /* Pushes it out of the left-nav cleanly */
         top: -350px; 
         background: var(--card); 
         border: 1px solid var(--border); 
@@ -540,19 +540,17 @@
         e.preventDefault(); // Prevent text highlighting while dragging
     });
 
-    window.addEventListener('mousemove', (e) => {
+window.addEventListener('mousemove', (e) => {
         if (!isResizingWorkspace) return;
 
         // Calculate the new width based on the mouse X position
         let newWidth = e.clientX;
 
-        // Enforce the bounds (Min 52px, Max 250px)
-        if (newWidth < 52) newWidth = 52;
+        // 🟢 FIX: Update the minimum bound to match the new 44px CSS width
+        if (newWidth < 44) newWidth = 44; 
         if (newWidth > 250) newWidth = 250;
 
         leftNav.style.width = `${newWidth}px`;
-
-        // Immediately force the canvas to redraw to fill the new space
         resizeCanvas();
     });
 
@@ -859,12 +857,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 // --- CHART CONFIGURATION & LAYOUT ---
-    let COL_WIDTH = 55;        // 🟢 Shrunk from 110 to 55 to fit 2x more candles by default
-    const Y_AXIS_WIDTH = 60;   
+    let COL_WIDTH = 55;        
+    const Y_AXIS_WIDTH = 48;   // 🟢 Shrunk from 60 to 48
     const VP_WIDTH = 120;      
     const X_AXIS_HEIGHT = 25;  
-    let GAP = 4.5;             // 🟢 Reduced gap proportionally
-    const TICK_SIZE = 1;     
+    let GAP = 4.5;             
+    const TICK_SIZE = 1;
     
     // 🟢 PHASE 2: SUB-CHART DIMENSIONS
     const SUBCHART_HEIGHT = 80;  
