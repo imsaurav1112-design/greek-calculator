@@ -1618,16 +1618,16 @@ const parseTime = (t) => {
                 ctx.font = "bold 10px 'JetBrains Mono'"; 
                 ctx.textBaseline = "middle";
 
-// 🟢 NEW: Dynamically shift text to pure white if background is intense
+           // 🟢 NEW: Dynamically shift text to pure white if background is intense
                 const isHeavyBg = Math.abs(imbalanceRatio) * volIntensity > 0.6;
                 const neutralText = isLight ? '#0f172a' : '#f8fafc'; 
                 const heavyText = '#ffffff'; 
 
-                // 🟢 NEW: Hide text completely if the user zoomed out too far, preventing blurry overlaps
+                // 🟢 NEW: Hide text completely if the user zoomed out too far
                 if (COL_WIDTH >= 35) {
-                    // Dynamically size font based on zoom level
+                    // Dynamically size font based on zoom level (Bulletproof concatenation)
                     const fontSize = Math.max(8, Math.min(10, COL_WIDTH / 6));
-                    ctx.font = `bold ${fontSize}px 'JetBrains Mono'`; 
+                    ctx.font = "bold " + fontSize + "px 'JetBrains Mono'"; 
                     ctx.textBaseline = "middle";
 
                     // Sell Side Text
