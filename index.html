@@ -316,13 +316,17 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     border-radius: 16px;
     padding: 16px 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* 🟢 This centers the text inside the card */
     align-items: center;
     box-sizing: border-box;
     
-    /* 🟢 FIX 2: Upgraded to a much smoother, fluid easing curve */
     transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
     transform-origin: center;
+    
+    /* 🟢 Hides the extra cards that are waiting in the queue */
+    opacity: 0;
+    transform: scale(0.7); 
+    z-index: 0;
 }
 /* Center Card (In Focus) */
 .rot-card.active {
@@ -336,7 +340,6 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
   /* Top Card (Blurred & Pushed Back) */
 .rot-card.prev {
     opacity: 0.4;
-    /* 🟢 FIX 3: Removed translateZ and rotateX. Uses pure 2D scale to fake depth perfectly */
     transform: translateY(-65px) scale(0.85); 
     z-index: 1;
     filter: blur(2px);
@@ -345,7 +348,6 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
   /* Bottom Card (Blurred & Pushed Back) */
 .rot-card.next {
     opacity: 0.4;
-    /* 🟢 FIX 3: Removed translateZ and rotateX. Uses pure 2D scale to fake depth perfectly */
     transform: translateY(65px) scale(0.85); 
     z-index: 1;
     filter: blur(2px);
@@ -369,9 +371,12 @@ header { height: 60px; background: rgba(20, 20, 21, 0.8); backdrop-filter: blur(
     font-weight: 800;
     font-size: 14px;
 }
+/* 🟢 Added Colors for Crude Oil & Natural Gas */
 .icon-nifty { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .icon-bank { background: linear-gradient(135deg, #10b981, #047857); }
 .icon-sensex { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.icon-crude { background: linear-gradient(135deg, #3f3f46, #18181b); } /* Dark Slate/Black */
+.icon-ng { background: linear-gradient(135deg, #0ea5e9, #0369a1); } /* Light Blue */
 
 .rot-name {
     font-size: 16px;
