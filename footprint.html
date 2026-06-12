@@ -1309,7 +1309,7 @@ const parseTime = (t) => {
 
         let minPrice = Infinity, maxPrice = -Infinity;
         
-// 🟢 PRE-COMPUTE DATA FOR SUB-CHARTS & COMPOSITE SCORE
+        // 🟢 PRE-COMPUTE DATA FOR SUB-CHARTS & COMPOSITE SCORE
         const cumDeltaTimeline = [];
         const volumeTimeline = [];
         let maxCumDelta = -Infinity, minCumDelta = Infinity;
@@ -1345,72 +1345,54 @@ const parseTime = (t) => {
             minCumDelta = Math.min(minCumDelta, runningCumDelta);
             maxSessionVol = Math.max(maxSessionVol, cVol);
 
-            // 🟢 PHASE 3: COMPOSITE SMART MONEY SCORE CALCULATION
+            // 🟢 COMPOSITE SMART MONEY SCORE CALCULATION
             volWindow.push(cVol);
             if (volWindow.length > 5) volWindow.shift();
             const avgVol = volWindow.reduce((a, b) => a + b, 0) / volWindow.length;
-            const volSpike = cVol > (avgVol * 1.5); // 50% above rolling average
+            const volSpike = cVol > (avgVol * 1.5); 
 
             let score = 0;
             const isBullish = candle.close >= candle.open;
 
-            // 1. Divergence (+30/-30)
-            if (!isBullish && cDelta > 0) score += 30; // Price down, buying up -> Bullish Divergence
-            if (isBullish && cDelta < 0) score -= 30;  // Price up, selling up -> Bearish Divergence
+            if (!isBullish && cDelta > 0) score += 30; 
+            if (isBullish && cDelta < 0) score -= 30;  
 
-            // 2. Delta% (+20/-20)
             const deltaPct = cVol > 0 ? (cDelta / cVol) * 100 : 0;
             if (deltaPct > 60) score += 20;
             if (deltaPct < -60) score -= 20;
 
-            // 3. CumDelta Rising (+15/-15)
             if (cDelta > 0) score += 15;
             if (cDelta < 0) score -= 15;
 
-            // 4. Volume Spike + Delta (+10/-10)
             if (volSpike && cDelta > 0) score += 10;
             if (volSpike && cDelta < 0) score -= 10;
 
-            // 5. Accumulation Zone Interaction (+25/-25)
             let inZoneScore = 0;
             accumulationZones.forEach(z => {
-                // If price touches or is inside the zone
                 if (cLow <= z.high && cHigh >= z.low) {
-                    if (z.delta > 0) inZoneScore = 25;  // Accumulation bounce
-                    if (z.delta < 0) inZoneScore = -25; // Distribution rejection
+                    if (z.delta > 0) inZoneScore = 25;  
+                    if (z.delta < 0) inZoneScore = -25; 
                 }
             });
             score += inZoneScore;
 
-            // Cap the score between -100 and +100
             candle.smartScore = Math.max(-100, Math.min(100, score));
         });
 
-        // 🟢 FIX: Main Chart stops above TOTAL_BOTTOM_RESERVE based on Toggle
         const TOTAL_BOTTOM_RESERVE = showSubCharts 
             ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
             : X_AXIS_HEIGHT; 
             
         const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
-        // =========================================================
-        // 🟢 NEW: AUTO-CENTER LOGIC
-        // Automatically focuses the camera on the latest traded price
-        // =========================================================
+
+        // 🟢 AUTO-CENTER LOGIC
         if (needsAutoCenter && timeKeys.length > 0) {
-            // Get the close price of the most recent footprint candle
             const latestCandle = latestDataCache[timeKeys[timeKeys.length - 1]];
             const targetPrice = latestCandle.close;
-            
-            // Calculate where this price WOULD be drawn without moving the camera
             const unoffsetY = MAIN_CHART_BOTTOM - 20 - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
-            
-            // Adjust the camera Y offset to push the target price exactly to the middle
             offsetY = (MAIN_CHART_BOTTOM / 2) - unoffsetY;
-            
-            // Turn off auto-center so the user can now drag the chart manually
             needsAutoCenter = false; 
         }
-        // =========================================================
 
         const getPriceY = (price) => {
             const diffFromMin = price - minPrice;
@@ -1440,14 +1422,13 @@ const parseTime = (t) => {
         
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         
-        // --- PRE-CALCULATE X POSITIONS FOR ZONES AND CROSSHAIR ---
         const xPositions = [];
         for (let i = timeKeys.length - 1; i >= 0; i--) {
             xPositions[i] = currentX;
             currentX -= (COL_WIDTH + GAP);
         }
         
-        // 🟢 PHASE 2: DRAW ACCUMULATION ZONES
+        // 🟢 DRAW ACCUMULATION ZONES
         if (showZones) {
             accumulationZones.forEach(zone => {
                 const startX = xPositions[zone.startIdx];
@@ -1488,7 +1469,6 @@ const parseTime = (t) => {
             });
         }
 
-        // Reset currentX for the main drawing loop
         currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
         let cumulativeDelta = 0;
         let activeHoverData = null; 
@@ -1514,21 +1494,19 @@ const parseTime = (t) => {
 
             cumulativeDelta += candleDelta;
             const isBullish = candleData.close >= candleData.open;
-           const totalVol = totalBuyVol + totalSellVol;
+            const totalVol = totalBuyVol + totalSellVol;
             const candleX = currentX + 6; 
 
-            // 🟢 MISSED STEP 4 (Part 1): Color-code the candle border based on Smart Money Score
             const score = candleData.smartScore || 0;
-            let candleBorderColor = isLight ? '#94a3b8' : '#475569'; // Default Neutral
+            let candleBorderColor = isLight ? '#94a3b8' : '#475569'; 
 
-            if (score >= 70) candleBorderColor = '#10b981';      // Strong Buy
-            else if (score >= 40) candleBorderColor = '#34d399'; // Buy
-            else if (score <= -70) candleBorderColor = '#ef4444'; // Strong Sell
-            else if (score <= -40) candleBorderColor = '#f87171'; // Sell
+            if (score >= 70) candleBorderColor = '#10b981';     
+            else if (score >= 40) candleBorderColor = '#34d399'; 
+            else if (score <= -70) candleBorderColor = '#ef4444'; 
+            else if (score <= -40) candleBorderColor = '#f87171'; 
 
-            // Draw the wick/border using the Smart Score color
             ctx.strokeStyle = candleBorderColor;
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(candleX, getPriceY(candleData.high));
             ctx.lineTo(candleX, getPriceY(candleData.low));
@@ -1538,17 +1516,10 @@ const parseTime = (t) => {
             const bodyBottom = getPriceY(Math.min(candleData.open, candleData.close));
             const bodyHeight = Math.max(3, bodyBottom - bodyTop); 
 
-// Make the wicks thicker
-            ctx.lineWidth = 3; 
-
-            // Keep the solid body the traditional Red/Green, but brighter
             const candleBodyColor = isBullish ? (isLight ? '#16a34a' : '#22c55e') : (isLight ? '#dc2626' : '#f87171');
             ctx.fillStyle = candleBodyColor;
-            
-            // Widen the body from 6px to 8px for better visibility
             ctx.fillRect(candleX - 4, bodyTop - (priceScale/2), 8, bodyHeight + priceScale);
 
-            // 🟢 PHASE 1: Bullish/Bearish Divergence Detector
             const isDivergent = (isBullish && candleDelta < 0) || (!isBullish && candleDelta > 0);
             if (showDivergence && isDivergent && Math.abs(candleDelta) > 50) { 
                 ctx.beginPath();
@@ -1586,27 +1557,22 @@ const parseTime = (t) => {
                 const bidBelow = matrix[price - TICK_SIZE] ? matrix[price - TICK_SIZE].sell_vol : 0;
                 const askAbove = matrix[price + TICK_SIZE] ? matrix[price + TICK_SIZE].buy_vol : 0;
 
-                // 🟢 PHASE 1: Diagonal Imbalances 
                 const isBuyImb = showImbalances && (b > bidBelow * 3) && (b > 50);
                 const isSellImb = showImbalances && (s > askAbove * 3) && (s > 50);
 
-               // 🟢 MISSED STEP 4 (Part 2): True Orderflow Imbalance Heatmap
                 const totalNodeVol = b + s;
                 const volIntensity = maxVol > 0 ? (totalNodeVol / maxVol) : 0;
-                const imbalanceRatio = totalNodeVol > 0 ? (b - s) / totalNodeVol : 0; // Range: -1.0 to +1.0
+                const imbalanceRatio = totalNodeVol > 0 ? (b - s) / totalNodeVol : 0; 
 
                 let r, g, bl, a;
                 if (imbalanceRatio > 0) {
-                    // Buyers dominate -> Green Gradient
                     r = 16; g = 185; bl = 129;
-                    a = imbalanceRatio * volIntensity * 0.85; // Alpha based on BOTH imbalance strength and volume thickness
+                    a = imbalanceRatio * volIntensity * 0.85; 
                 } else {
-                    // Sellers dominate -> Red Gradient
                     r = 239; g = 68; bl = 68;
                     a = Math.abs(imbalanceRatio) * volIntensity * 0.85;
                 }
 
-                // Add a tiny baseline alpha (+0.05) so purely neutral nodes are still faintly visible
                 ctx.fillStyle = `rgba(${r}, ${g}, ${bl}, ${a + 0.05})`;
                 ctx.fillRect(boxLeft, y - priceScale/2, boxWidth, priceScale);
 
@@ -1615,22 +1581,15 @@ const parseTime = (t) => {
                     ctx.strokeRect(boxLeft, y - priceScale/2, boxWidth, priceScale);
                 }
 
-                ctx.font = "bold 10px 'JetBrains Mono'"; 
-                ctx.textBaseline = "middle";
-
-           // 🟢 NEW: Dynamically shift text to pure white if background is intense
                 const isHeavyBg = Math.abs(imbalanceRatio) * volIntensity > 0.6;
                 const neutralText = isLight ? '#0f172a' : '#f8fafc'; 
                 const heavyText = '#ffffff'; 
 
-                // 🟢 NEW: Hide text completely if the user zoomed out too far
                 if (COL_WIDTH >= 35) {
-                    // Dynamically size font based on zoom level (Bulletproof concatenation)
                     const fontSize = Math.max(8, Math.min(10, COL_WIDTH / 6));
                     ctx.font = "bold " + fontSize + "px 'JetBrains Mono'"; 
                     ctx.textBaseline = "middle";
 
-                    // Sell Side Text
                     ctx.textAlign = "right";
                     if (isSellImb) {
                         ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.3)' : 'rgba(239, 68, 68, 0.3)'; 
@@ -1641,7 +1600,6 @@ const parseTime = (t) => {
                     }
                     ctx.fillText(s, center - 4, y);
 
-                    // Buy Side Text
                     ctx.textAlign = "left";
                     if (isBuyImb) {
                         ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.3)' : 'rgba(16, 185, 129, 0.3)'; 
@@ -1652,7 +1610,8 @@ const parseTime = (t) => {
                     }
                     ctx.fillText(b, center + 4, y);
                 }
-            // 🟢 PHASE 1: Delta Heatmap Logic
+            });
+
             const lowestPrice = Math.min(...prices, candleData.low);
             let statsY = getPriceY(lowestPrice) + priceScale / 2 + 15;
 
@@ -1695,8 +1654,6 @@ const parseTime = (t) => {
                 ctx.fillText(`${totalSellVol} x ${totalBuyVol}`, center, statsY);
             }
 
-
-            // 🟢 PHASE 2: SUB-CHARTS (CumDelta & Volume)
             if (showSubCharts) {
                 const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
                 const volBaseY = height - X_AXIS_HEIGHT;
@@ -1753,7 +1710,7 @@ const parseTime = (t) => {
             }
 
             currentX -= (COL_WIDTH + GAP);
-        }
+        } // <-- THIS CLOSES THE MAIN FOR LOOP 🟢
 
         // 🟢 DRAW THE MAIN PRICE AXIS
         ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b';
@@ -1774,7 +1731,6 @@ const parseTime = (t) => {
         
       // 🟢 DRAW SUB-CHART DIVIDERS & Y-AXIS SCALES
         if (showSubCharts) {
-            // Draw horizontal divider line
             ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
@@ -1784,7 +1740,6 @@ const parseTime = (t) => {
             ctx.stroke();
             ctx.setLineDash([]);
             
-            // 🟢 Sub-Chart Number Formatter (Converts 150000 to 1.5L)
             const fmtScale = (num) => {
                 const absNum = Math.abs(num);
                 if (absNum >= 100000) return (num / 100000).toFixed(1) + 'L';
@@ -1795,47 +1750,37 @@ const parseTime = (t) => {
             ctx.font = "bold 9px 'JetBrains Mono'";
             ctx.textBaseline = "middle";
 
-            // --- 1. CUMULATIVE DELTA SCALE ---
             const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
             const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
             const cdCenterY = cDeltaBaseY - (SUBCHART_HEIGHT / 2);
 
             ctx.textAlign = "left";
             
-            // Zero Line
             ctx.fillStyle = isLight ? '#94a3b8' : '#64748b';
             ctx.fillText("0", width - Y_AXIS_WIDTH + 6, cdCenterY);
             
-            // Max Positive Delta
             ctx.fillStyle = isLight ? '#10b981' : '#34d399';
             ctx.fillText("+" + fmtScale(cdRange), width - Y_AXIS_WIDTH + 6, cdCenterY - (SUBCHART_HEIGHT / 2) + 6);
             
-            // Max Negative Delta
             ctx.fillStyle = isLight ? '#ef4444' : '#f87171';
             ctx.fillText("-" + fmtScale(cdRange), width - Y_AXIS_WIDTH + 6, cdCenterY + (SUBCHART_HEIGHT / 2) - 6);
 
-            // Section Label (In the empty spacing)
             ctx.fillStyle = 'var(--muted)';
             ctx.textAlign = "center";
             ctx.fillText("CUM Δ", width - (Y_AXIS_WIDTH/2), height - X_AXIS_HEIGHT - SUBCHART_HEIGHT - (SUBCHART_SPACING/2));
 
-
-            // --- 2. VOLUME SCALE ---
             const volBaseY = height - X_AXIS_HEIGHT;
             
             ctx.textAlign = "left";
             ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
             
-            // Max Volume Bar
             ctx.fillText(fmtScale(maxSessionVol), width - Y_AXIS_WIDTH + 6, volBaseY - SUBCHART_HEIGHT + 6);
 
-            // Section Label (Faintly overlaid on the center of the volume pane)
             ctx.fillStyle = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)';
             ctx.textAlign = "center";
             ctx.fillText("VOL", width - (Y_AXIS_WIDTH/2), volBaseY - (SUBCHART_HEIGHT/2));
         }
 
-        // 🟢 PHASE 2: SYNCHRONIZED CROSSHAIR
         const chPanel = document.getElementById('crosshair-stats');
         
         if (isHovering && activeHoverData) {
@@ -1853,9 +1798,8 @@ const parseTime = (t) => {
             ctx.stroke();
             ctx.setLineDash([]);
             
-if (currentHoverY < MAIN_CHART_BOTTOM) {
+            if (currentHoverY < MAIN_CHART_BOTTOM) {
                 const hoverPrice = minPrice + ((MAIN_CHART_BOTTOM - 20 - currentHoverY + offsetY) / priceScale) * TICK_SIZE;
-                // 🟢 FIX: Explicit hex colors instead of CSS variables so the Canvas doesn't draw it black!
                 ctx.fillStyle = isLight ? '#2563eb' : '#3b82f6'; 
                 ctx.fillRect(width - Y_AXIS_WIDTH, currentHoverY - 10, Y_AXIS_WIDTH, 20);
                 ctx.fillStyle = '#ffffff';
@@ -1877,45 +1821,39 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
         } else {
             chPanel.style.display = 'none';
         }
-// 🟢 PHASE 3: Update Header Bar Meter
-            const hgContainer = document.getElementById('header-gauge');
-            if (hgContainer) {
-                // 🟢 THE FIX: Safely check if we are hovering. If not, default to the latest candle on the chart!
-                let targetTime = activeHoverData ? activeHoverData.time : (timeKeys.length > 0 ? timeKeys[timeKeys.length - 1] : null);
-                
-                let currentScore = 0;
-                if (targetTime && latestDataCache[targetTime]) {
-                    currentScore = latestDataCache[targetTime].smartScore || 0;
-                }
 
-                const valEl = document.getElementById('hg-val');
-                const lblEl = document.getElementById('hg-lbl');
-                const marker = document.getElementById('hg-marker');
-
-                valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
-
-                let color = 'var(--muted)';
-                let lbl = 'NEUTRAL';
-                
-                // 🟢 UPDATED: Changed from Buy/Sell to Positive/Negative
-                if (currentScore >= 70) { color = 'var(--green)'; lbl = 'STRONG POSITIVE'; }
-                else if (currentScore >= 40) { color = 'var(--green)'; lbl = 'POSITIVE'; }
-                else if (currentScore <= -70) { color = 'var(--red)'; lbl = 'STRONG NEGATIVE'; }
-                else if (currentScore <= -40) { color = 'var(--red)'; lbl = 'NEGATIVE'; }
-                
-                valEl.style.color = color;
-                lblEl.style.color = color;
-                lblEl.innerText = lbl;
-                
-                // Math to slide the needle: Map the -100 to +100 score onto a 0% to 100% position
-                const pct = ((currentScore + 100) / 200) * 100;
-                marker.style.left = `${pct}%`;
-                
-                // Make the needle glow the corresponding color if it's a strong signal
-                marker.style.background = (currentScore >= 40 || currentScore <= -40) ? color : (isLight ? '#0f172a' : '#ffffff'); 
+        const hgContainer = document.getElementById('header-gauge');
+        if (hgContainer) {
+            let targetTime = activeHoverData ? activeHoverData.time : (timeKeys.length > 0 ? timeKeys[timeKeys.length - 1] : null);
+            
+            let currentScore = 0;
+            if (targetTime && latestDataCache[targetTime]) {
+                currentScore = latestDataCache[targetTime].smartScore || 0;
             }
 
-        // --- DRAW DOM ---
+            const valEl = document.getElementById('hg-val');
+            const lblEl = document.getElementById('hg-lbl');
+            const marker = document.getElementById('hg-marker');
+
+            valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
+
+            let color = 'var(--muted)';
+            let lbl = 'NEUTRAL';
+            
+            if (currentScore >= 70) { color = 'var(--green)'; lbl = 'STRONG POSITIVE'; }
+            else if (currentScore >= 40) { color = 'var(--green)'; lbl = 'POSITIVE'; }
+            else if (currentScore <= -70) { color = 'var(--red)'; lbl = 'STRONG NEGATIVE'; }
+            else if (currentScore <= -40) { color = 'var(--red)'; lbl = 'NEGATIVE'; }
+            
+            valEl.style.color = color;
+            lblEl.style.color = color;
+            lblEl.innerText = lbl;
+            
+            const pct = ((currentScore + 100) / 200) * 100;
+            marker.style.left = `${pct}%`;
+            marker.style.background = (currentScore >= 40 || currentScore <= -40) ? color : (isLight ? '#0f172a' : '#ffffff'); 
+        }
+
         if (showDOM) {
             const DOM_WIDTH = 100; 
             const domStartX = width - Y_AXIS_WIDTH; 
@@ -1998,7 +1936,7 @@ if (currentHoverY < MAIN_CHART_BOTTOM) {
                 ctx.setLineDash([]); 
             }
         }
-    } // <--- END OF renderCanvas    
+    } // end of render canvas
     // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
