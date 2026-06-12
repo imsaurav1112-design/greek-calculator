@@ -924,10 +924,6 @@ footer {
                         <div class="rot-icon icon-nifty">N</div>
                         <div class="rot-name">Nifty 50</div>
                     </div>
-                    <div class="rot-right">
-                        <div class="rot-price" id="rot-price-nifty">--</div>
-                        
-                    </div>
                 </div>
 
                 <div class="rot-card next" id="card-bank">
@@ -935,20 +931,12 @@ footer {
                         <div class="rot-icon icon-bank">B</div>
                         <div class="rot-name">Bank Nifty</div>
                     </div>
-                    <div class="rot-right">
-                        <div class="rot-price" id="rot-price-bank">--</div>
-                        
-                    </div>
                 </div>
 
                 <div class="rot-card prev" id="card-sensex">
                     <div class="rot-left">
                         <div class="rot-icon icon-sensex">S</div>
                         <div class="rot-name">Sensex</div>
-                    </div>
-                    <div class="rot-right">
-                        <div class="rot-price" id="rot-price-sensex">--</div>
-                        
                     </div>
                 </div>
             </div>
@@ -1869,13 +1857,11 @@ const planPrices = {
     });
     
 // --- 2. LIVE PRICE FEEDER (Price Only) ---
+// --- 2. LIVE PRICE FEEDER (Price Only) ---
 async function fetchLiveHeroPrices() {
     try {
         const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
         const data = await resp.json();
-        
-        // 🟢 DEBUG LOG: Open your browser inspect console (F12) to see this!
-        console.log("BACKEND DATA REVEALED:", data);
         
         const updateCard = (apiKeys, idName) => {
             const keyFound = apiKeys.find(k => data[k] !== undefined);
@@ -1898,9 +1884,9 @@ async function fetchLiveHeroPrices() {
     }
 }
 
-    // Fetch immediately, then every 3 seconds
-    fetchLiveHeroPrices();
-    setInterval(fetchLiveHeroPrices, 3000);
+// Fetch immediately, then every 3 seconds
+fetchLiveHeroPrices();
+setInterval(fetchLiveHeroPrices, 3000);
   </script>
 </body>
 </html>
