@@ -88,6 +88,41 @@
     .price-val { color: var(--text); }
     .price-val.fut { color: var(--gold); }
 
+    /* 🟢 NEW: Instrument Dropdown Styling */
+    .header-instrument-select select {
+        background: var(--section);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        outline: none;
+        transition: 0.2s ease;
+        appearance: none; /* Removes default browser styling */
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px top 50%;
+        background-size: 10px auto;
+        padding-right: 30px; /* Space for the arrow */
+    }
+
+    .header-instrument-select select:hover {
+        border-color: var(--accent);
+    }
+    
+    .header-instrument-select select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
+    .light-theme .header-instrument-select select {
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    }
+
 /* --- 2. WORKSPACE & LEFT NAV --- */
     .workspace { display: flex; flex: 1; overflow: hidden; position: relative; }
 
@@ -395,15 +430,12 @@
 <header style="position: relative; justify-content: flex-start; gap: 30px;">
     <a href="/" class="logo"><span>GC</span></a>
 
-    <div class="header-prices">
-        <div class="price-box">
-            <span class="price-label">SPOT:</span>
-            <span class="price-val" id="hdr-spot">--</span>
-        </div>
-        <div class="price-box">
-            <span class="price-label">FUT:</span>
-            <span class="price-val fut" id="hdr-fut">--</span>
-        </div>
+<div class="header-instrument-select">
+        <select id="instrument-dropdown" onchange="handleInstrumentChange(this.value)">
+            <option value="NIFTY" selected>NIFTY 50</option>
+            <option value="CRUDEOIL">CRUDE OIL</option>
+            <option value="NATURALGAS">NATURAL GAS</option>
+        </select>
     </div>
 
     <!-- 🟢 NEW: Header Bar Meter (Now Centered!) -->
@@ -1090,8 +1122,34 @@ function resizeCanvas() {
     resizeCanvas();
     setTimeout(resizeCanvas, 100);
 
+    // 🟢 NEW: Track the currently selected instrument
+    let currentInstrument = "NIFTY";
+
 // --- DATA POLLING ---
     let isLiveMode = true;
+
+    // 🟢 NEW: Handle dropdown changes
+    window.handleInstrumentChange = function(newSymbol) {
+        currentInstrument = newSymbol;
+        
+        // Instantly clear the old chart data from memory so it doesn't bleed together
+        latestDataCache = {};
+        latestDomCache = { bids: {}, asks: {} };
+        volumeProfile = {};
+        sessionStats = {};
+        
+        // Force the camera to re-center on the new asset's price
+        needsAutoCenter = true; 
+        
+        // Wipe the canvas clean immediately
+        ctx.clearRect(0, 0, width, height);
+        
+        // Re-fetch historical data if we are in backtest mode, otherwise wait for the live polling loop
+        if (!isLiveMode) {
+            const dateInput = document.getElementById('history-date').value;
+            triggerDateChange(dateInput); 
+        }
+    };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
@@ -1118,7 +1176,7 @@ function resizeCanvas() {
 
             isLiveMode = false;
             try {
-                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
 
                 latestDataCache = data.data || {};
@@ -1132,13 +1190,8 @@ function resizeCanvas() {
             if (!isLiveMode) return; 
 
             try {
-                const tResp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
-                const tData = await tResp.json();
 
-                if (tData["NIFTY 50"]) document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
-                if (tData["NIFTY FUT"]) document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2); 
-
-                const r = await fetch('https://api.greekcalculator.in/api/footprint', { headers: { 'Authorization': `Bearer ${token}` } });
+                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
 
                 if (data.status === "success") {
