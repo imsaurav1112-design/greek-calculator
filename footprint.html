@@ -8,13 +8,13 @@
 <link rel="icon" type="image/png" href="optionchain_fevicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
-    :root { 
+:root { 
         /* 🟢 Dark Theme (Refined Obsidian/Slate) */
         --bg: #0b0f19; 
         --card: #131b2c; 
         --section: #1e293b; 
         --border: #334155; 
-        --text: #f8fafc; 
+        --text: #ffffff;  /* Pushed from off-white to pure white for crisp text */
         --muted: #94a3b8; 
         --accent: #3b82f6; 
         --gold: #fbbf24; 
@@ -156,18 +156,18 @@
         --red: #ef4444; 
     }
 
-    .light-theme {
+.light-theme {
         /* 🟢 Light Theme (Clean Paper/Silver) */
         --bg: #f8fafc;
         --card: #ffffff;
         --section: #f1f5f9;
-        --border: #e2e8f0;
-        --text: #0f172a;
+        --border: #cbd5e1; /* Darkened border slightly for better definition */
+        --text: #020617; /* Deepened text color to near-black */
         --muted: #64748b;
         --accent: #2563eb;
         --gold: #d97706;
-        --green: #16a34a;
-        --red: #dc2626;
+        --green: #16a34a; /* Deep, readable green */
+        --red: #dc2626;   /* Deep, readable red */
     }
 
     /* --- SESSION STATS --- */
@@ -262,12 +262,12 @@
     .divider { display: none; } /* Hide divider on desktop */
     .mobile-menu-toggle { display: none; }
 
-    /* 🟢 Footprint Imbalance Glows */
-    .imb-buy { background: rgba(16, 185, 129, 0.2); border-radius: 4px; padding: 0 2px; }
-    .imb-sell { background: rgba(239, 68, 68, 0.2); border-radius: 4px; padding: 0 2px; }
+/* 🟢 FOOTPRINT IMBALANCE GLOWS (CSS Overrides) */
+    .imb-buy { background: rgba(34, 197, 94, 0.25); border-radius: 4px; padding: 0 4px; color: #22c55e; font-weight: 800;}
+    .imb-sell { background: rgba(239, 68, 68, 0.25); border-radius: 4px; padding: 0 4px; color: #ef4444; font-weight: 800;}
     
-    .light-theme .imb-buy { background: rgba(22, 163, 74, 0.2); }
-    .light-theme .imb-sell { background: rgba(220, 38, 38, 0.2); }
+    .light-theme .imb-buy { background: rgba(22, 163, 74, 0.2); color: #16a34a; }
+    .light-theme .imb-sell { background: rgba(220, 38, 38, 0.2); color: #dc2626; }
 
   /* --- 🟢 PHASE 3: HEADER BAR METER --- */
 .header-gauge-container {
@@ -1500,10 +1500,15 @@ const parseTime = (t) => {
             const bodyBottom = getPriceY(Math.min(candleData.open, candleData.close));
             const bodyHeight = Math.max(3, bodyBottom - bodyTop); 
 
-            // Keep the solid body the traditional Red/Green
-            const candleBodyColor = isBullish ? '#10b981' : '#ef4444';
+// Make the wicks thicker
+            ctx.lineWidth = 3; 
+
+            // Keep the solid body the traditional Red/Green, but brighter
+            const candleBodyColor = isBullish ? (isLight ? '#16a34a' : '#22c55e') : (isLight ? '#dc2626' : '#f87171');
             ctx.fillStyle = candleBodyColor;
-            ctx.fillRect(candleX - 3, bodyTop - (priceScale/2), 6, bodyHeight + priceScale);
+            
+            // Widen the body from 6px to 8px for better visibility
+            ctx.fillRect(candleX - 4, bodyTop - (priceScale/2), 8, bodyHeight + priceScale);
 
             // 🟢 PHASE 1: Bullish/Bearish Divergence Detector
             const isDivergent = (isBullish && candleDelta < 0) || (!isBullish && candleDelta > 0);
@@ -1575,23 +1580,32 @@ const parseTime = (t) => {
                 ctx.font = "bold 10px 'JetBrains Mono'"; 
                 ctx.textBaseline = "middle";
 
+// 🟢 NEW: Dynamically shift text to pure white if the background heatmap gets too intense!
+                const isHeavyBg = Math.abs(imbalanceRatio) * volIntensity > 0.6;
+                const neutralText = isLight ? '#0f172a' : '#f8fafc'; // Crisp black / Pure white
+                const heavyText = '#ffffff'; // Force white text on heavy colored backgrounds (even in light mode)
+
                 // Sell Side
                 ctx.textAlign = "right";
                 if (isSellImb) {
-                    ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.2)' : 'rgba(239, 68, 68, 0.2)'; 
-                    ctx.fillRect(center - 32, y - 7, 30, 14);
-                    ctx.fillStyle = '#ef4444'; 
-                } else { ctx.fillStyle = isLight ? '#475569' : '#d4d4d8'; }
-                ctx.fillText(s, center - 4, y);
+                    ctx.fillStyle = isLight ? 'rgba(220, 38, 38, 0.3)' : 'rgba(239, 68, 68, 0.3)'; 
+                    ctx.fillRect(center - 32, y - Math.floor(priceScale/2) + 2, 30, priceScale - 4); // Fits inside cell perfectly
+                    ctx.fillStyle = isLight ? '#b91c1c' : '#fca5a5'; // Deep red / Bright pink for extreme readability
+                } else { 
+                    ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
+                }
+                ctx.fillText(s, center - 6, y);
 
                 // Buy Side
                 ctx.textAlign = "left";
                 if (isBuyImb) {
-                    ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.2)' : 'rgba(16, 185, 129, 0.2)'; 
-                    ctx.fillRect(center + 2, y - 7, 30, 14);
-                    ctx.fillStyle = '#10b981'; 
-                } else { ctx.fillStyle = isLight ? '#475569' : '#d4d4d8'; }
-                ctx.fillText(b, center + 4, y);
+                    ctx.fillStyle = isLight ? 'rgba(22, 163, 74, 0.3)' : 'rgba(16, 185, 129, 0.3)'; 
+                    ctx.fillRect(center + 2, y - Math.floor(priceScale/2) + 2, 30, priceScale - 4); // Fits inside cell perfectly
+                    ctx.fillStyle = isLight ? '#15803d' : '#6ee7b7'; // Deep green / Bright mint
+                } else { 
+                    ctx.fillStyle = isHeavyBg ? heavyText : neutralText; 
+                }
+                ctx.fillText(b, center + 6, y);
             });
 
             // 🟢 PHASE 1: Delta Heatmap Logic
