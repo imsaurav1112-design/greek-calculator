@@ -419,7 +419,7 @@
 /* --- 📱 MOBILE SPECIFIC OPTIMIZATION --- */
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
-        .logo span { display: none; } 
+       
        
       /* 🟢 Mobile Header Adjustments */
         header { gap: 5px; padding: 0 8px; }
@@ -433,13 +433,10 @@
         }
 
 /* Shrink the Gauge and push to right */
+/* 🟢 Hide the Gauge completely on Mobile */
         .header-gauge-container {
-            padding: 4px;
-            gap: 4px;
-            margin-left: auto;
+            display: none !important;
         }
-        .hg-text { display: none; } /* Hide the word "NEUTRAL" on mobile to save space */
-        .hg-bar-track { width: 40px; }
         
         /* 🟢 Match Live-Market Vertical Dropdown Nav */
         .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;}
@@ -507,7 +504,7 @@
             </select>
             
             <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
-                <option value="1">1m</option>
+                
                 <option value="3">3m</option>
                 <option value="5" selected>5m</option>
                 <option value="15">15m</option>
