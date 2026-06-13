@@ -1158,7 +1158,7 @@ function resizeCanvas() {
         resetChartAndFetch();
     };
 
-    // 🟢 Helper to prevent duplicate code
+   // 🟢 Helper to prevent duplicate code
     function resetChartAndFetch() {
         latestDataCache = {};
         latestDomCache = { bids: {}, asks: {} };
@@ -1168,13 +1168,14 @@ function resizeCanvas() {
         ctx.clearRect(0, 0, width, height);
         
         if (!isLiveMode) {
-            const dateInput = document.getElementById('history-date').value;
-            if (dateInput) {
-                triggerDateChange(dateInput); 
+            const dateInput = document.getElementById('history-date');
+            if (dateInput && dateInput.value) {
+                triggerDateChange(dateInput.value); 
+                // 🟢 THE FIX: Force the calendar to fire its fetch event so it grabs the new timeframe!
+                dateInput.dispatchEvent(new Event('change'));
             }
         }
     }
-
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
