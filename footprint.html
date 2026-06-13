@@ -1143,7 +1143,7 @@ function resizeCanvas() {
     let currentInstrument = "NIFTY";
     let currentTimeframe = "5";
 
-// --- DATA POLLING ---
+    // --- DATA POLLING ---
     let isLiveMode = true;
 
     // 🟢 Handle Instrument Change
@@ -1169,28 +1169,11 @@ function resizeCanvas() {
         
         if (!isLiveMode) {
             const dateInput = document.getElementById('history-date').value;
-            triggerDateChange(dateInput); 
+            if (dateInput) {
+                triggerDateChange(dateInput); 
+            }
         }
     }
-        
-        // Instantly clear the old chart data from memory so it doesn't bleed together
-        latestDataCache = {};
-        latestDomCache = { bids: {}, asks: {} };
-        volumeProfile = {};
-        sessionStats = {};
-        
-        // Force the camera to re-center on the new asset's price
-        needsAutoCenter = true; 
-        
-        // Wipe the canvas clean immediately
-        ctx.clearRect(0, 0, width, height);
-        
-        // Re-fetch historical data if we are in backtest mode, otherwise wait for the live polling loop
-        if (!isLiveMode) {
-            const dateInput = document.getElementById('history-date').value;
-            triggerDateChange(dateInput); 
-        }
-    };
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
