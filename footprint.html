@@ -438,18 +438,24 @@
     </label>
 </div>
 
-<header style="position: relative; justify-content: flex-start; gap: 30px;">
+<header>
     <a href="/" class="logo"><span>GC</span></a>
 
-<div class="header-instrument-select">
-        <select id="instrument-dropdown" onchange="handleInstrumentChange(this.value)">
+    <div class="header-controls">
+        <select id="instrument-dropdown" class="header-dropdown" onchange="handleInstrumentChange(this.value)">
             <option value="NIFTY" selected>NIFTY 50</option>
             <option value="CRUDEOIL">CRUDE OIL</option>
             <option value="NATURALGAS">NATURAL GAS</option>
         </select>
+        
+        <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
+            <option value="1">1m</option>
+            <option value="3">3m</option>
+            <option value="5" selected>5m</option>
+            <option value="15">15m</option>
+        </select>
     </div>
 
-    <!-- 🟢 NEW: Header Bar Meter (Now Centered!) -->
     <div class="header-gauge-container" id="header-gauge">
         <div class="hg-text">
             <span id="hg-lbl">NEUTRAL</span>
