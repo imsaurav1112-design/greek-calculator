@@ -312,12 +312,13 @@
         0% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
         100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); }
     }
-  /* 🟢 SETTINGS PANEL FIX: Push to the right so it doesn't get hidden */
+/* 🟢 SETTINGS PANEL DESKTOP POSITIONING */
 .settings-panel {
         display: none; 
         position: absolute; 
-        left: 48px; /* Pushes it out of the left-nav cleanly */
-        top: -350px; 
+        left: 60px; /* Snaps safely next to the sidebar */
+        bottom: 20px; /* Anchors it to the bottom */
+        top: auto; 
         background: var(--card); 
         border: 1px solid var(--border); 
         border-radius: 8px; 
@@ -650,30 +651,30 @@
                 <input type="date" id="history-date" onchange="triggerDateChange(this.value)" onclick="this.showPicker()" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
             </div>
 
-            <div style="position: relative;" id="settings-wrapper">
+<div style="position: relative;" id="settings-wrapper">
                 <button class="tool-btn" id="btn-settings" onclick="toggleSettings(event)" title="Settings">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
-                
-                <div class="settings-panel" id="settings-panel">
-                    <div class="settings-header">General</div>
-                    <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
-                    <div class="settings-header" style="border-radius: 0;">Components</div>
-                    <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
-                    <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
-                    <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
-                    
-                    <div class="settings-header" style="border-radius: 0;">Smart Orderflow</div>
-                    <label class="settings-row" title="Highlights diagonal volume imbalances">Imbalances <input type="checkbox" id="imb-cb" onchange="toggleImbalances(this)" checked></label>
-                    <label class="settings-row" title="Shows Bullish/Bearish Delta divergence triangles">Divergence <input type="checkbox" id="div-cb" onchange="toggleDivergence(this)" checked></label>
-                    <label class="settings-row" title="Highlights extreme delta values at bottom of columns">Delta Heatmap <input type="checkbox" id="heat-cb" onchange="toggleHeatmap(this)" checked></label>
-                    <label class="settings-row" title="Draws Accumulation/Distribution boxes">Zones <input type="checkbox" id="zones-cb" onchange="toggleZones(this)" checked></label>
-                    <label class="settings-row" title="Shows Cumulative Delta & Volume beneath chart">Sub-Charts <input type="checkbox" id="sub-cb" onchange="toggleSubCharts(this)" checked></label>
-                </div>
             </div>
         </div>
     </div>
-    
+
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-header">General</div>
+        <label class="settings-row">Light Theme <input type="checkbox" id="theme-cb" onchange="toggleTheme()"></label>
+        <div class="settings-header" style="border-radius: 0;">Components</div>
+        <label class="settings-row">Session Stats <input type="checkbox" id="stats-cb" onchange="toggleComponent('stats-panel', this)" checked></label>
+        <label class="settings-row">Volume Profile <input type="checkbox" id="vp-cb" onchange="toggleVP(this)" checked></label>
+        <label class="settings-row">Live D30 DOM <input type="checkbox" id="dom-cb" onchange="toggleDOM(this)" checked></label>
+        
+        <div class="settings-header" style="border-radius: 0;">Smart Orderflow</div>
+        <label class="settings-row" title="Highlights diagonal volume imbalances">Imbalances <input type="checkbox" id="imb-cb" onchange="toggleImbalances(this)" checked></label>
+        <label class="settings-row" title="Shows Bullish/Bearish Delta divergence triangles">Divergence <input type="checkbox" id="div-cb" onchange="toggleDivergence(this)" checked></label>
+        <label class="settings-row" title="Highlights extreme delta values at bottom of columns">Delta Heatmap <input type="checkbox" id="heat-cb" onchange="toggleHeatmap(this)" checked></label>
+        <label class="settings-row" title="Draws Accumulation/Distribution boxes">Zones <input type="checkbox" id="zones-cb" onchange="toggleZones(this)" checked></label>
+        <label class="settings-row" title="Shows Cumulative Delta & Volume beneath chart">Sub-Charts <input type="checkbox" id="sub-cb" onchange="toggleSubCharts(this)" checked></label>
+    </div>
+
     <div id="chart-container">
         <canvas id="orderflowCanvas"></canvas>
         
@@ -1333,12 +1334,19 @@ function resizeCanvas() {
         }
     }
     
-    onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
         const token = await user.getIdToken();
 
-        document.getElementById('history-date').addEventListener('change', async (e) => {
+        // 🟢 FIX: Define the fetch function once so BOTH calendars can use it
+        const handleDateChange = async (e) => {
             const selectedDate = e.target.value;
+
+            // Keep both desktop and mobile inputs synchronized
+            const deskInput = document.getElementById('history-date');
+            const mobInput = document.getElementById('history-date-mobile');
+            if (deskInput) deskInput.value = selectedDate;
+            if (mobInput) mobInput.value = selectedDate;
 
             // 🟢 BULLETPROOF IST DATE GENERATOR
             const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
@@ -1346,19 +1354,15 @@ function resizeCanvas() {
 
             if (!selectedDate || selectedDate === today) {
                 isLiveMode = true;
-
-                // 🟢 Force a clean UI refresh when jumping back to live mode
                 latestDataCache = {};
                 latestDomCache = { bids: {}, asks: {} };
                 processSessionData();
                 renderCanvas();
-
                 return;
             }
 
             isLiveMode = false;
             try {
-                // ✅ Replace the historical fetch with this:
                 const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
 
@@ -1368,7 +1372,14 @@ function resizeCanvas() {
                 processSessionData(); 
                 renderCanvas();
             } catch(err) { console.error("History fetch failed", err); }
-        });
+        };
+
+        // 🟢 FIX: Attach the listener to BOTH calendars
+        const deskDate = document.getElementById('history-date');
+        const mobDate = document.getElementById('history-date-mobile');
+        if (deskDate) deskDate.addEventListener('change', handleDateChange);
+        if (mobDate) mobDate.addEventListener('change', handleDateChange);
+        
         setInterval(async () => {
             if (!isLiveMode) return; 
 
