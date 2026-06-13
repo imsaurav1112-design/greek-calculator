@@ -365,14 +365,25 @@
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
         .logo span { display: none; } 
-        .header-prices { gap: 10px; font-size: 11px; flex-direction: column; align-items: flex-end; gap: 2px;}
+       
+      /* 🟢 Mobile Header Adjustments */
+        header { gap: 5px; padding: 0 5px; }
+        .header-controls { gap: 4px; }
+        .header-dropdown { 
+            padding: 4px 18px 4px 6px; 
+            font-size: 10px; 
+            background-size: 8px auto; 
+            background-position: right 6px top 50%; 
+        }
 
+/* Shrink the Gauge and push to right */
         .header-gauge-container {
-            position: relative;
-            left: auto;
-            transform: none;
+            padding: 4px;
+            gap: 4px;
             margin-left: auto;
         }
+        .hg-text { display: none; } /* Hide the word "NEUTRAL" on mobile to save space */
+        .hg-bar-track { width: 40px; }
         
         /* 🟢 Match Live-Market Vertical Dropdown Nav */
         .mobile-menu-toggle { display: flex !important; width: 40px !important; height: 40px !important; justify-content: center; align-items: center; color: var(--accent) !important; margin: 0; border: none; background: transparent;}
@@ -1122,15 +1133,39 @@ function resizeCanvas() {
     resizeCanvas();
     setTimeout(resizeCanvas, 100);
 
-    // 🟢 NEW: Track the currently selected instrument
+// 🟢 NEW: Track the currently selected instrument and timeframe
     let currentInstrument = "NIFTY";
+    let currentTimeframe = "5";
 
 // --- DATA POLLING ---
     let isLiveMode = true;
 
-    // 🟢 NEW: Handle dropdown changes
+    // 🟢 Handle Instrument Change
     window.handleInstrumentChange = function(newSymbol) {
         currentInstrument = newSymbol;
+        resetChartAndFetch();
+    };
+
+    // 🟢 Handle Timeframe Change
+    window.handleTimeframeChange = function(newTime) {
+        currentTimeframe = newTime;
+        resetChartAndFetch();
+    };
+
+    // 🟢 Helper to prevent duplicate code
+    function resetChartAndFetch() {
+        latestDataCache = {};
+        latestDomCache = { bids: {}, asks: {} };
+        volumeProfile = {};
+        sessionStats = {};
+        needsAutoCenter = true; 
+        ctx.clearRect(0, 0, width, height);
+        
+        if (!isLiveMode) {
+            const dateInput = document.getElementById('history-date').value;
+            triggerDateChange(dateInput); 
+        }
+    }
         
         // Instantly clear the old chart data from memory so it doesn't bleed together
         latestDataCache = {};
@@ -1176,7 +1211,8 @@ function resizeCanvas() {
 
             isLiveMode = false;
             try {
-                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                // ✅ Replace the historical fetch with this:
+                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
 
                 latestDataCache = data.data || {};
@@ -1191,7 +1227,8 @@ function resizeCanvas() {
 
             try {
 
-                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                // ✅ Replace the live fetch inside setInterval with this:
+                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await r.json();
 
                 if (data.status === "success") {
