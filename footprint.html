@@ -492,11 +492,57 @@
         .resizer-x { display: none; }
         .stats-panel { display: none !important; } 
     }
+
+    /* --- 🟢 MOBILE LANDSCAPE (FULLSCREEN) OPTIMIZATION --- */
+    #landscape-menu-btn {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 9999;
+        background: rgba(19, 27, 44, 0.5);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 8px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+    
+    .light-theme #landscape-menu-btn {
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    #landscape-menu-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* Target mobile phones held sideways (short height + landscape) */
+    @media (max-height: 500px) and (orientation: landscape) {
+        /* Hide everything except the chart when the override class IS NOT present */
+        body:not(.show-landscape-ui) header { display: none !important; }
+        body:not(.show-landscape-ui) .mobile-bottom-nav { display: none !important; }
+        body:not(.show-landscape-ui) #chart-container { padding-bottom: 0 !important; }
+        body:not(.show-landscape-ui) .left-nav { display: none !important; }
+        
+        /* Show our ghost button to let them bring the UI back */
+        body:not(.show-landscape-ui) #landscape-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
 </style>
 </head>
 <body>
 
     <canvas id="drawing-canvas" class="drawing-canvas"></canvas>
+    
+    <button id="landscape-menu-btn" onclick="toggleLandscapeUI()" title="Show Menus">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14h6v6"></path><path d="M20 10h-6V4"></path><path d="M14 10l7-7"></path><path d="M3 21l7-7"></path>
+        </svg>
+    </button>
 
 <div class="drawing-toolbar" id="drawing-toolbar">
     <div class="drag-handle" id="draw-drag" title="Drag to Move">⋮⋮</div>
@@ -928,6 +974,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if(mobileBtn) mobileBtn.classList.add('active');
         }
     };
+
+    // 🟢 Toggle Landscape Fullscreen Override
+    window.toggleLandscapeUI = function() {
+        document.body.classList.toggle('show-landscape-ui');
+        
+        // Wait 50ms for the CSS to snap the header/nav back into place, then resize the canvas to fit
+        setTimeout(resizeCanvas, 50);
+    };
+    
     window.toggleTheme = function() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
