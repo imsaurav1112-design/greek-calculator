@@ -1848,9 +1848,9 @@ window.startCheckout = async function(planId) {
                           'Authorization': `Bearer ${window.currentFirebaseToken}`,
                           'Content-Type': 'application/json'
                       },
-                      // 🟢 FIX: Removed 'cost' to perfectly match the backend's strict PLAN_SCHEMA
-                      body: JSON.stringify({ plan: planId })
-                  });
+          // 🟢 FIX: Send ONLY the 'plan', as per the backend's strict PLAN_SCHEMA
+                body: JSON.stringify({ plan: planId }) 
+            });
                 
                   const data = await resp.json();
                   
