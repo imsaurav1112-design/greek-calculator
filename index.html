@@ -923,12 +923,13 @@ footer {
 
         <div class="hero-widget">
             
-           <div class="rotating-cards-container" id="rotator-box" style="margin-bottom: 90px;">
+<div class="rotating-cards-container" id="rotator-box" style="margin-bottom: 90px;">
     <div class="rot-card active" id="card-nifty">
         <div class="rot-left">
             <div class="rot-icon icon-nifty">N</div>
             <div class="rot-name">Nifty 50</div>
         </div>
+        <div class="rot-right"><div class="rot-price" id="rot-price-nifty">--</div></div>
     </div>
 
     <div class="rot-card next" id="card-bank">
@@ -936,6 +937,7 @@ footer {
             <div class="rot-icon icon-bank">B</div>
             <div class="rot-name">Bank Nifty</div>
         </div>
+        <div class="rot-right"><div class="rot-price" id="rot-price-bank">--</div></div>
     </div>
 
     <div class="rot-card prev" id="card-sensex">
@@ -943,6 +945,7 @@ footer {
             <div class="rot-icon icon-sensex">S</div>
             <div class="rot-name">Sensex</div>
         </div>
+        <div class="rot-right"><div class="rot-price" id="rot-price-sensex">--</div></div>
     </div>
 
     <div class="rot-card" id="card-crude">
@@ -950,6 +953,7 @@ footer {
             <div class="rot-icon icon-crude">C</div>
             <div class="rot-name">Crude Oil</div>
         </div>
+        <div class="rot-right"><div class="rot-price" id="rot-price-crude">--</div></div>
     </div>
 
     <div class="rot-card" id="card-ng">
@@ -957,6 +961,7 @@ footer {
             <div class="rot-icon icon-ng">G</div>
             <div class="rot-name">Natural Gas</div>
         </div>
+        <div class="rot-right"><div class="rot-price" id="rot-price-ng">--</div></div>
     </div>
 </div>
             <div class="hero-buttons" id="hero-actions">
@@ -1533,49 +1538,102 @@ onAuthStateChanged(auth, async (user) => {
             const expiryText = document.getElementById('prof-expiry');
             const heroBox = document.getElementById('hero-actions');
             
+// 🟢 FETCH EXACT PERMISSIONS FROM BACKEND
+            let access = { has_oc: false, has_fp: false };
+            try {
+                const accessRes = await fetch(`https://api.greekcalculator.in/api/check-access`, { 
+                    headers: { 'Authorization': `Bearer ${window.currentFirebaseToken}` } 
+                });
+                if (accessRes.ok) {
+                    access = await accessRes.json();
+                }
+            } catch(e) { console.error("Access check failed", e); }
+
+            // 🟢 BUILD THE UI BASED ON TIER & ACCESS
             if (profile.tier === "pro") {
                 badge.innerText = "PRO PLAN";
                 badge.className = "profile-tier tier-pro";
+                
+                // 🟢 MATH: Calculate Days Remaining!
                 if(profile.expiry_date) {
-                    expiryText.innerText = `Expires: ${profile.expiry_date}`;
+                    // Replace space with T to make it work on iPhones/Safari
+                    const expDate = new Date(profile.expiry_date.replace(" ", "T")); 
+                    const now = new Date();
+                    const diffTime = expDate - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+                    
+                    if (diffDays > 0) {
+                        expiryText.innerHTML = `Expires in <b>${diffDays} days</b>`;
+                        // Turn text red if they have 3 or fewer days left
+                        expiryText.style.color = diffDays <= 3 ? "var(--red)" : "var(--muted)"; 
+                    } else if (diffDays === 0 || diffDays === -1) {
+                        expiryText.innerHTML = `<b style="color: var(--gold);">Grace Period (Renews soon)</b>`;
+                    } else {
+                        expiryText.innerText = "Expired";
+                    }
                     expiryText.style.display = "block";
                 }
                 
-heroBox.innerHTML = `
-    <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="window.location.href='live-market'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
-        LIVE OC
-    </button>
-    <button class="btn" style="background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);" onclick="window.location.href='footprint'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
-        FOOTPRINT
-    </button>
-    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-        BACKTESTER
-    </button>
-`;
+                // 🟢 DYNAMIC BUTTONS: Only show them the buttons they paid for!
+                let heroHTML = '';
+                
+                if (access.has_oc) {
+                    heroHTML += `
+                    <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="window.location.href='live-market'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+                        LIVE OC
+                    </button>`;
+                } else {
+                    heroHTML += `
+                    <button class="btn" style="background: var(--green); color: white; border: none; opacity: 0.5;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+                        UPGRADE OC
+                    </button>`;
+                }
+
+                if (access.has_fp) {
+                    heroHTML += `
+                    <button class="btn" style="background: var(--accent); color: white; border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);" onclick="window.location.href='footprint'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+                        FOOTPRINT
+                    </button>`;
+                } else {
+                    heroHTML += `
+                    <button class="btn" style="background: var(--accent); color: white; border: none; opacity: 0.5;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+                        UPGRADE FP
+                    </button>`;
+                }
+
+                heroHTML += `
+                <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                    BACKTESTER
+                </button>`;
+                
+                heroBox.innerHTML = heroHTML;
+
             } else {
+                // THEY ARE FREE TIER
                 badge.innerText = "FREE PLAN";
                 badge.className = "profile-tier tier-free";
                 expiryText.style.display = "none";
                 
-heroBox.innerHTML = `
-    <button class="btn" style="background: var(--green); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
-        LIVE OC (PRO)
-    </button>
-    <button class="btn" style="background: var(--accent); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
-        FOOTPRINT (PRO)
-    </button>
-    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
-        BACKTESTER (FREE)
-    </button>
-`;
-            }
-            
+                heroBox.innerHTML = `
+                    <button class="btn" style="background: var(--green); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> 
+                        LIVE OC (PRO)
+                    </button>
+                    <button class="btn" style="background: var(--accent); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg> 
+                        FOOTPRINT (PRO)
+                    </button>
+                    <button class="btn" style="background: var(--section); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='backtester'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+                        BACKTESTER (FREE)
+                    </button>
+                `;
+            }            
         } catch(e) { console.error("Profile Fetch Error", e); }
         
   } else {
@@ -1751,7 +1809,7 @@ window.startCheckout = async function(planId) {
       const walletText = document.getElementById('prof-wallet').innerText.replace(/[^0-9.-]+/g, "");
       const walletBalance = parseFloat(walletText) || 0;
 
-      // 🟢 The Wallet Intercept Logic
+// 🟢 The Wallet Intercept Logic
       if (walletBalance >= cost) {
           const useWallet = confirm(`🎉 You have ₹${walletBalance.toFixed(2)} in your wallet! Would you like to use it to buy this plan for ₹${cost}?`);
           
@@ -1763,8 +1821,10 @@ window.startCheckout = async function(planId) {
                           'Authorization': `Bearer ${window.currentFirebaseToken}`,
                           'Content-Type': 'application/json'
                       },
-                      body: JSON.stringify({ plan: planId, cost: cost })
+                      // 🟢 FIX: Removed 'cost' to perfectly match the backend's strict PLAN_SCHEMA
+                      body: JSON.stringify({ plan: planId })
                   });
+                
                   const data = await resp.json();
                   
                   if (resp.ok) {
@@ -1899,9 +1959,13 @@ async function fetchLiveHeroPrices() {
             }
         };
 
-        updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
+         updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
         updateCard(["BANKNIFTY", "NIFTY BANK"], "bank"); 
         updateCard(["SENSEX"], "sensex");
+        
+        # 🟢 FIX: Added Crude Oil and Natural Gas mappings
+        updateCard(["CRUDEOIL", "CRUDE OIL"], "crude");
+        updateCard(["NATURALGAS", "NATURAL GAS"], "ng");
 
     } catch(e) {
         console.error("Failed to fetch live hero prices:", e);
