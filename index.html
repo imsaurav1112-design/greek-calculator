@@ -929,7 +929,6 @@ footer {
             <div class="rot-icon icon-nifty">N</div>
             <div class="rot-name">Nifty 50</div>
         </div>
-        <div class="rot-right"><div class="rot-price" id="rot-price-nifty">--</div></div>
     </div>
 
     <div class="rot-card next" id="card-bank">
@@ -937,7 +936,6 @@ footer {
             <div class="rot-icon icon-bank">B</div>
             <div class="rot-name">Bank Nifty</div>
         </div>
-        <div class="rot-right"><div class="rot-price" id="rot-price-bank">--</div></div>
     </div>
 
     <div class="rot-card prev" id="card-sensex">
@@ -945,7 +943,6 @@ footer {
             <div class="rot-icon icon-sensex">S</div>
             <div class="rot-name">Sensex</div>
         </div>
-        <div class="rot-right"><div class="rot-price" id="rot-price-sensex">--</div></div>
     </div>
 
     <div class="rot-card" id="card-crude">
@@ -953,7 +950,6 @@ footer {
             <div class="rot-icon icon-crude">C</div>
             <div class="rot-name">Crude Oil</div>
         </div>
-        <div class="rot-right"><div class="rot-price" id="rot-price-crude">--</div></div>
     </div>
 
     <div class="rot-card" id="card-ng">
@@ -961,9 +957,9 @@ footer {
             <div class="rot-icon icon-ng">G</div>
             <div class="rot-name">Natural Gas</div>
         </div>
-        <div class="rot-right"><div class="rot-price" id="rot-price-ng">--</div></div>
     </div>
 </div>
+          
             <div class="hero-buttons" id="hero-actions">
 <!-- GREEN LIVE BUTTON -->
                 <button class="btn" style="background: var(--green); color: white; border: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);" onclick="openAuthModal('signup')">
@@ -1986,40 +1982,7 @@ window.startCheckout = async function(planId) {
         }, 100);
     });
     
-    // --- 2. LIVE PRICE FEEDER (Price Only) ---
-async function fetchLiveHeroPrices() {
-    try {
-        const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
-        const data = await resp.json();
-        
-        const updateCard = (apiKeys, idName) => {
-            const keyFound = apiKeys.find(k => data[k] !== undefined);
-            const assetData = data[keyFound];
-            
-            if (assetData) {
-                const ltp = assetData.ltp.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                document.getElementById(`rot-price-${idName}`).innerText = ltp;
-            } else {
-                console.warn(`Ticker data not found for keys: ${apiKeys.join(', ')}`);
-            }
-        };
 
-updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
-        updateCard(["BANKNIFTY", "NIFTY BANK"], "bank"); 
-        updateCard(["SENSEX"], "sensex");
-        
-        // 🟢 FIX: Added Crude Oil and Natural Gas mappings
-        updateCard(["CRUDEOIL", "CRUDE OIL"], "crude");
-        updateCard(["NATURALGAS", "NATURAL GAS"], "ng");
-
-    } catch(e) {
-        console.error("Failed to fetch live hero prices:", e);
-    }
-}
-
-// Fetch immediately, then every 3 seconds
-fetchLiveHeroPrices();
-setInterval(fetchLiveHeroPrices, 3000);
   </script>
 </body>
 </html>
