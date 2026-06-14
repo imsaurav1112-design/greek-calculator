@@ -1428,8 +1428,10 @@ initBgAnimation();
 </script>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  // 🟢 NEW: Import App Check
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -1443,6 +1445,12 @@ initBgAnimation();
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
+  // 🟢 NEW: Initialize Firebase App Check
+  // Replace 'YOUR_RECAPTCHA_V3_SITE_KEY' with the actual public key from your Google Cloud Console
+  const appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'),
+      isTokenAutoRefreshEnabled: true
+  });
 
   // 🟢 Profile Panel Toggle Logic
   window.toggleProfilePanel = function(event) {
@@ -1451,12 +1459,22 @@ initBgAnimation();
       panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
   };
   
-  // Close panel when clicking outside
+// Close panel when clicking outside
   document.addEventListener('click', function(event) {
       const panel = document.getElementById('profile-panel');
       const btn = document.getElementById('profile-btn');
       if (panel && btn && !panel.contains(event.target) && !btn.contains(event.target)) {
           panel.style.display = 'none';
+      }
+  });
+
+  // 🟢 NEW: Close panel when pressing Escape
+  document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+          const panel = document.getElementById('profile-panel');
+          if (panel && panel.style.display === 'flex') {
+              panel.style.display = 'none';
+          }
       }
   });
 
@@ -1575,6 +1593,13 @@ onAuthStateChanged(auth, async (user) => {
                 }
                 
                 // 🟢 DYNAMIC BUTTONS: Only show them the buttons they paid for!
+
+              // 🟢 NEW: Anti-Flash State Check
+                const permState = `pro_${access.has_oc}_${access.has_fp}`;
+
+                if (window._currentHeroState !== permState) {
+                    window._currentHeroState = permState;
+                  
                 let heroHTML = '';
                 
                 if (access.has_oc) {
@@ -1612,12 +1637,17 @@ onAuthStateChanged(auth, async (user) => {
                 </button>`;
                 
                 heroBox.innerHTML = heroHTML;
+                  } // <-- CLOSES THE ANTI-FLASH BLOCK
 
             } else {
-                // THEY ARE FREE TIER
-                badge.innerText = "FREE PLAN";
-                badge.className = "profile-tier tier-free";
-                expiryText.style.display = "none";
+       // THEY ARE FREE TIER
+            badge.innerText = "FREE PLAN";
+            badge.className = "profile-tier tier-free";
+            expiryText.style.display = "none";
+            
+            // 🟢 Anti-Flash State Check for Free Tier
+            if (window._currentHeroState !== "free") {
+                window._currentHeroState = "free";
                 
                 heroBox.innerHTML = `
                     <button class="btn" style="background: var(--green); color: white; border: none; opacity: 0.7;" onclick="document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})">
@@ -1633,13 +1663,14 @@ onAuthStateChanged(auth, async (user) => {
                         BACKTESTER (FREE)
                     </button>
                 `;
-            }            
-        } catch(e) { console.error("Profile Fetch Error", e); }
-        
+            } // <-- CLOSES THE ANTI-FLASH CHECK
+        } // <-- CLOSES THE FREE TIER (else) BLOCK
+            
+    } catch(e) { console.error("Profile Fetch Error", e); }
+    
   } else {
         window.currentFirebaseToken = null;
-        if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'block';
-        if(document.getElementById('btn-signup-nav')) document.getElementById('btn-signup-nav').style.display = 'flex'; // 🟢 Show Signup
+        if(document.getElementById('btn-login-nav')) document.getElementById('btn-login-nav').style.display = 'block';        if(document.getElementById('btn-signup-nav')) document.getElementById('btn-signup-nav').style.display = 'flex'; // 🟢 Show Signup
         document.getElementById('profile-btn').style.display = 'none';
         document.getElementById('profile-panel').style.display = 'none';
         
@@ -1913,35 +1944,49 @@ window.startCheckout = async function(planId) {
             
             if (!cardNifty || !cardBank || !cardSensex || !cardCrude || !cardNg) return;
             
-            // Added the 2 new cards to the array
             const cards = [cardNifty, cardBank, cardSensex, cardCrude, cardNg];
             let currentIndex = 0;
+            let rotateInterval;
 
-            setInterval(() => {
-                currentIndex = (currentIndex + 1) % cards.length;
-                
-                const activeIndex = currentIndex;
-                const nextIndex = (currentIndex + 1) % cards.length;
-                
-                // Use modulo math to grab the previous index safely
-                const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
+            function startRotation() {
+                if (rotateInterval) clearInterval(rotateInterval);
+                rotateInterval = setInterval(() => {
+                    currentIndex = (currentIndex + 1) % cards.length;
+                    
+                    const activeIndex = currentIndex;
+                    const nextIndex = (currentIndex + 1) % cards.length;
+                    const prevIndex = (currentIndex - 1 + cards.length) % cards.length;
 
-                // Reset all cards to hidden background state
-                cards.forEach(card => {
-                    card.className = "rot-card"; 
-                });
+                    // Reset all cards to hidden background state
+                    cards.forEach(card => { card.className = "rot-card"; });
 
-                // Apply active, next, and prev to the correct 3 cards
-                cards[activeIndex].classList.add('active');
-                cards[nextIndex].classList.add('next');
-                cards[prevIndex].classList.add('prev');
+                    // Apply active, next, and prev to the correct 3 cards
+                    cards[activeIndex].classList.add('active');
+                    cards[nextIndex].classList.add('next');
+                    cards[prevIndex].classList.add('prev');
+                }, 3000);
+            }
 
-            }, 3000); // 🟢 Slightly faster rotation (3 seconds) to cycle through all 5 quicker
+            function stopRotation() {
+                clearInterval(rotateInterval);
+            }
+
+            // Start rotation immediately
+            startRotation();
+
+            // Pause rotation when the user switches tabs to prevent CSS snapping
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden) {
+                    stopRotation();
+                } else {
+                    startRotation();
+                }
+            });
+
         }, 100);
     });
     
-// --- 2. LIVE PRICE FEEDER (Price Only) ---
-// --- 2. LIVE PRICE FEEDER (Price Only) ---
+    // --- 2. LIVE PRICE FEEDER (Price Only) ---
 async function fetchLiveHeroPrices() {
     try {
         const resp = await fetch('https://api.greekcalculator.in/api/ticker-prices');
@@ -1959,11 +2004,11 @@ async function fetchLiveHeroPrices() {
             }
         };
 
-         updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
+updateCard(["NIFTY", "NIFTY 50", "NIFTY50"], "nifty");
         updateCard(["BANKNIFTY", "NIFTY BANK"], "bank"); 
         updateCard(["SENSEX"], "sensex");
         
-        # 🟢 FIX: Added Crude Oil and Natural Gas mappings
+        // 🟢 FIX: Added Crude Oil and Natural Gas mappings
         updateCard(["CRUDEOIL", "CRUDE OIL"], "crude");
         updateCard(["NATURALGAS", "NATURAL GAS"], "ng");
 
