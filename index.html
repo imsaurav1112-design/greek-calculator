@@ -1703,11 +1703,11 @@ heroBox.innerHTML = `
       document.getElementById('btn-6mo').classList.remove('active');
       document.getElementById(`btn-${months}mo`).classList.add('active');
 
-      // 2. Pricing Data (Uses your exact requested pricing)
+// 2. Pricing Data (Synchronized with backend MASTER_PRICING)
       const pricingData = {
           1: { oc: 249, fp: 249, combo: 490, suffix: '/mo', plan_oc: 'oc_1m', plan_fp: 'fp_1m', plan_combo: 'combo_1m' },
-          3: { oc: 699, fp: 699, combo: 1390, suffix: '/qtr', plan_oc: 'oc_3m', plan_fp: 'fp_3m', plan_combo: 'combo_3m' },
-          6: { oc: 1299, fp: 1299, combo: 2590, suffix: '/half', plan_oc: 'oc_6m', plan_fp: 'fp_6m', plan_combo: 'combo_6m' }
+          3: { oc: 699, fp: 699, combo: 1399, suffix: '/qtr', plan_oc: 'oc_3m', plan_fp: 'fp_3m', plan_combo: 'combo_3m' },
+          6: { oc: 1299, fp: 1299, combo: 2799, suffix: '/half', plan_oc: 'oc_6m', plan_fp: 'fp_6m', plan_combo: 'combo_6m' }
       };
 
       const data = pricingData[months];
@@ -1733,17 +1733,18 @@ heroBox.innerHTML = `
       document.getElementById('btn-combo-checkout').setAttribute('onclick', `startCheckout('${data.plan_combo}')`);
   };
 
-  window.startCheckout = async function(planId) {
+window.startCheckout = async function(planId) {
       if (!window.currentFirebaseToken) {
           alert("Please sign in first!");
           openAuthModal();
           return;
       }
 
-const planPrices = {
+      // 🟢 FIX: Synced combo prices with backend to prevent wallet math mismatch
+      const planPrices = {
           "oc_1m": 249, "fp_1m": 249, "combo_1m": 490,
-          "oc_3m": 699, "fp_3m": 699, "combo_3m": 1390,
-          "oc_6m": 1299, "fp_6m": 1299, "combo_6m": 2590
+          "oc_3m": 699, "fp_3m": 699, "combo_3m": 1399,
+          "oc_6m": 1299, "fp_6m": 1299, "combo_6m": 2799
       };
       const cost = planPrices[planId];
 
