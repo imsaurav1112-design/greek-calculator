@@ -1337,7 +1337,7 @@ function resizeCanvas() {
     };
 
   // 🟢 Helper to prevent duplicate code
-    function resetChartAndFetch() {
+  function resetChartAndFetch() {
         latestDataCache = {};
         latestDomCache = { bids: {}, asks: {} };
         volumeProfile = {};
@@ -1346,11 +1346,10 @@ function resizeCanvas() {
         ctx.clearRect(0, 0, width, height);
         
         if (!isLiveMode) {
-            // Check both desktop and mobile date inputs
+            // Grab the active date string from whichever picker has it
             const dateInput = document.getElementById('history-date').value || document.getElementById('history-date-mobile').value;
             if (dateInput) {
-                triggerDateChange(dateInput); 
-                // Force the calendar to fire its fetch event so it grabs the new timeframe!
+                // Pick the input currently in use and force a native re-fetch for the new symbol/timeframe
                 const dateElement = document.getElementById('history-date').value ? document.getElementById('history-date') : document.getElementById('history-date-mobile');
                 dateElement.dispatchEvent(new Event('change'));
             }
@@ -1359,34 +1358,43 @@ function resizeCanvas() {
     
 onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
-        const token = await user.getIdToken();
 
-        // 🟢 FIX: Define the fetch function once so BOTH calendars can use it
+        // 🟢 UNIFIED HISTORICAL FETCH LOGIC
         const handleDateChange = async (e) => {
             const selectedDate = e.target.value;
 
-            // Keep both desktop and mobile inputs synchronized
+            // Synchronize both desktop and mobile calendar inputs visually
             const deskInput = document.getElementById('history-date');
             const mobInput = document.getElementById('history-date-mobile');
             if (deskInput) deskInput.value = selectedDate;
             if (mobInput) mobInput.value = selectedDate;
 
-            // 🟢 BULLETPROOF IST DATE GENERATOR
+            // Generate today's date in IST for accurate live boundaries
             const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
             const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
+            // If the calendar is cleared or set to today, instantly snap back to Live Stream Mode
             if (!selectedDate || selectedDate === today) {
                 isLiveMode = true;
                 latestDataCache = {};
                 latestDomCache = { bids: {}, asks: {} };
+                window.updateDateUI(selectedDate); // Reset the gold glowing indicator
                 processSessionData();
                 renderCanvas();
                 return;
             }
 
+            // Lock into Historical Replay Mode
             isLiveMode = false;
+            window.updateDateUI(selectedDate); // Activate gold glowing historical indicator
+
             try {
-                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                // 🟢 FIX: Fetch a fresh, active authentication token dynamically on every request
+                const freshToken = await auth.currentUser.getIdToken();
+                
+                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+                    headers: { 'Authorization': `Bearer ${freshToken}` } 
+                });
                 const data = await r.json();
 
                 latestDataCache = data.data || {};
@@ -1394,22 +1402,28 @@ onAuthStateChanged(auth, async (user) => {
 
                 processSessionData(); 
                 renderCanvas();
-            } catch(err) { console.error("History fetch failed", err); }
+            } catch(err) { 
+                console.error("🚨 Historical footprint fetch failed:", err); 
+            }
         };
 
-        // 🟢 FIX: Attach the listener to BOTH calendars
+        // 🟢 Attach the clean listener to both inputs
         const deskDate = document.getElementById('history-date');
         const mobDate = document.getElementById('history-date-mobile');
         if (deskDate) deskDate.addEventListener('change', handleDateChange);
         if (mobDate) mobDate.addEventListener('change', handleDateChange);
         
+        // 🟢 AUTO-REFRESHING LIVE STREAM LOOP
         setInterval(async () => {
-            if (!isLiveMode) return; 
+            if (!isLiveMode) return; // Keep loop asleep during historical replays
 
             try {
-
-                // ✅ Replace the live fetch inside setInterval with this:
-                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                // 🟢 FIX: Keep the live background stream authenticated automatically
+                const freshToken = await auth.currentUser.getIdToken();
+                
+                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+                    headers: { 'Authorization': `Bearer ${freshToken}` } 
+                });
                 const data = await r.json();
 
                 if (data.status === "success") {
@@ -1418,7 +1432,9 @@ onAuthStateChanged(auth, async (user) => {
                     processSessionData(); 
                     renderCanvas();
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error("Live fetch error suppressed", e);
+            }
         }, 2000);
     });
 
