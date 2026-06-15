@@ -1552,11 +1552,12 @@ const parseTime = (t) => {
             return;
         }
 
-        let minPrice = Infinity, maxPrice = -Infinity;
+let minPrice = Infinity, maxPrice = -Infinity;
         
         // 🟢 PRE-COMPUTE DATA FOR SUB-CHARTS & COMPOSITE SCORE
-        const cumDeltaTimeline = [];
-        const volumeTimeline = [];
+        // FIX: Changed from Arrays [] to Objects {} so we can map them by Time!
+        const cumDeltaTimeline = {};
+        const volumeTimeline = {};
         let maxCumDelta = -Infinity, minCumDelta = Infinity;
         let maxSessionVol = 0;
         let runningCumDelta = 0;
@@ -1583,8 +1584,9 @@ const parseTime = (t) => {
             if (cLow !== Infinity && cLow < minPrice) minPrice = cLow;
             
             runningCumDelta += cDelta;
-            cumDeltaTimeline.push(runningCumDelta);
-            volumeTimeline.push({ vol: cVol, delta: cDelta });
+            // 🟢 FIX: Save the data using the exact time string (t) as the key
+            cumDeltaTimeline[t] = runningCumDelta;
+            volumeTimeline[t] = { vol: cVol, delta: cDelta };
             
             maxCumDelta = Math.max(maxCumDelta, runningCumDelta);
             minCumDelta = Math.min(minCumDelta, runningCumDelta);
@@ -1897,14 +1899,16 @@ const parseTime = (t) => {
 
                 ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
                 ctx.fillText(`${totalSellVol} x ${totalBuyVol}`, center, statsY);
-            }
+                }
 
-            if (showSubCharts) {
+                 if (showSubCharts) {
                 const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
                 const volBaseY = height - X_AXIS_HEIGHT;
                 
-                const cdVal = cumDeltaTimeline[i];
-                const prevCdVal = (i > 0) ? cumDeltaTimeline[i-1] : 0;
+                // 🟢 FIX: Fetch data safely using the timeKey, preventing 'undefined' crashes
+                const cdVal = cumDeltaTimeline[timeKey] || 0;
+                const prevTimeKey = (i > 0) ? timeKeys[i-1] : null;
+                const prevCdVal = prevTimeKey ? (cumDeltaTimeline[prevTimeKey] || 0) : 0;
                 
                 const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
                 const getYForCD = (val) => {
@@ -1929,7 +1933,8 @@ const parseTime = (t) => {
                 ctx.arc(currentX + (COL_WIDTH/2), cdY, 3, 0, Math.PI * 2);
                 ctx.fill();
 
-                const vData = volumeTimeline[i];
+                // 🟢 FIX: Fetch volume data using the timeKey
+                const vData = volumeTimeline[timeKey] || {vol: 0, delta: 0};
                 const vH = (vData.vol / maxSessionVol) * SUBCHART_HEIGHT;
                 ctx.fillStyle = vData.delta >= 0 ? '#10b981' : '#ef4444';
                 ctx.fillRect(currentX + 16, volBaseY - vH, COL_WIDTH - 20, vH);
