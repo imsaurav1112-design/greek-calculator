@@ -1972,13 +1972,16 @@ let minPrice = Infinity, maxPrice = -Infinity;
             ctx.textAlign = "center";
             ctx.fillText(timeKey, center, panelY + 16);
 
-            if (isHovering && currentHoverX >= currentX && currentHoverX <= currentX + COL_WIDTH) {
+               if (isHovering && currentHoverX >= currentX && currentHoverX <= currentX + COL_WIDTH) {
+                // 🟢 FIX: Use the timeKey instead of the array index (i) to fetch the data
+                const hoverVolData = volumeTimeline[timeKey] || { vol: 0, delta: 0 };
+                
                 activeHoverData = {
                     x: currentX + (COL_WIDTH / 2), 
                     time: timeKey,
-                    cumDelta: cumDeltaTimeline[i],
-                    vol: volumeTimeline[i].vol,
-                    delta: volumeTimeline[i].delta
+                    cumDelta: cumDeltaTimeline[timeKey] || 0,
+                    vol: hoverVolData.vol,
+                    delta: hoverVolData.delta
                 };
             }
 
