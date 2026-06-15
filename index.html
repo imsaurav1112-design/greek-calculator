@@ -1441,25 +1441,18 @@ initBgAnimation();
 
   const app = initializeApp(firebaseConfig);
 
-  // 🟢 TEST MODE UNLOCK: If localhost blocks you, uncomment the line below while coding:
-  // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+// 🟢 TEST MODE UNLOCK: If localhost blocks you, uncomment the line below while coding:
+// self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 
-  // 🟢 NEW: Initialize App Check
-  const appCheck = initializeAppCheck(app, {
-      // 👇 Replace this string with the actual Site Key from Google Cloud Console
-      provider: new ReCaptchaV3Provider('YOUR_ACTUAL_RECAPTCHA_V3_SITE_KEY_HERE'),
-      isTokenAutoRefreshEnabled: true
-  });
+// 🟢 Initialize Firebase App Check with your actual Site Key
+const appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('6LfXyh8tAAAAAPynt3rxNTFs-1y8UoX6DRYgyW-m'),
+    isTokenAutoRefreshEnabled: true
+});
 
-  const auth = getAuth(app);
-  const googleProvider = new GoogleAuthProvider();
-  // 🟢 NEW: Initialize Firebase App Check
-  //public key from your Google Cloud Console
-  const appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider('6LfXyh8tAAAAAPynt3rxNTFs-1y8UoX6DRYgyW-m'),
-      isTokenAutoRefreshEnabled: true
-  });
-
+// 🟢 Initialize Auth Providers
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
   // 🟢 Profile Panel Toggle Logic
   window.toggleProfilePanel = function(event) {
       if(event) event.stopPropagation();
