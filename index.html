@@ -1424,8 +1424,9 @@ initBgAnimation();
 </script>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  
   // 🟢 NEW: Import App Check
   import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
   
@@ -1439,6 +1440,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
   };
 
   const app = initializeApp(firebaseConfig);
+
+  // 🟢 TEST MODE UNLOCK: If localhost blocks you, uncomment the line below while coding:
+  // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+  // 🟢 NEW: Initialize App Check
+  const appCheck = initializeAppCheck(app, {
+      // 👇 Replace this string with the actual Site Key from Google Cloud Console
+      provider: new ReCaptchaV3Provider('YOUR_ACTUAL_RECAPTCHA_V3_SITE_KEY_HERE'),
+      isTokenAutoRefreshEnabled: true
+  });
+
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
   // 🟢 NEW: Initialize Firebase App Check
