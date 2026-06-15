@@ -700,11 +700,34 @@
     </div>
 </div>
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  
+  // 🟢 NEW: Import App Check
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
+  
+  const firebaseConfig = {
+      apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
+      authDomain: "insideoptionchain.firebaseapp.com",
+      projectId: "insideoptionchain",
+      storageBucket: "insideoptionchain.firebasestorage.app",
+      messagingSenderId: "112098245685",
+      appId: "1:112098245685:web:e3d15aca5d370a3fc4057c"
+  };
 
-    const app = initializeApp({ apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo", authDomain: "insideoptionchain.firebaseapp.com", projectId: "insideoptionchain" });
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+
+  // 🟢 TEST MODE UNLOCK: If localhost blocks you, uncomment the line below while coding:
+  // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+
+  // 🟢 NEW: Initialize App Check
+  const appCheck = initializeAppCheck(app, {
+      // 👇 Replace this string with the actual Site Key from Google Cloud Console
+      provider: new ReCaptchaV3Provider('YOUR_ACTUAL_RECAPTCHA_V3_SITE_KEY_HERE'),
+      isTokenAutoRefreshEnabled: true
+  });
+
+  const auth = getAuth(app);
 
     const canvas = document.getElementById('orderflowCanvas');
     const container = document.getElementById('chart-container');
