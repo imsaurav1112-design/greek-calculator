@@ -1336,8 +1336,8 @@ function resizeCanvas() {
         resetChartAndFetch();
     };
 
-  // 🟢 Helper to prevent duplicate code
-  function resetChartAndFetch() {
+ // 🟢 1. UNIFIED CHART RESET & RE-FETCH
+    function resetChartAndFetch() {
         latestDataCache = {};
         latestDomCache = { bids: {}, asks: {} };
         volumeProfile = {};
@@ -1346,81 +1346,90 @@ function resizeCanvas() {
         ctx.clearRect(0, 0, width, height);
         
         if (!isLiveMode) {
-            // Grab the active date string from whichever picker has it
             const dateInput = document.getElementById('history-date').value || document.getElementById('history-date-mobile').value;
             if (dateInput) {
-                // Pick the input currently in use and force a native re-fetch for the new symbol/timeframe
-                const dateElement = document.getElementById('history-date').value ? document.getElementById('history-date') : document.getElementById('history-date-mobile');
-                dateElement.dispatchEvent(new Event('change'));
+                window.triggerDateChange(dateInput); 
             }
+        } else if (window.forceLiveFetch) {
+            window.forceLiveFetch(); 
         }
     }
-    
-onAuthStateChanged(auth, async (user) => {
-        if (!user) return window.location.href = "index.html";
 
-        // 🟢 UNIFIED HISTORICAL FETCH LOGIC
-        const handleDateChange = async (e) => {
-            const selectedDate = e.target.value;
+    // 🟢 2. BULLETPROOF CALENDAR & HISTORY ENGINE
+    window.triggerDateChange = async function(selectedDate) {
+        // Update UI and AutoCenter
+        window.updateDateUI(selectedDate); 
+        needsAutoCenter = true; 
+        
+        const nav = document.getElementById('left-nav');
+        if (nav && nav.classList.contains('menu-open')) nav.classList.remove('menu-open');
 
-            // Synchronize both desktop and mobile calendar inputs visually
-            const deskInput = document.getElementById('history-date');
-            const mobInput = document.getElementById('history-date-mobile');
-            if (deskInput) deskInput.value = selectedDate;
-            if (mobInput) mobInput.value = selectedDate;
+        // Synchronize inputs visually
+        const deskInput = document.getElementById('history-date');
+        const mobInput = document.getElementById('history-date-mobile');
+        if (deskInput && deskInput.value !== selectedDate) deskInput.value = selectedDate;
+        if (mobInput && mobInput.value !== selectedDate) mobInput.value = selectedDate;
 
-            // Generate today's date in IST for accurate live boundaries
-            const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-            const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        // Generate today's date in IST
+        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-            // If the calendar is cleared or set to today, instantly snap back to Live Stream Mode
-            if (!selectedDate || selectedDate === today) {
-                isLiveMode = true;
+        // Live Mode vs History Mode
+        if (!selectedDate || selectedDate === today) {
+            isLiveMode = true;
+            latestDataCache = {};
+            latestDomCache = { bids: {}, asks: {} };
+            processSessionData();
+            renderCanvas();
+            if (window.forceLiveFetch) window.forceLiveFetch(); 
+            return;
+        }
+
+        // Lock into Historical Mode
+        isLiveMode = false;
+        ctx.clearRect(0, 0, width, height); // Clear screen while loading
+
+        try {
+            // Generate a fresh, unexpired security token
+            const freshToken = await auth.currentUser.getIdToken();
+            console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
+
+            const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+                headers: { 'Authorization': `Bearer ${freshToken}` } 
+            });
+            
+            const data = await r.json();
+            
+            // 🚨 CRITICAL DEBUG: This will tell you if the Python backend is actually sending data!
+            console.log("📦 History API Response:", data); 
+
+            if (data.status === "success" && data.data && Object.keys(data.data).length > 0) {
+                latestDataCache = data.data;
+                latestDomCache = data.dom || { bids: {}, asks: {} };
+            } else {
+                console.warn("⚠️ Backend responded, but the data dictionary was completely empty.");
                 latestDataCache = {};
                 latestDomCache = { bids: {}, asks: {} };
-                window.updateDateUI(selectedDate); // Reset the gold glowing indicator
-                processSessionData();
-                renderCanvas();
-                return;
             }
 
-            // Lock into Historical Replay Mode
-            isLiveMode = false;
-            window.updateDateUI(selectedDate); // Activate gold glowing historical indicator
+            processSessionData(); 
+            renderCanvas();
+        } catch(err) { 
+            console.error("🚨 History fetch failed:", err); 
+            latestDataCache = {}; 
+            renderCanvas();
+        }
+    };
 
+    // 🟢 3. AUTHENTICATION & LIVE LOOP
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return window.location.href = "index.html";
+
+        // Make live fetch a global function so dropdowns can instantly trigger it
+        window.forceLiveFetch = async function() {
+            if (!isLiveMode || !auth.currentUser) return;
             try {
-                // 🟢 FIX: Fetch a fresh, active authentication token dynamically on every request
                 const freshToken = await auth.currentUser.getIdToken();
-                
-                const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
-                    headers: { 'Authorization': `Bearer ${freshToken}` } 
-                });
-                const data = await r.json();
-
-                latestDataCache = data.data || {};
-                latestDomCache = { bids: {}, asks: {} }; 
-
-                processSessionData(); 
-                renderCanvas();
-            } catch(err) { 
-                console.error("🚨 Historical footprint fetch failed:", err); 
-            }
-        };
-
-        // 🟢 Attach the clean listener to both inputs
-        const deskDate = document.getElementById('history-date');
-        const mobDate = document.getElementById('history-date-mobile');
-        if (deskDate) deskDate.addEventListener('change', handleDateChange);
-        if (mobDate) mobDate.addEventListener('change', handleDateChange);
-        
-        // 🟢 AUTO-REFRESHING LIVE STREAM LOOP
-        setInterval(async () => {
-            if (!isLiveMode) return; // Keep loop asleep during historical replays
-
-            try {
-                // 🟢 FIX: Keep the live background stream authenticated automatically
-                const freshToken = await auth.currentUser.getIdToken();
-                
                 const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
                     headers: { 'Authorization': `Bearer ${freshToken}` } 
                 });
@@ -1432,12 +1441,15 @@ onAuthStateChanged(auth, async (user) => {
                     processSessionData(); 
                     renderCanvas();
                 }
-            } catch(e) {
-                console.error("Live fetch error suppressed", e);
-            }
-        }, 2000);
-    });
+            } catch(e) {}
+        };
 
+        // Start the background live loop
+        setInterval(window.forceLiveFetch, 2000);
+        
+        // Trigger the very first chart load instantly
+        window.forceLiveFetch();
+    });
     function processSessionData() {
         volumeProfile = {};
         let totalVol = 0; let totalVolPrice = 0; let totalDelta = 0;
