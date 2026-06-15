@@ -1442,9 +1442,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
   // 🟢 NEW: Initialize Firebase App Check
-  // Replace 'YOUR_RECAPTCHA_V3_SITE_KEY' with the actual public key from your Google Cloud Console
+  //public key from your Google Cloud Console
   const appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_V3_SITE_KEY'),
+      provider: new ReCaptchaV3Provider('6LfXyh8tAAAAAPynt3rxNTFs-1y8UoX6DRYgyW-m'),
       isTokenAutoRefreshEnabled: true
   });
 
