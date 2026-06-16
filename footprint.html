@@ -1336,11 +1336,12 @@ function resizeCanvas() {
         resetChartAndFetch();
     };
 
-    // 🟢 ENVIRONMENT TOGGLE: Swap this when pushing to live!
-    const UPSTOX_API = "http://127.0.0.1:5001"; // <-- Use this for local testing
+// 🟢 1. THE BRIDGE: Define where your backend lives!
+    // Swap these lines when you deploy to the public internet
+    const UPSTOX_API = "http://127.0.0.1:5001"; 
     // const UPSTOX_API = "https://api.greekcalculator.in";
 
- // 🟢 1. UNIFIED CHART RESET & RE-FETCH
+    // 🟢 2. UNIFIED CHART RESET
     function resetChartAndFetch() {
         latestDataCache = {};
         latestDomCache = { bids: {}, asks: {} };
@@ -1351,34 +1352,28 @@ function resizeCanvas() {
         
         if (!isLiveMode) {
             const dateInput = document.getElementById('history-date').value || document.getElementById('history-date-mobile').value;
-            if (dateInput) {
-                window.triggerDateChange(dateInput); 
-            }
+            if (dateInput) window.triggerDateChange(dateInput); 
         } else if (window.forceLiveFetch) {
             window.forceLiveFetch(); 
         }
     }
 
-    // 🟢 2. BULLETPROOF CALENDAR & HISTORY ENGINE
+    // 🟢 3. HISTORY CONNECTION
     window.triggerDateChange = async function(selectedDate) {
-        // Update UI and AutoCenter
         window.updateDateUI(selectedDate); 
         needsAutoCenter = true; 
         
         const nav = document.getElementById('left-nav');
         if (nav && nav.classList.contains('menu-open')) nav.classList.remove('menu-open');
 
-        // Synchronize inputs visually
         const deskInput = document.getElementById('history-date');
         const mobInput = document.getElementById('history-date-mobile');
         if (deskInput && deskInput.value !== selectedDate) deskInput.value = selectedDate;
         if (mobInput && mobInput.value !== selectedDate) mobInput.value = selectedDate;
 
-        // Generate today's date in IST
         const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
         const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-        // Live Mode vs History Mode
         if (!selectedDate || selectedDate === today) {
             isLiveMode = true;
             latestDataCache = {};
@@ -1389,30 +1384,25 @@ function resizeCanvas() {
             return;
         }
 
-        // Lock into Historical Mode
         isLiveMode = false;
-        ctx.clearRect(0, 0, width, height); // Clear screen while loading
+        ctx.clearRect(0, 0, width, height); 
 
         try {
-// Generate a fresh, unexpired security token
+            // THE KEY: Get a fresh Firebase token
             const freshToken = await auth.currentUser.getIdToken();
             console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
 
-            // 🟢 FIX: Use the dynamic UPSTOX_API variable
+            // THE REQUEST: Hit the dynamic API variable for History
             const r = await fetch(`${UPSTOX_API}/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
                 headers: { 'Authorization': `Bearer ${freshToken}` } 
             });
             
             const data = await r.json();
-            
-            // 🚨 CRITICAL DEBUG: This will tell you if the Python backend is actually sending data!
-            console.log("📦 History API Response:", data); 
 
             if (data.status === "success" && data.data && Object.keys(data.data).length > 0) {
                 latestDataCache = data.data;
                 latestDomCache = data.dom || { bids: {}, asks: {} };
             } else {
-                console.warn("⚠️ Backend responded, but the data dictionary was completely empty.");
                 latestDataCache = {};
                 latestDomCache = { bids: {}, asks: {} };
             }
@@ -1426,17 +1416,17 @@ function resizeCanvas() {
         }
     };
 
-    // 🟢 3. AUTHENTICATION & LIVE LOOP
+    // 🟢 4. LIVE STREAM CONNECTION
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
 
-// Make live fetch a global function so dropdowns can instantly trigger it
         window.forceLiveFetch = async function() {
             if (!isLiveMode || !auth.currentUser) return;
             try {
+                // THE KEY: Get a fresh Firebase token
                 const freshToken = await auth.currentUser.getIdToken();
                 
-                // 🟢 FIX: Use the dynamic UPSTOX_API variable here too
+                // THE REQUEST: Hit the dynamic API variable for Live Data
                 const r = await fetch(`${UPSTOX_API}/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
                     headers: { 'Authorization': `Bearer ${freshToken}` } 
                 });
@@ -1451,12 +1441,11 @@ function resizeCanvas() {
             } catch(e) {}
         };
 
-        // Start the background live loop
+        // Start polling the backend every 2 seconds
         setInterval(window.forceLiveFetch, 2000);
-        
-        // Trigger the very first chart load instantly
         window.forceLiveFetch();
     });
+    
     function processSessionData() {
         volumeProfile = {};
         let totalVol = 0; let totalVolPrice = 0; let totalDelta = 0;
