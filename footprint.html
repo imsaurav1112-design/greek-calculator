@@ -1336,6 +1336,10 @@ function resizeCanvas() {
         resetChartAndFetch();
     };
 
+    // 🟢 ENVIRONMENT TOGGLE: Swap this when pushing to live!
+    const UPSTOX_API = "http://127.0.0.1:5001"; // <-- Use this for local testing
+    // const UPSTOX_API = "https://api.greekcalculator.in";
+
  // 🟢 1. UNIFIED CHART RESET & RE-FETCH
     function resetChartAndFetch() {
         latestDataCache = {};
@@ -1390,11 +1394,12 @@ function resizeCanvas() {
         ctx.clearRect(0, 0, width, height); // Clear screen while loading
 
         try {
-            // Generate a fresh, unexpired security token
+// Generate a fresh, unexpired security token
             const freshToken = await auth.currentUser.getIdToken();
             console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
 
-            const r = await fetch(`https://api.greekcalculator.in/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+            // 🟢 FIX: Use the dynamic UPSTOX_API variable
+            const r = await fetch(`${UPSTOX_API}/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
                 headers: { 'Authorization': `Bearer ${freshToken}` } 
             });
             
@@ -1425,12 +1430,14 @@ function resizeCanvas() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
 
-        // Make live fetch a global function so dropdowns can instantly trigger it
+// Make live fetch a global function so dropdowns can instantly trigger it
         window.forceLiveFetch = async function() {
             if (!isLiveMode || !auth.currentUser) return;
             try {
                 const freshToken = await auth.currentUser.getIdToken();
-                const r = await fetch(`https://api.greekcalculator.in/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+                
+                // 🟢 FIX: Use the dynamic UPSTOX_API variable here too
+                const r = await fetch(`${UPSTOX_API}/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
                     headers: { 'Authorization': `Bearer ${freshToken}` } 
                 });
                 const data = await r.json();
