@@ -760,8 +760,41 @@ footer { height: 48px; background: var(--card); border-top: 1px solid var(--bord
     .status-indicator { order: 2; margin-left: auto; margin-right: 10px; }
     .live-clock { order: 3; font-size: 11px; }
 }
-    /* 🟢 THE FIX: Removed the 90% stretch and tightened the gaps for mobile */
-    .replay-bar { width: max-content; bottom: 120px; padding: 8px 12px; gap: 10px; }
+/* --- 🟢 PROFESSIONAL MOBILE REPLAY PILL --- */
+    .replay-bar { 
+        bottom: 75px !important; /* Hovers perfectly just above the mobile footer */
+        width: 92vw !important; /* Uses screen width efficiently */
+        max-width: 400px !important; 
+        padding: 6px 12px !important; 
+        gap: 4px !important; 
+        border-radius: 40px !important; /* Smooth, app-like pill shape */
+        flex-wrap: nowrap !important; /* Strictly prevents ugly stacking */
+        justify-content: space-between !important;
+    }
+    
+    /* Shrink the interactive elements to fit elegantly on one line */
+    .replay-bar .draw-btn { padding: 4px !important; }
+    .replay-bar .draw-btn svg { width: 16px !important; height: 16px !important; }
+    
+    #replay-time-display { 
+        font-size: 11px !important; 
+        margin: 0 4px !important; 
+        min-width: 45px !important; 
+    }
+    
+    #replay-skip-interval { 
+        font-size: 10px !important; 
+        padding: 4px 6px !important; 
+        max-width: 85px; 
+    }
+    
+    /* Clean up the LIVE exit button */
+    .replay-bar .draw-btn:last-child { 
+        font-size: 10px !important; 
+        padding: 4px 8px !important; 
+        background: rgba(34, 197, 94, 0.1) !important; /* Subtle green glow */
+        border-radius: 20px !important;
+    }
 
 .mobile-menu-toggle { display: none; }
 .mobile-market-stats { display: none; }
