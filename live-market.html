@@ -1673,7 +1673,9 @@ async function fetchUpstoxChain(quiet = false) {
     globalRows = data.chain || [];
     globalSym = sym; globalData = data;
     
-  const nowStr = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+  // 🟢 FIX: Strip the rogue Unicode spaces before saving to the RAM array
+  const rawTime = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+  const nowStr = rawTime.replace(/[\u202F\u00A0]/g, ' ').trim().toUpperCase();
     const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
     
     // 🟢 THE FIX: Push the exact same structure the backend sends, so the chart parser never breaks!
@@ -1729,21 +1731,23 @@ async function fetchUpstoxChain(quiet = false) {
 }
 
 function parseTimeToUnix(timeStr) {
-    const [time, period] = timeStr.split(' ');
+    // 🟢 FIX: Sanitize the narrow no-break space (\u202F) inserted by modern browsers
+    const cleanStr = timeStr.replace(/[\u202F\u00A0]/g, ' ').trim();
+    const [time, period] = cleanStr.split(' ');
+    
     let [hrs, mins] = time.split(':');
     hrs = parseInt(hrs);
     
-    if (period === 'PM' && hrs !== 12) hrs += 12;
-    if (period === 'AM' && hrs === 12) hrs = 0;
+    if (period.toUpperCase() === 'PM' && hrs !== 12) hrs += 12;
+    if (period.toUpperCase() === 'AM' && hrs === 12) hrs = 0;
     
-    // 🟢 FIX 1: Get the exact local date to prevent midnight UTC rollover bugs
+    // Get the exact local date to prevent midnight UTC rollover bugs
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     
-    // 🟢 FIX 2: Append 'Z' (UTC) instead of '+05:30'. 
-    // This tricks Lightweight Charts into displaying the exact IST hours on the X-Axis!
+    // Append 'Z' (UTC) to trick Lightweight Charts into displaying exact IST hours
     const d = new Date(`${year}-${month}-${day}T${hrs.toString().padStart(2, '0')}:${mins}:00Z`);
     
     return Math.floor(d.getTime() / 1000); 
@@ -2231,15 +2235,21 @@ window.initTerminal = async function() {
 
 function parseTimeToMinutes(tStr) {
     if (!tStr) return 0;
-    let timePart = tStr, ampm = "";
-    if (tStr.includes(" ")) {
-        let parts = tStr.split(" ");
+    
+    // 🟢 FIX: Sanitize the narrow no-break space (\u202F) here as well!
+    const cleanStr = tStr.replace(/[\u202F\u00A0]/g, ' ').trim();
+    let timePart = cleanStr, ampm = "";
+    
+    if (cleanStr.includes(" ")) {
+        let parts = cleanStr.split(" ");
         timePart = parts[0];
         ampm = parts[1] ? parts[1].toUpperCase() : "";
     }
+    
     let [h, m] = timePart.split(":").map(Number);
     if (ampm === "PM" && h !== 12) h += 12;
     if (ampm === "AM" && h === 12) h = 0;
+    
     return h * 60 + m;
 }
 
