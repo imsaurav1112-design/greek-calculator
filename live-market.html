@@ -1674,32 +1674,37 @@ async function fetchUpstoxChain(quiet = false) {
     globalSym = sym; globalData = data;
     
   // 🟢 FIX: Strip the rogue Unicode spaces before saving to the RAM array
-  const rawTime = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
-  const nowStr = rawTime.replace(/[\u202F\u00A0]/g, ' ').trim().toUpperCase();
-    const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
+// Update the data slice mechanism inside fetchUpstoxChain
+const rawTime = new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+const nowStr = rawTime.replace(/[\u202F\u00A0]/g, ' ').trim().toUpperCase();
+const lastEntry = liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].time : "";
+
+if (lastEntry !== nowStr) {
+    liveHistory.push({
+        time: nowStr,
+        spot: data.spot,
+        pcr: data.pcr,
+        rows: globalRows.map(r => ({
+            strike: r.strike,
+            ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
+            ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
+            ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
+            ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0,
+            ceGreeks: { iv: r.ce.iv || 0, delta: r.ce.delta || 0, theta: r.ce.theta || 0, vega: r.ce.vega || 0, gamma: r.ce.gamma || 0 },
+            peGreeks: { iv: r.pe.iv || 0, delta: r.pe.delta || 0, theta: r.pe.theta || 0, vega: r.pe.vega || 0, gamma: r.pe.gamma || 0 },
+            ce_prz: r.ce_prz || 0, pe_prz: r.pe_prz || 0
+        }))
+    });
     
-    // 🟢 THE FIX: Push the exact same structure the backend sends, so the chart parser never breaks!
-    if (lastEntry !== nowStr) {
-        liveHistory.push({
-            time: nowStr,
-            spot: data.spot,
-            pcr: data.pcr,
-            rows: globalRows.map(r => ({
-                strike: r.strike,
-                ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
-                ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
-                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
-                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0,
-                
-                // 🟢 ADDED: Save Greeks and RPL/SPL for the Replay Engine
-                ceGreeks: { iv: r.ce.iv || 0, delta: r.ce.delta || 0, theta: r.ce.theta || 0, vega: r.ce.vega || 0, gamma: r.ce.gamma || 0 },
-                peGreeks: { iv: r.pe.iv || 0, delta: r.pe.delta || 0, theta: r.pe.theta || 0, vega: r.pe.vega || 0, gamma: r.pe.gamma || 0 },
-                ce_prz: r.ce_prz || 0,
-                pe_prz: r.pe_prz || 0
-            }))
-        });
-            if (liveHistory.length > 350) liveHistory.shift();
+    // 🟢 DYNAMIC RAM CAPACITY: Cap at 380 minutes for standard indices (9:15 AM - 3:30 PM), 
+    // but allow the array to expand to 900 minutes to accommodate raw evening MCX sessions!
+    const isCommodity = ["CRUDEOIL", "NATURALGAS"].includes(globalSym);
+    const maxAllowedCapacity = isCommodity ? 900 : 380;
+    
+    if (liveHistory.length > maxAllowedCapacity) {
+        liveHistory.shift();
     }
+}
 
 // 👇 STEP 4: THE GATEKEEPER GOES EXACTLY HERE 👇
     if (typeof isReplaying !== 'undefined' && isReplaying) {
@@ -1730,8 +1735,8 @@ async function fetchUpstoxChain(quiet = false) {
   }
 }
 
+// 🟢 FIX 1: Bulletproof time parser that strips rogue narrow-spaces (\u202F) across modern browsers
 function parseTimeToUnix(timeStr) {
-    // 🟢 FIX: Sanitize the narrow no-break space (\u202F) inserted by modern browsers
     const cleanStr = timeStr.replace(/[\u202F\u00A0]/g, ' ').trim();
     const [time, period] = cleanStr.split(' ');
     
@@ -1741,18 +1746,106 @@ function parseTimeToUnix(timeStr) {
     if (period.toUpperCase() === 'PM' && hrs !== 12) hrs += 12;
     if (period.toUpperCase() === 'AM' && hrs === 12) hrs = 0;
     
-    // Get the exact local date to prevent midnight UTC rollover bugs
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     
-    // Append 'Z' (UTC) to trick Lightweight Charts into displaying exact IST hours
+    // Append 'Z' to preserve precise clock placement on Lightweight Charts X-axis
     const d = new Date(`${year}-${month}-${day}T${hrs.toString().padStart(2, '0')}:${mins}:00Z`);
-    
     return Math.floor(d.getTime() / 1000); 
 }
 
+function parseTimeToMinutes(tStr) {
+    if (!tStr) return 0;
+    const cleanStr = tStr.replace(/[\u202F\u00A0]/g, ' ').trim();
+    let timePart = cleanStr, ampm = "";
+    
+    if (cleanStr.includes(" ")) {
+        let parts = cleanStr.split(" ");
+        timePart = parts[0];
+        ampm = parts[1] ? parts[1].toUpperCase() : "";
+    }
+    
+    let [h, m] = timePart.split(":").map(Number);
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    
+    return h * 60 + m;
+}
+
+// 🟢 FIX 2: Restored original 3-chart rendering engine without adding outside parameters
+function showStrikeCharts(strike) {
+    if (!liveHistory || liveHistory.length === 0) {
+        alert("No historical data available yet. Please wait for the next fetch.");
+        return;
+    }
+    
+    document.getElementById('chart-modal').style.display = 'flex';
+    document.getElementById('modal-strike-title').innerText = strike.toLocaleString('en-IN');
+
+    setTimeout(() => {
+        const ceVolData = [], peVolData = [], ceOiData = [], peOiData = [];
+        const ceOiChgData = [], peOiChgData = [];   
+        const seenTimes = new Set();
+
+        liveHistory.forEach(snap => {
+            const timestamp = parseTimeToUnix(snap.time);
+            if (seenTimes.has(timestamp)) return;
+            seenTimes.add(timestamp);
+
+            const rowArray = snap.rows || snap.chain || []; 
+            const row = rowArray.find(r => r.strike === strike);
+            
+            if (row) {
+                ceVolData.push({ time: timestamp, value: row.ceVol || 0 }); 
+                peVolData.push({ time: timestamp, value: row.peVol || 0 });
+                ceOiData.push({ time: timestamp, value: row.ceOI || 0 }); 
+                peOiData.push({ time: timestamp, value: row.peOI || 0 });
+                ceOiChgData.push({ time: timestamp, value: row.ceOIChg || 0 }); 
+                peOiChgData.push({ time: timestamp, value: row.peOIChg || 0 });
+            }
+        });
+
+        // 1-minute duplication padding rule for pristine single-tick plots
+        if (ceVolData.length === 1) {
+            const firstTime = ceVolData[0].time;
+            ceVolData.unshift({ time: firstTime - 60, value: ceVolData[0].value });
+            peVolData.unshift({ time: firstTime - 60, value: peVolData[0].value });
+            ceOiData.unshift({ time: firstTime - 60, value: ceOiData[0].value });
+            peOiData.unshift({ time: firstTime - 60, value: peOiData[0].value });
+            ceOiChgData.unshift({ time: firstTime - 60, value: ceOiChgData[0].value });
+            peOiChgData.unshift({ time: firstTime - 60, value: peOiChgData[0].value });
+        }
+        
+        const sorter = (a, b) => a.time - b.time;
+        ceVolData.sort(sorter); peVolData.sort(sorter); ceOiData.sort(sorter); peOiData.sort(sorter);
+        ceOiChgData.sort(sorter); peOiChgData.sort(sorter);
+
+        // --- DRAW REVERTED CHARTS ---
+        if (tvModalVolChart) tvModalVolChart.remove();
+        tvModalVolChart = createInstChart('tv-modal-vol');
+        const ceVolSeries = tvModalVolChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peVolSeries = tvModalVolChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceVolSeries.setData(ceVolData); peVolSeries.setData(peVolData);
+        tvModalVolChart.timeScale().fitContent();
+
+        if (tvModalOiChart) tvModalOiChart.remove();
+        tvModalOiChart = createInstChart('tv-modal-oi');
+        const ceOiSeries = tvModalOiChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiSeries = tvModalOiChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceOiSeries.setData(ceOiData); peOiSeries.setData(peOiData);
+        tvModalOiChart.timeScale().fitContent();
+
+        if (tvModalOiChgChart) tvModalOiChgChart.remove();
+        tvModalOiChgChart = createInstChart('tv-modal-oi-chg');
+        const ceOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#ef4444', lineWidth: 2 });
+        const peOiChgSeries = tvModalOiChgChart.addLineSeries({ color: '#10b981', lineWidth: 2 });
+        ceOiChgSeries.setData(ceOiChgData); peOiChgSeries.setData(peOiChgData);
+
+        switchModalChart('tv-modal-vol');
+    }, 50); 
+}
 // 🟢 UPGRADED: Now accepts extraOptions to prevent the "Axis Shift" bug
 function createInstChart(containerId, extraOptions = {}) {
     const container = document.getElementById(containerId);
@@ -2220,13 +2313,24 @@ window.initTerminal = async function() {
     
     window.loadExpiries(); 
     
-// 🟢 THE FIX: The ONLY 3-Second Interval you need!
-    setInterval(() => {
-        const activeExpiry = document.getElementById('sel-expiry').value;
-        if (globalSym && activeExpiry && activeExpiry !== 'Loading...' && activeExpiry !== 'Offline' && activeExpiry !== 'Upstox Login Needed') { 
+// 🟢 THE INTELLIGENT CONTINUOUS LOOP TERMINAL BRIDGE
+setInterval(() => {
+    const activeExpiry = document.getElementById('sel-expiry').value;
+    if (globalSym && activeExpiry && activeExpiry !== 'Loading...' && activeExpiry !== 'Offline') { 
+        
+        const currentClock = new Date();
+        const currentMins = currentClock.getHours() * 60 + currentClock.getMinutes();
+        const isCommodity = ["CRUDEOIL", "NATURALGAS"].includes(globalSym);
+        
+        // NSE/BSE stops pulling snapshots strictly at 3:30 PM (930 minutes)
+        // MCX commodity loop stays aggressively awake until 11:30 PM (1410 minutes)
+        const cutoffBoundary = isCommodity ? 1410 : 930;
+        
+        if (currentMins <= cutoffBoundary) {
             fetchUpstoxChain(true);
         }
-    }, 3000);
+    }
+}, 3000);
 
 }; // 🔴 THE MISSING BRACKET HAS BEEN RESTORED HERE!
 // ==========================================
