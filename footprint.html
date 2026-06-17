@@ -1375,10 +1375,18 @@ function resizeCanvas() {
         isLiveMode = false;
         ctx.clearRect(0, 0, width, height); 
 
-        try {
+          try {
+            // 🟢 CRITICAL FIX: Prevent race conditions if the user clicks before Firebase boots
+            if (!auth.currentUser) {
+                console.warn("Firebase Auth not yet initialized. Ignoring click.");
+                alert("Authenticating session... Please try again in a second.");
+                return; 
+            }
+
             // THE KEY: Get a fresh Firebase token
             const freshToken = await auth.currentUser.getIdToken();
             console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
+    
 
             // THE REQUEST: Hit the dynamic API variable for History
             const r = await fetch(`${UPSTOX_API}/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
