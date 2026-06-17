@@ -672,10 +672,7 @@
 </div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-  
-  // 🟢 NEW: Import App Check
-  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -687,19 +684,7 @@
   };
 
   const app = initializeApp(firebaseConfig);
-
-  // 🟢 TEST MODE UNLOCK: If localhost blocks you, uncomment the line below while coding:
-  // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-
-  // 🟢 NEW: Initialize App Check
-  const appCheck = initializeAppCheck(app, {
-      // 👇 Replace this string with the actual Site Key from Google Cloud Console
-      provider: new ReCaptchaV3Provider('6LcHGSAtAAAAANFVFbWYLeT6HyyZF-g0VgLied3q'),
-      isTokenAutoRefreshEnabled: true
-  });
-
   const auth = getAuth(app);
-
     const canvas = document.getElementById('orderflowCanvas');
     const container = document.getElementById('chart-container');
     const ctx = canvas.getContext('2d');
@@ -789,8 +774,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById(`tool-${tool}`).classList.add('active');
     };
 
-    window.clearCanvas = function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+window.clearCanvas = function() {
+        // 🟢 UX FIX: Protect the user from accidental clicks!
+        if (confirm("Are you sure you want to clear all your drawings? This cannot be undone.")) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
     };
 
     function getStrokeColor() {
@@ -1054,11 +1042,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🟢 PHASE 2: SUB-CHART DIMENSIONS
     const SUBCHART_HEIGHT = 80;  
     const SUBCHART_SPACING = 15; 
-    const TOTAL_BOTTOM_RESERVE = showSubCharts 
-        ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
-        : X_AXIS_HEIGHT; 
-        
-    const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
   // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
@@ -1201,8 +1184,23 @@ function handlePointerDown(e) {
         lastMouseX = clientX; lastMouseY = clientY;
     }
 
-    function handlePointerUp(e) { 
-        if (e && e.touches && e.touches.length < 2) lastPinchDist = 0; // Reset pinch if a finger lifts
+function handlePointerUp(e) { 
+        if (e && e.touches) {
+            if (e.touches.length < 2) {
+                lastPinchDist = 0; // Reset pinch if a finger lifts
+            }
+            
+            // 🟢 FIX: Mobile Pinch-to-Drag Transition Failsafe
+            // If dropping from 2 fingers to 1, seamlessly resume the pan/drag
+            // by updating the coordinates to the remaining finger so it doesn't jump!
+            if (e.touches.length === 1) {
+                lastMouseX = e.touches[0].clientX;
+                lastMouseY = e.touches[0].clientY;
+                return; // Exit early to keep the dragging flags alive!
+            }
+        }
+        
+        // If 0 fingers remain (or it's a mouse release), kill all dragging completely
         isDraggingChart = false; 
         isDraggingYScale = false; 
         isDraggingXScale = false;
