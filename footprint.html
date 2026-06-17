@@ -563,11 +563,9 @@
     <div class="header-left">
         <a href="/" class="logo"><span>GC</span></a>
 
-        <div class="header-controls">
+<div class="header-controls">
             <select id="instrument-dropdown" class="header-dropdown" onchange="handleInstrumentChange(this.value)">
                 <option value="NIFTY" selected>NIFTY 50</option>
-                <option value="CRUDEOIL">CRUDE OIL</option>
-                <option value="NATURALGAS">NATURAL GAS</option>
             </select>
             
             <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
@@ -944,17 +942,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-// 🟢 The Date Picker Bridge
-    window.triggerDateChange = function(val) {
-        // 1. Trigger the gold glow effect
-        window.updateDateUI(val); 
-        needsAutoCenter = true; // 🟢 NEW: Re-center the chart when a new date loads
-        // 2. Auto-close menu on mobile
-        const nav = document.getElementById('left-nav');
-        if (nav && nav.classList.contains('menu-open')) {
-            nav.classList.remove('menu-open');
-        }
-    };
+
 
 // Close settings and mobile nav when clicking outside
     document.addEventListener('click', function(event) {
