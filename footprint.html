@@ -559,17 +559,15 @@
 </div>
 
 <header>
-    <!-- 🟢 Group the Logo and Dropdowns on the Left -->
     <div class="header-left">
         <a href="/" class="logo"><span>GC</span></a>
 
-<div class="header-controls">
-            <select id="instrument-dropdown" class="header-dropdown" onchange="handleInstrumentChange(this.value)">
-                <option value="NIFTY" selected>NIFTY 50</option>
-            </select>
+        <div class="header-controls">
+            <div class="header-dropdown" style="pointer-events: none; background-image: none; padding-right: 14px; color: var(--accent);">
+                NIFTY 50
+            </div>
             
             <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
-                
                 <option value="3">3m</option>
                 <option value="5" selected>5m</option>
                 <option value="15">15m</option>
