@@ -395,6 +395,33 @@
 /* --- 📱 MOBILE SPECIFIC OPTIMIZATION --- */
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
+
+        /* 🟢 Mobile Stats Panel Styling */
+        .mobile-stats-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 10000; align-items: flex-end; justify-content: center;
+        }
+        .mobile-stats-content {
+            background: var(--card); border-top: 1px solid var(--border);
+            width: 100%; border-radius: 16px 16px 0 0; padding: 20px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .light-theme .mobile-stats-content { box-shadow: 0 -10px 40px rgba(0,0,0,0.1); }
+        .ms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 800; font-size: 14px; font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+        .ms-close { background: transparent; border: none; color: var(--muted); font-size: 18px; padding: 0; cursor: pointer; }
+        .ms-section { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; }
+        .ms-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px;}
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Hide Desktop Elements on Mobile */
+        header .header-gauge-container { display: none !important; }
         
       /* 🟢 Mobile Header Adjustments */
         header { gap: 5px; padding: 0 8px; }
@@ -571,6 +598,10 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
         <span>Draw</span>
     </button>
+    <button class="nav-icon" id="btn-stats-mobile" onclick="toggleMobileStats(event)" title="Stats">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+        <span>Stats</span>
+    </button>
     <div class="nav-icon date-picker-wrapper" title="Historical Date" style="position: relative;">
         <svg id="date-svg-icon-mobile" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         <span>Date</span>
@@ -670,6 +701,41 @@
         </div>
     </div>
 </div>
+
+    <div class="mobile-stats-overlay" id="mobile-stats-panel" onclick="closeMobileStats(event)">
+    <div class="mobile-stats-content">
+        <div class="ms-header">
+            <span>Market Intelligence</span>
+            <button class="ms-close" onclick="closeMobileStats(event)">✖</button>
+        </div>
+        
+        <div class="ms-section">
+            <div class="ms-label">Smart Orderflow Score</div>
+            <div class="header-gauge-container" style="position: relative; left: 0; transform: none; width: 100%; justify-content: space-between; margin-top: 5px; display: flex !important;">
+                <div class="hg-text">
+                    <span id="hg-lbl-mobile">NEUTRAL</span>
+                    <span id="hg-val-mobile">0</span>
+                </div>
+                <div class="hg-bar-track">
+                    <div class="hg-marker" id="hg-marker-mobile"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ms-section" style="border-bottom: none;">
+            <div class="ms-label">Session Statistics</div>
+            <div class="stat-row"><span class="stat-label">VWAP</span><span class="stat-val" id="st-vwap-mobile">--</span></div>
+            <div class="stat-row"><span class="stat-label">Cum Delta</span><span class="stat-val" id="st-delta-mobile">--</span></div>
+            <div class="stat-row"><span class="stat-label">VPOC</span><span class="stat-val" id="st-vpoc-mobile" style="color: var(--gold);">--</span></div>
+            <div class="stat-row"><span class="stat-label">VAH / VAL</span><span class="stat-val" id="st-va-mobile">-- / --</span></div>
+            <div style="height: 1px; background: var(--border); margin: 10px 0;"></div>
+            <div class="stat-row"><span class="stat-label">OR High (15m)</span><span class="stat-val" id="st-orh-mobile" style="color: var(--green);">--</span></div>
+            <div class="stat-row"><span class="stat-label">OR Low (15m)</span><span class="stat-val" id="st-orl-mobile" style="color: var(--red);">--</span></div>
+        </div>
+    </div>
+</div>
+
+    
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -930,6 +996,29 @@ window.clearCanvas = function() {
         }
     });
 
+    // 🟢 Mobile Stats Toggle Logic
+window.toggleMobileStats = function(event) {
+    if(event) event.stopPropagation();
+    const panel = document.getElementById('mobile-stats-panel');
+    const btn = document.getElementById('btn-stats-mobile');
+    
+    if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
+        if(btn) btn.classList.remove('active');
+    } else {
+        panel.style.display = 'flex';
+        if(btn) btn.classList.add('active');
+    }
+};
+
+window.closeMobileStats = function(event) {
+    if (event.target.id === 'mobile-stats-panel' || event.target.classList.contains('ms-close')) {
+        document.getElementById('mobile-stats-panel').style.display = 'none';
+        const btn = document.getElementById('btn-stats-mobile');
+        if(btn) btn.classList.remove('active');
+    }
+};
+    
 // 🟢 Toggle Settings
     window.toggleSettings = function(event) {
         if(event) event.stopPropagation();
@@ -1574,6 +1663,19 @@ const parseTime = (t) => {
         document.getElementById('st-va').innerText = `${sessionStats.vah} / ${sessionStats.val}`;
         document.getElementById('st-orh').innerText = sessionStats.orHigh;
         document.getElementById('st-orl').innerText = sessionStats.orLow;
+
+        // 🟢 Update Mobile Stats
+        const vwapMob = document.getElementById('st-vwap-mobile');
+        if (vwapMob) {
+            vwapMob.innerText = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
+            const dElMob = document.getElementById('st-delta-mobile');
+            dElMob.innerText = (totalDelta > 0 ? '+' : '') + totalDelta;
+            dElMob.style.color = totalDelta > 0 ? 'var(--green)' : 'var(--red)';
+            document.getElementById('st-vpoc-mobile').innerText = sessionStats.vpoc;
+            document.getElementById('st-va-mobile').innerText = `${sessionStats.vah} / ${sessionStats.val}`;
+            document.getElementById('st-orh-mobile').innerText = sessionStats.orHigh;
+            document.getElementById('st-orl-mobile').innerText = sessionStats.orLow;
+        }
     }
 
 // --- CORE RENDERING ENGINE ---
@@ -2143,14 +2245,43 @@ let minPrice = Infinity, maxPrice = -Infinity;
             lblEl.style.color = color;
             lblEl.innerText = lbl;
             
-            const pct = ((currentScore + 100) / 200) * 100;
+const pct = ((currentScore + 100) / 200) * 100;
             marker.style.left = `${pct}%`;
             marker.style.background = (currentScore >= 40 || currentScore <= -40) ? color : (isLight ? '#0f172a' : '#ffffff'); 
         }
 
+        // 🟢 NEW: Update the Mobile Gauge (PASTED HERE)
+        const valElMob = document.getElementById('hg-val-mobile');
+        const lblElMob = document.getElementById('hg-lbl-mobile');
+        const markerMob = document.getElementById('hg-marker-mobile');
+        
+        if (valElMob && lblElMob && markerMob) {
+            let mobileScore = 0;
+            const timeKeys = Object.keys(latestDataCache).sort();
+            const targetTime = activeHoverData ? activeHoverData.time : (timeKeys.length > 0 ? timeKeys[timeKeys.length - 1] : null);
+            if (targetTime && latestDataCache[targetTime]) {
+                mobileScore = latestDataCache[targetTime].smartScore || 0;
+            }
+            
+            let mobColor = 'var(--muted)';
+            let mobLbl = 'NEUTRAL';
+            if (mobileScore >= 70) { mobColor = 'var(--green)'; mobLbl = 'STRONG POSITIVE'; }
+            else if (mobileScore >= 40) { mobColor = 'var(--green)'; mobLbl = 'POSITIVE'; }
+            else if (mobileScore <= -70) { mobColor = 'var(--red)'; mobLbl = 'STRONG NEGATIVE'; }
+            else if (mobileScore <= -40) { mobColor = 'var(--red)'; mobLbl = 'NEGATIVE'; }
+
+            valElMob.innerText = (mobileScore > 0 ? '+' : '') + mobileScore;
+            valElMob.style.color = mobColor;
+            lblElMob.style.color = mobColor;
+            lblElMob.innerText = mobLbl;
+            const mobPct = ((mobileScore + 100) / 200) * 100;
+            markerMob.style.left = `${mobPct}%`;
+            markerMob.style.background = (mobileScore >= 40 || mobileScore <= -40) ? mobColor : (isLight ? '#0f172a' : '#ffffff'); 
+        }
+        // 🟢 END OF MOBILE GAUGE
+
         if (showDOM) {
-            const DOM_WIDTH = 100; 
-            const domStartX = width - Y_AXIS_WIDTH; 
+            const DOM_WIDTH = 100;
 
             let maxDomVol = 0;
             Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
