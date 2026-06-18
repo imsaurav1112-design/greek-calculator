@@ -1406,7 +1406,7 @@ function resizeCanvas() {
         }
     }
 
-    // 🟢 3. HISTORY CONNECTION
+// 🟢 3. HISTORY CONNECTION
     window.triggerDateChange = async function(selectedDate) {
         window.updateDateUI(selectedDate); 
         needsAutoCenter = true; 
@@ -1419,8 +1419,7 @@ function resizeCanvas() {
         if (deskInput && deskInput.value !== selectedDate) deskInput.value = selectedDate;
         if (mobInput && mobInput.value !== selectedDate) mobInput.value = selectedDate;
 
-// 🟢 FIX: Remove the clunky timezone 'today' check entirely. 
-        // Always try to fetch the historical file first.
+        // 🟢 FIX: Always try to fetch the historical file first.
         isLiveMode = false;
         ctx.clearRect(0, 0, width, height); 
 
@@ -1465,43 +1464,10 @@ function resizeCanvas() {
             renderCanvas();
             if (window.forceLiveFetch) window.forceLiveFetch(); 
         }
-        console.warn("Firebase Auth not yet initialized. Ignoring click.");
-                alert("Authenticating session... Please try again in a second.");
-                return; 
-            }
-
-            // THE KEY: Get a fresh Firebase token
-            const freshToken = await auth.currentUser.getIdToken();
-            console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
-    
-
-            // THE REQUEST: Hit the dynamic API variable for History
-            const r = await fetch(`${UPSTOX_API}/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
-                headers: { 'Authorization': `Bearer ${freshToken}` } 
-            });
-            
-            const data = await r.json();
-
-            if (data.status === "success" && data.data && Object.keys(data.data).length > 0) {
-                latestDataCache = data.data;
-                latestDomCache = data.dom || { bids: {}, asks: {} };
-            } else {
-                latestDataCache = {};
-                latestDomCache = { bids: {}, asks: {} };
-            }
-
-            processSessionData(); 
-            renderCanvas();
-        } catch(err) { 
-            console.error("🚨 History fetch failed:", err); 
-            latestDataCache = {}; 
-            renderCanvas();
-        }
-    };
+    }; // <-- 🟢 THIS is the closing bracket for triggerDateChange!
 
     // 🟢 4. LIVE STREAM CONNECTION
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return window.location.href = "index.html";
+    onAuthStateChanged(auth, async (user) => {        if (!user) return window.location.href = "index.html";
 
         window.forceLiveFetch = async function() {
             if (!isLiveMode || !auth.currentUser) return;
