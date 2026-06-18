@@ -1330,26 +1330,53 @@ function resizeCanvas() {
         if (deskInput && deskInput.value !== selectedDate) deskInput.value = selectedDate;
         if (mobInput && mobInput.value !== selectedDate) mobInput.value = selectedDate;
 
-        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
-        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-
-        if (!selectedDate || selectedDate === today) {
-            isLiveMode = true;
-            latestDataCache = {};
-            latestDomCache = { bids: {}, asks: {} };
-            processSessionData();
-            renderCanvas();
-            if (window.forceLiveFetch) window.forceLiveFetch(); 
-            return;
-        }
-
+// 🟢 FIX: Remove the clunky timezone 'today' check entirely. 
+        // Always try to fetch the historical file first.
         isLiveMode = false;
         ctx.clearRect(0, 0, width, height); 
 
-          try {
+        try {
             // 🟢 CRITICAL FIX: Prevent race conditions if the user clicks before Firebase boots
             if (!auth.currentUser) {
                 console.warn("Firebase Auth not yet initialized. Ignoring click.");
+                alert("Authenticating session... Please try again in a second.");
+                return; 
+            }
+
+            const freshToken = await auth.currentUser.getIdToken();
+            console.log(`⏳ Fetching history for ${currentInstrument} on ${selectedDate}...`);
+    
+            const r = await fetch(`${UPSTOX_API}/api/historical-footprint?date=${selectedDate}&symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+                headers: { 'Authorization': `Bearer ${freshToken}` } 
+            });
+            
+            const data = await r.json();
+
+            if (data.status === "success" && data.data && Object.keys(data.data).length > 0) {
+                // We successfully found a historical file for this date!
+                latestDataCache = data.data;
+                latestDomCache = data.dom || { bids: {}, asks: {} };
+                processSessionData(); 
+                renderCanvas();
+            } else {
+                // If no historical file exists, it must be a live market day (or a weekend).
+                // Revert back to live mode automatically!
+                isLiveMode = true;
+                latestDataCache = {};
+                latestDomCache = { bids: {}, asks: {} };
+                processSessionData();
+                renderCanvas();
+                if (window.forceLiveFetch) window.forceLiveFetch(); 
+            }
+
+        } catch(err) { 
+            console.error("🚨 History fetch failed:", err); 
+            isLiveMode = true; // Fallback to live mode on network errors
+            latestDataCache = {}; 
+            renderCanvas();
+            if (window.forceLiveFetch) window.forceLiveFetch(); 
+        }
+        console.warn("Firebase Auth not yet initialized. Ignoring click.");
                 alert("Authenticating session... Please try again in a second.");
                 return; 
             }
