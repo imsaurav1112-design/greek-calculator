@@ -453,7 +453,15 @@ footer {
     border-radius: 8px;
     overflow: hidden;
 }
-.tab-chart { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; }
+/* 🟢 FIX: Use Opacity instead of Display:None to prevent Canvas API CPU spikes */
+.tab-chart { 
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+    width: 100%; height: 100%; 
+    opacity: 0; pointer-events: none; z-index: 1; transition: opacity 0.2s;
+}
+.tab-chart.active-chart {
+    opacity: 1; pointer-events: auto; z-index: 10;
+}
 
 .modal-toggles { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 4px; gap: 4px; }
 .modal-toggle-btn { flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; font-size: 13px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: 0.2s; font-family: 'Poppins', sans-serif; }
@@ -798,10 +806,10 @@ footer {
         <button class="modal-close" onclick="closeStrikeCharts(event)">✖</button>
         <h2 class="modal-header">Strike: <span id="modal-strike-title">--</span></h2>
         
-        <div class="modal-chart-area">
-            <div id="tv-modal-vol" class="tab-chart" style="display: block;"></div>
-            <div id="tv-modal-oi" class="tab-chart" style="display: none;"></div>
-            <div id="tv-modal-oi-chg" class="tab-chart" style="display: none;"></div>
+<div class="modal-chart-area">
+            <div id="tv-modal-vol" class="tab-chart active-chart"></div>
+            <div id="tv-modal-oi" class="tab-chart"></div>
+            <div id="tv-modal-oi-chg" class="tab-chart"></div>
         </div>
 
         <div class="modal-toggles">
@@ -1503,16 +1511,17 @@ function switchModalChart(targetId) {
         const div = document.getElementById(c.id);
         if (!div) return;
         
+// 🟢 FIX: Swap CSS classes instead of forcing display:none
         if (c.id === targetId) {
-            div.style.display = 'block'; 
+            div.classList.add('active-chart'); 
             if (c.inst) {
                 setTimeout(() => {
                     c.inst.applyOptions({ width: div.clientWidth, height: div.clientHeight });
                     c.inst.timeScale().fitContent();
-                }, 20);
+                }, 10);
             }
         } else {
-            div.style.display = 'none'; 
+            div.classList.remove('active-chart'); 
         }
     });
 }
