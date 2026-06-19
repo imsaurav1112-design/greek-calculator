@@ -1120,9 +1120,13 @@ window.closeMobileStats = function(event) {
             if (cb) cb.checked = true;
         }
 
-        // Mobile layout defaults
+     // Mobile layout defaults
         if(window.innerWidth <= 768) {
              document.getElementById('stats-cb').checked = false;
+        } else {
+             // Failsafe: Forcursively suppress mobile overlay elements if loaded on desktop windows
+             const mobPanel = document.getElementById('mobile-stats-panel');
+             if(mobPanel) mobPanel.style.setProperty('display', 'none', 'important');
         }
     });
 
