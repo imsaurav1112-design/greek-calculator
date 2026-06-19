@@ -221,14 +221,20 @@
         position: relative; 
         background: #0c0c0f; 
         cursor: crosshair; 
-        overflow: hidden; /* 🟢 FIX 1: Completely disabled native browser scrolling */
-        touch-action: none; /* 🟢 FIX 2: Stops "pull-to-refresh" so mobile dragging is flawless */
+        overflow: hidden; 
+        touch-action: none; 
+        /* 🟢 NEW: Ensure it takes up all available space */
+        min-height: 50vh; 
     }
-
+    
     canvas { 
         display: block; 
         width: 100%; 
-        height: 100%; /* 🟢 FIX 3: Removed min-height: 800px so it perfectly snaps to the screen height */
+        height: 100%; 
+        /* 🟢 NEW: Force position absolute to fill the container */
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     /* --- SESSION STATS --- */
@@ -1287,9 +1293,13 @@ canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
     let sessionStats = {};
 
 function resizeCanvas() { 
-        // 🟢 FIX: Use the actual CSS-rendered size of the canvas to prevent stretching/misalignment
-        width = canvas.width = canvas.offsetWidth; 
-        height = canvas.height = canvas.offsetHeight; 
+        if (!container || !canvas) return;
+        
+        // 🟢 FIX: Force exact pixel mapping to prevent 0x0 rendering
+        const rect = container.getBoundingClientRect();
+        width = canvas.width = rect.width; 
+        height = canvas.height = rect.height; 
+        
         renderCanvas(); 
     }
     window.addEventListener('resize', resizeCanvas); 
@@ -1667,13 +1677,17 @@ let minPrice = Infinity, maxPrice = -Infinity;
 
         const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
-        // 🟢 AUTO-CENTER LOGIC
+// 🟢 AUTO-CENTER LOGIC (Protected)
         if (needsAutoCenter && timeKeys.length > 0) {
             const latestCandle = latestDataCache[timeKeys[timeKeys.length - 1]];
-            const targetPrice = latestCandle.close;
-            const unoffsetY = MAIN_CHART_BOTTOM - 20 - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
-            offsetY = (MAIN_CHART_BOTTOM / 2) - unoffsetY;
-            needsAutoCenter = false; 
+            
+            // Failsafe: Only try to center if we actually have valid prices
+            if (latestCandle && latestCandle.close > 0 && minPrice !== Infinity) {
+                const targetPrice = latestCandle.close;
+                const unoffsetY = MAIN_CHART_BOTTOM - 20 - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
+                offsetY = (MAIN_CHART_BOTTOM / 2) - unoffsetY;
+                needsAutoCenter = false; 
+            }
         }
 
         const getPriceY = (price) => {
