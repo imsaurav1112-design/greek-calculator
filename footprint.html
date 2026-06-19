@@ -223,12 +223,16 @@
         cursor: crosshair; 
         overflow: hidden; /* 🟢 FIX 1: Completely disabled native browser scrolling */
         touch-action: none; /* 🟢 FIX 2: Stops "pull-to-refresh" so mobile dragging is flawless */
+        min-height: 50vh; /* 🟢 FIX 3: Ensures the container never collapses to 0 height */
     }
     
     canvas { 
         display: block; 
         width: 100%; 
-        height: 100%; /* 🟢 FIX 3: Removed min-height: 800px so it perfectly snaps to the screen height */
+        height: 100%; 
+        position: absolute; /* 🟢 FIX 4: Forces canvas to map exactly to the parent container bounds */
+        top: 0;
+        left: 0;
     }
 
     /* --- SESSION STATS --- */
@@ -423,11 +427,12 @@
         /* Hide Desktop Elements on Mobile */
         header .header-gauge-container { display: none !important; }
         
-      /* 🟢 Mobile Header Adjustments */
+/* 🟢 Mobile Header Adjustments */
         header { gap: 5px; padding: 0 8px; }
         .header-left { gap: 10px; } /* Pulls logo and dropdowns closer */
         .header-controls { gap: 6px; }
-        .header-dropdown { 
+        /* Target ONLY the timeframe dropdown so the Nifty text badge doesn't squish */
+        #timeframe-dropdown { 
             padding: 4px 22px 4px 8px; 
             font-size: 11px; 
             background-size: 10px auto; 
