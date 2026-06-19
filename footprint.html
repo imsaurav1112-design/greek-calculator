@@ -676,7 +676,7 @@
   
   // 🟢 NEW: Import App Check
   import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
 
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -790,8 +790,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById(`tool-${tool}`).classList.add('active');
     };
 
-    window.clearCanvas = function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
 window.clearCanvas = function() {
         // 🟢 UX FIX: Protect the user from accidental clicks!
         if (confirm("Are you sure you want to clear all your drawings? This cannot be undone.")) {
@@ -1207,8 +1205,6 @@ function handlePointerDown(e) {
         lastMouseX = clientX; lastMouseY = clientY;
     }
 
-    function handlePointerUp(e) { 
-        if (e && e.touches && e.touches.length < 2) lastPinchDist = 0; // Reset pinch if a finger lifts
 function handlePointerUp(e) { 
         if (e && e.touches) {
             if (e.touches.length < 2) {
