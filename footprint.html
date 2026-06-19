@@ -1022,13 +1022,6 @@ window.closeMobileStats = function(event) {
         if(btn) btn.classList.remove('active');
     }
 };
-window.closeMobileStats = function(event) {
-    if (event.target.id === 'mobile-stats-panel' || event.target.classList.contains('ms-close')) {
-        document.getElementById('mobile-stats-panel').style.display = 'none';
-        const btn = document.getElementById('btn-stats-mobile');
-        if(btn) btn.classList.remove('active');
-    }
-};
     
 // 🟢 Toggle Settings
     window.toggleSettings = function(event) {
@@ -1434,9 +1427,24 @@ function resizeCanvas() {
         if (deskInput && deskInput.value !== selectedDate) deskInput.value = selectedDate;
         if (mobInput && mobInput.value !== selectedDate) mobInput.value = selectedDate;
 
-        // 🟢 FIX: Always try to fetch the historical file first.
+        // 🟢 FIX: Check if the user cleared the date picker OR explicitly selected today
+        const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+        const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+        if (!selectedDate || selectedDate === today) {
+            console.log("🔄 Reverting to Live Market Mode...");
+            isLiveMode = true;
+            latestDataCache = {};
+            latestDomCache = { bids: {}, asks: {} };
+            processSessionData();
+            renderCanvas();
+            if (window.forceLiveFetch) window.forceLiveFetch();
+            return; // Exit early to prevent historical fetch
+        }
+
+        // We are officially looking at the past
         isLiveMode = false;
-        ctx.clearRect(0, 0, width, height); 
+        ctx.clearRect(0, 0, width, height);
 
         try {
             // 🟢 CRITICAL FIX: Prevent race conditions if the user clicks before Firebase boots
@@ -2261,8 +2269,9 @@ let minPrice = Infinity, maxPrice = -Infinity;
         }
         // 🟢 END OF MOBILE GAUGE
 
-        if (showDOM) {
+if (showDOM) {
             const DOM_WIDTH = 100;
+            const domStartX = width - Y_AXIS_WIDTH; // 🟢 FIX: Restored this critical variable!
 
             let maxDomVol = 0;
             Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
