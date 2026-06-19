@@ -398,7 +398,7 @@
 
         /* 🟢 Mobile Stats Panel Styling */
         .mobile-stats-overlay {
-            display: none;
+            display:none !important;
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             z-index: 10000; align-items: flex-end; justify-content: center;
@@ -994,21 +994,29 @@ window.clearCanvas = function() {
         }
     });
 
-    // 🟢 Mobile Stats Toggle Logic
+// 🟢 Mobile Stats Toggle Logic (Fixed for Desktop Initialization)
 window.toggleMobileStats = function(event) {
     if(event) event.stopPropagation();
     const panel = document.getElementById('mobile-stats-panel');
     const btn = document.getElementById('btn-stats-mobile');
     
-    if (panel.style.display === 'flex') {
-        panel.style.display = 'none';
+    // Check using the computed style or checking the property directly
+    if (panel.style.getPropertyValue('display').includes('flex')) {
+        panel.style.setProperty('display', 'none', 'important');
         if(btn) btn.classList.remove('active');
     } else {
-        panel.style.display = 'flex';
+        panel.style.setProperty('display', 'flex', 'important');
         if(btn) btn.classList.add('active');
     }
 };
 
+window.closeMobileStats = function(event) {
+    if (event.target.id === 'mobile-stats-panel' || event.target.classList.contains('ms-close')) {
+        document.getElementById('mobile-stats-panel').style.setProperty('display', 'none', 'important');
+        const btn = document.getElementById('btn-stats-mobile');
+        if(btn) btn.classList.remove('active');
+    }
+};
 window.closeMobileStats = function(event) {
     if (event.target.id === 'mobile-stats-panel' || event.target.classList.contains('ms-close')) {
         document.getElementById('mobile-stats-panel').style.display = 'none';
