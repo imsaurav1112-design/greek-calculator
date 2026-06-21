@@ -2325,17 +2325,17 @@ document.getElementById('f-ce-oi').innerText = fmtVol(data.total_ce_oi);
 function abs(x) { return x < 0 ? -x : x; }
 
 // Terminal Initialization
-// Terminal Initialization
 window.initTerminal = async function() {
     try {
         const headers = window.currentFirebaseToken ? { 'Authorization': `Bearer ${window.currentFirebaseToken}` } : {};
-        const r = await fetch(`${UPSTOX_API}/user-profile`, { headers });
-        const profile = await r.json();
+        // 🟢 FIX: Use check-access to verify specific Option Chain (OC) permissions
+        const r = await fetch(`${UPSTOX_API}/api/check-access`, { headers });
+        const access = await r.json();
         
-        if (profile.tier !== "pro") {
-            alert("The Live Terminal requires a Pro subscription.");
+        if (access.status !== "success" || !access.has_oc) {
+            alert("The Live Option Chain requires an OC or Combo Pro Plan.");
             window.location.href = "index.html#pricing";
-            return; 
+            return; // 🛑 Kills the script!
         }
     } catch(e) {
         console.error("Profile check failed", e);
