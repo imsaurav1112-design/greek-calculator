@@ -1414,9 +1414,29 @@ function resizeCanvas() {
         }
     };
 
-    // 🟢 4. LIVE STREAM CONNECTION
+// 🟢 4. LIVE STREAM CONNECTION
     onAuthStateChanged(auth, async (user) => {
         if (!user) return window.location.href = "index.html";
+
+        // 👇 THE MONETIZATION GATEKEEPER 👇
+        try {
+            const token = await user.getIdToken();
+            const r = await fetch(`${UPSTOX_API}/api/check-access`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const access = await r.json();
+
+            if (access.status !== "success" || !access.has_fp) {
+                alert("Footprint Charts require an active Footprint or Combo Pro Plan.");
+                window.location.href = "/#pricing"; 
+                return; // 🛑 Kills the script entirely! No WebSockets will start.
+            }
+        } catch (e) {
+            console.error("Auth check failed:", e);
+            alert("Secure connection failed. Please log in again.");
+            return;
+        }
+        // 👆 END GATEKEEPER 👆
 
         window.forceLiveFetch = async function() {
             if (!isLiveMode || !auth.currentUser) return;
