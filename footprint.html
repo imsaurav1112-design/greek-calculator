@@ -2211,7 +2211,9 @@ let minPrice = Infinity, maxPrice = -Infinity;
             const lblEl = document.getElementById('hg-lbl');
             const marker = document.getElementById('hg-marker');
 
-            valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
+valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
+            // Sync to mobile
+            if(document.getElementById('ms-hg-val')) document.getElementById('ms-hg-val').innerText = (currentScore > 0 ? '+' : '') + currentScore;
 
             let color = 'var(--muted)';
             let lbl = 'NEUTRAL';
@@ -2224,11 +2226,23 @@ let minPrice = Infinity, maxPrice = -Infinity;
             valEl.style.color = color;
             lblEl.style.color = color;
             lblEl.innerText = lbl;
+            
+            // Sync labels to mobile
+            if(document.getElementById('ms-hg-lbl')) {
+                document.getElementById('ms-hg-lbl').style.color = color;
+                document.getElementById('ms-hg-val').style.color = color;
+                document.getElementById('ms-hg-lbl').innerText = lbl;
+            }
 
             const pct = ((currentScore + 100) / 200) * 100;
             marker.style.left = `${pct}%`;
             marker.style.background = (currentScore >= 40 || currentScore <= -40) ? color : (isLight ? '#0f172a' : '#ffffff'); 
-        }
+            
+            // Sync marker to mobile
+            if(document.getElementById('ms-hg-marker')) {
+                document.getElementById('ms-hg-marker').style.left = `${pct}%`;
+                document.getElementById('ms-hg-marker').style.background = marker.style.background;
+            }
 
         if (showDOM) {
             const DOM_WIDTH = 100; 
