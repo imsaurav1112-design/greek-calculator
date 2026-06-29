@@ -1642,16 +1642,29 @@ const parseTime = (t) => {
              statsPanel.style.display = 'block';
         }
 
-        document.getElementById('st-vwap').innerText = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
+const vwapVal = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
+        document.getElementById('st-vwap').innerText = vwapVal;
+        if(document.getElementById('ms-st-vwap')) document.getElementById('ms-st-vwap').innerText = vwapVal;
 
         const dEl = document.getElementById('st-delta');
-        dEl.innerText = (totalDelta > 0 ? '+' : '') + totalDelta;
-        dEl.style.color = totalDelta > 0 ? 'var(--green)' : 'var(--red)';
+        const msDEl = document.getElementById('ms-st-delta');
+        const dText = (totalDelta > 0 ? '+' : '') + totalDelta;
+        const dColor = totalDelta > 0 ? 'var(--green)' : 'var(--red)';
+        
+        dEl.innerText = dText; dEl.style.color = dColor;
+        if(msDEl) { msDEl.innerText = dText; msDEl.style.color = dColor; }
 
         document.getElementById('st-vpoc').innerText = sessionStats.vpoc;
-        document.getElementById('st-va').innerText = `${sessionStats.vah} / ${sessionStats.val}`;
+        if(document.getElementById('ms-st-vpoc')) document.getElementById('ms-st-vpoc').innerText = sessionStats.vpoc;
+
+        const vaText = `${sessionStats.vah} / ${sessionStats.val}`;
+        document.getElementById('st-va').innerText = vaText;
+        if(document.getElementById('ms-st-va')) document.getElementById('ms-st-va').innerText = vaText;
+
         document.getElementById('st-orh').innerText = sessionStats.orHigh;
         document.getElementById('st-orl').innerText = sessionStats.orLow;
+        if(document.getElementById('ms-st-orh')) document.getElementById('ms-st-orh').innerText = sessionStats.orHigh;
+        if(document.getElementById('ms-st-orl')) document.getElementById('ms-st-orl').innerText = sessionStats.orLow;
     }
 
 // --- CORE RENDERING ENGINE ---
@@ -2243,7 +2256,7 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
                 document.getElementById('ms-hg-marker').style.left = `${pct}%`;
                 document.getElementById('ms-hg-marker').style.background = marker.style.background;
             }
-
+          } 
         if (showDOM) {
             const DOM_WIDTH = 100; 
             const domStartX = width - Y_AXIS_WIDTH; 
