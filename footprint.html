@@ -397,7 +397,12 @@
 
 /* 🟢 Desktop overrides for the new Nav structure */
     .mobile-bottom-nav { display: none; }
-
+    
+/* 🟢 Prevent Mobile UI elements from rendering raw on Desktop */
+    @media (min-width: 769px) {
+        .mobile-stats-overlay { display: none !important; }
+        .mobile-bottom-nav { display: none !important; }
+    }
 /* --- 📱 MOBILE SPECIFIC OPTIMIZATION --- */
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
@@ -670,7 +675,8 @@
                 <div class="ms-stat-box"><span>OR Low</span><b id="ms-st-orl" style="color: var(--red);">--</b></div>
             </div>
         </div>
-
+    </div>
+</div>
         <div class="ms-section">
             <div class="ms-label">HISTORICAL DATE</div>
             <input type="date" id="history-date-mobile" onchange="triggerDateChange(this.value)"
