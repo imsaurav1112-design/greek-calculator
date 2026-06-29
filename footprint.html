@@ -2388,10 +2388,13 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
             }
         }
     } // end of render canvas
-   // 🟢 FANCY: Update UI when a date is selected
+ // 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
-        const mobileWrapper = document.getElementById('date-svg-icon-mobile').parentElement; // Get mobile wrapper
+        
+        // 🟢 CRITICAL FIX: Safely check if the mobile icon exists before asking for its parent!
+        const mobileIcon = document.getElementById('date-svg-icon-mobile');
+        const mobileWrapper = mobileIcon ? mobileIcon.parentElement : null; 
 
         // Generate today's date in IST
         const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
@@ -2416,7 +2419,6 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
                 mobileWrapper.classList.add('active');
             }
         }
-    };
-</script>
+    };</script>
 </body>
 </html>
