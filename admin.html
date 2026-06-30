@@ -73,6 +73,16 @@
     .auth-input:focus { outline: none; border-color: var(--accent); }
     .btn-primary { background: var(--accent); border: none; color: #fff; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: 0.2s;}
     .btn-primary:hover { background: #2563eb; }
+/* Mobile specific: Hide Sidebar, use full width */
+    @media (max-width: 768px) {
+        body { flex-direction: column; }
+        .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; }
+        .nav-item { padding: 10px; font-size: 12px; border-left: none; }
+        .main-content { padding: 15px; }
+        .kpi-grid { grid-template-columns: 1fr 1fr; }
+        table { font-size: 11px; }
+    }
+    
 </style>
 </head>
 <body>
