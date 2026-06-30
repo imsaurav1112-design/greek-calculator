@@ -167,6 +167,22 @@
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
 
+    /* 🟢 HEADER DATE BADGE */
+    .header-date-badge {
+        background: rgba(34, 197, 94, 0.15); /* Defaults to Green for Live */
+        color: var(--green);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 800;
+        font-family: 'JetBrains Mono', monospace;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        transition: 0.3s ease;
+    }
+    
     /* Light Theme Adjustments */
     .light-theme .header-dropdown {
         background: rgba(241, 245, 249, 0.6);
@@ -407,6 +423,9 @@
     @media (max-width: 768px) {
         .logo { font-size: 15px; }
 
+        /* 🟢 Hide Gauge on Mobile */
+        .header-gauge-container { display: none !important; }
+
         /* 🟢 MOBILE STATS BOTTOM SHEET */
         .mobile-stats-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -592,13 +611,14 @@
             </select>
 
             <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
-
                 <option value="3">3m</option>
                 <option value="5" selected>5m</option>
                 <option value="15">15m</option>
             </select>
+            
+            <!-- 🟢 NEW: Global Date Badge -->
+            <div id="header-date-display" class="header-date-badge">Live (Today)</div>
         </div>
-    </div>
 
     <!-- 🟢 The Gauge stays locked to the Absolute Center via CSS -->
     <div class="header-gauge-container" id="header-gauge">
@@ -618,23 +638,30 @@
 <nav class="mobile-bottom-nav">
     <a href="/" class="nav-icon" title="Home">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        Home
+        <span>Home</span>
     </a>
     <a href="/live-market" class="nav-icon" title="Live Market">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-        Live
+        <span>Live</span>
     </a>
     <button class="nav-icon" onclick="toggleMobileStats()" title="Stats">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-        Stats
+        <span>Stats</span>
     </button>
     <button class="nav-icon" id="nav-btn-draw-mobile" onclick="toggleDrawingToolbar()" title="Draw">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-        Draw
+        <span>Draw</span>
     </button>
+    
+    <div class="nav-icon date-picker-wrapper" title="Historical Date" style="position: relative;">
+        <svg id="date-svg-icon-mobile" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span>Date</span>
+        <input type="date" id="history-date-mobile" onchange="triggerDateChange(this.value)" onclick="this.showPicker()" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+    </div>
+
     <button class="nav-icon" id="btn-settings-mobile" onclick="toggleSettings(event)" title="Settings">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        Settings
+        <span>Settings</span>
     </button>
 </nav>
 
@@ -677,6 +704,7 @@
         </div>
     </div>
 </div>
+
 <div class="workspace">
     <div class="left-nav" id="left-nav">
         <div class="resizer-x" id="resizer"></div>
@@ -2379,37 +2407,45 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
             }
         }
     } // end of render canvas
- // 🟢 FANCY: Update UI when a date is selected
+// 🟢 FANCY: Update UI when a date is selected
     window.updateDateUI = function(selectedDate) {
         const wrapper = document.getElementById('date-btn-wrapper');
-        
-        // 🟢 CRITICAL FIX: Safely check if the mobile icon exists before asking for its parent!
         const mobileIcon = document.getElementById('date-svg-icon-mobile');
         const mobileWrapper = mobileIcon ? mobileIcon.parentElement : null; 
+        
+        // 🟢 Link to the new Header Badge
+        const headerDate = document.getElementById('header-date-display'); 
 
         // Generate today's date in IST
         const d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
         const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
         if (!selectedDate || selectedDate === today) {
-            if(wrapper) {
-                wrapper.classList.remove('date-active-glow');
-                wrapper.title = "Historical Date";
-            }
-            if(mobileWrapper) {
-                mobileWrapper.classList.remove('active');
+            if(wrapper) { wrapper.classList.remove('date-active-glow'); wrapper.title = "Historical Date"; }
+            if(mobileWrapper) { mobileWrapper.classList.remove('active'); }
+            
+            // Revert Header Badge to Green (Live)
+            if(headerDate) { 
+                headerDate.innerText = "Live (Today)"; 
+                headerDate.style.color = "var(--green)"; 
+                headerDate.style.borderColor = "rgba(34, 197, 94, 0.3)"; 
+                headerDate.style.background = "rgba(34, 197, 94, 0.15)"; 
             }
         } 
         else {
             const formattedDate = new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            if(wrapper) {
-                wrapper.classList.add('date-active-glow');
-                wrapper.title = `Viewing: ${formattedDate} (Tap to reset)`;
-            }
-            if(mobileWrapper) {
-                mobileWrapper.classList.add('active');
+            if(wrapper) { wrapper.classList.add('date-active-glow'); wrapper.title = `Viewing: ${formattedDate} (Tap to reset)`; }
+            if(mobileWrapper) { mobileWrapper.classList.add('active'); }
+            
+            // Switch Header Badge to Gold (Historical)
+            if(headerDate) { 
+                headerDate.innerText = formattedDate; 
+                headerDate.style.color = "var(--gold)"; 
+                headerDate.style.borderColor = "rgba(245, 158, 11, 0.3)"; 
+                headerDate.style.background = "rgba(245, 158, 11, 0.15)"; 
             }
         }
-    };</script>
+    };
+</script>
 </body>
 </html>
