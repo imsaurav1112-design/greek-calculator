@@ -1846,16 +1846,33 @@ const vwapVal = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
 
         const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
-// 🟢 AUTO-CENTER LOGIC (Protected)
-        if (needsAutoCenter && timeKeys.length > 0) {
-            const latestCandle = latestDataCache[timeKeys[timeKeys.length - 1]];
-            
-            // Failsafe: Only try to center if we actually have valid prices
-            if (latestCandle && latestCandle.close > 0 && minPrice !== Infinity) {
-                const targetPrice = latestCandle.close;
-                const unoffsetY = MAIN_CHART_BOTTOM - 20 - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
+// 🟢 UPGRADED AUTO-CENTER LOGIC (Handles Candles + Pre-Market DOM)
+        if (needsAutoCenter) {
+            let targetPrice = null;
+
+            // 1. Primary Target: Latest Traded Footprint Candle Close
+            if (timeKeys.length > 0) {
+                const latestCandle = latestDataCache[timeKeys[timeKeys.length - 1]];
+                if (latestCandle && latestCandle.close > 0) {
+                    targetPrice = latestCandle.close;
+                }
+            } 
+            // 2. Fallback Target: Best Bid from D5/D30 Orderbook DOM (Pre-market / No trades yet)
+            else if (typeof latestDomCache !== 'undefined' && latestDomCache) {
+                const bids = Object.keys(latestDomCache.bids || {}).map(Number);
+                const asks = Object.keys(latestDomCache.asks || {}).map(Number);
+                if (bids.length > 0) {
+                    targetPrice = Math.max(...bids); // Center on Best Bid
+                } else if (asks.length > 0) {
+                    targetPrice = Math.min(...asks); // Center on Best Ask
+                }
+            }
+
+            // 3. Apply Camera Translation if a valid target and baseline exist
+            if (targetPrice !== null && minPrice !== Infinity && !isNaN(minPrice)) {
+                const unoffsetY = (MAIN_CHART_BOTTOM - 20) - ((targetPrice - minPrice) / TICK_SIZE * priceScale);
                 offsetY = (MAIN_CHART_BOTTOM / 2) - unoffsetY;
-                needsAutoCenter = false; 
+                needsAutoCenter = false; // Lock camera until user resets or changes instrument
             }
         }
 
