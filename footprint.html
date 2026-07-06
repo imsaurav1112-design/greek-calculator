@@ -2339,18 +2339,31 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
                 document.getElementById('ms-hg-marker').style.background = marker.style.background;
             }
             }
-        if (showDOM) {
+       if (showDOM) {
             const DOM_WIDTH = 100; 
             const domStartX = width - Y_AXIS_WIDTH; 
 
+            // 🟢 D5 FIX: Aggregate fractional quotes into whole-integer price buckets
+            const aggregatedAsks = {};
+            const aggregatedBids = {};
+
+            Object.entries(latestDomCache.asks || {}).forEach(([pStr, vol]) => {
+                const bucketPrice = Math.round(parseFloat(pStr));
+                aggregatedAsks[bucketPrice] = (aggregatedAsks[bucketPrice] || 0) + vol;
+            });
+
+            Object.entries(latestDomCache.bids || {}).forEach(([pStr, vol]) => {
+                const bucketPrice = Math.round(parseFloat(pStr));
+                aggregatedBids[bucketPrice] = (aggregatedBids[bucketPrice] || 0) + vol;
+            });
+
             let maxDomVol = 0;
-            Object.values(latestDomCache.bids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
-            Object.values(latestDomCache.asks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+            Object.values(aggregatedBids).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
+            Object.values(aggregatedAsks).forEach(v => { if(v > maxDomVol) maxDomVol = v; });
 
             if (maxDomVol > 0) {
-                Object.keys(latestDomCache.asks).forEach(pStr => {
+                Object.entries(aggregatedAsks).forEach(([pStr, vol]) => {
                     const p = parseFloat(pStr);
-                    const vol = latestDomCache.asks[pStr];
                     const y = getPriceY(p);
                     if (y < -50 || y > MAIN_CHART_BOTTOM) return;
 
@@ -2365,9 +2378,8 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
                     ctx.fillText(vol >= 1000 ? (vol/1000).toFixed(1) + 'k' : vol, domStartX - 5, y);
                 });
 
-                Object.keys(latestDomCache.bids).forEach(pStr => {
+                Object.entries(aggregatedBids).forEach(([pStr, vol]) => {
                     const p = parseFloat(pStr);
-                    const vol = latestDomCache.bids[pStr];
                     const y = getPriceY(p);
                     if (y < -50 || y > MAIN_CHART_BOTTOM) return;
 
@@ -2383,7 +2395,6 @@ valEl.innerText = (currentScore > 0 ? '+' : '') + currentScore;
                 });
             }
         }
-
         if (showVP && sessionStats.maxVPVol) {
             ctx.fillStyle = isLight ? '#f1f5f9' : '#09090b'; 
             ctx.fillRect(0, 0, VP_WIDTH, MAIN_CHART_BOTTOM);
