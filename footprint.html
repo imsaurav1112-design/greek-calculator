@@ -1743,7 +1743,13 @@ const vwapVal = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
 
         const timeKeys = Object.keys(latestDataCache).sort();
 
-        if (timeKeys.length === 0) {
+        // 🟢 FIX: Check if DOM data exists so we don't abort early during pre-market
+        const hasDomQuotes = (
+            latestDomCache && 
+            (Object.keys(latestDomCache.bids || {}).length > 0 || Object.keys(latestDomCache.asks || {}).length > 0)
+        );
+
+        if (timeKeys.length === 0 && !hasDomQuotes) {
             ctx.fillStyle = isLight ? '#64748b' : '#a1a1aa';
             ctx.font = "600 14px 'Inter'";
             ctx.textAlign = "center";
@@ -1751,8 +1757,17 @@ const vwapVal = isNaN(sessionStats.vwap) ? '--' : sessionStats.vwap.toFixed(2);
             return;
         }
 
-let minPrice = Infinity, maxPrice = -Infinity;
+        let minPrice = Infinity, maxPrice = -Infinity;
 
+        // 🟢 FIX: If we have DOM quotes but no candles yet, use the DOM prices to set up the vertical chart scale!
+        if (timeKeys.length === 0 && hasDomQuotes) {
+            const allDomPrices = [
+                ...Object.keys(latestDomCache.bids).map(Number),
+                ...Object.keys(latestDomCache.asks).map(Number)
+            ];
+            minPrice = Math.min(...allDomPrices) - 10;
+            maxPrice = Math.max(...allDomPrices) + 10;
+        }
         // 🟢 PRE-COMPUTE DATA FOR SUB-CHARTS & COMPOSITE SCORE
         // FIX: Changed from Arrays [] to Objects {} so we can map them by Time!
         const cumDeltaTimeline = {};
