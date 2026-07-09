@@ -1428,7 +1428,7 @@ initBgAnimation();
   import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   // 🟢 NEW: Import App Check
-  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check.js";
+
   
   const firebaseConfig = {
       apiKey: "AIzaSyCXycONZBbhKBo__PtazbQXJR9n44dmoGo",
@@ -1445,10 +1445,7 @@ initBgAnimation();
 // self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 
 // 🟢 Initialize Firebase App Check with your actual Site Key
-const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('6LcHGSAtAAAAANFVFbWYLeT6HyyZF-g0VgLied3q'),
-    isTokenAutoRefreshEnabled: true
-});
+
 
 // 🟢 Initialize Auth Providers
 const auth = getAuth(app);
