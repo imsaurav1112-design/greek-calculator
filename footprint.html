@@ -1792,10 +1792,12 @@ let minPrice = Infinity, maxPrice = -Infinity;
                 cVol += (matrix[p].buy_vol + matrix[p].sell_vol);
             });
 
-            if (cHigh === -Infinity && candle.high > 0) cHigh = candle.high;
-            if (cLow === Infinity && candle.low > 0) cLow = candle.low;
-            if (cHigh !== -Infinity && cHigh > maxPrice) maxPrice = cHigh;
-            if (cLow !== Infinity && cLow < minPrice) minPrice = cLow;
+            if (cHigh === -Infinity) cHigh = candle.high || 0;
+            if (cLow === Infinity) cLow = candle.low || 0;
+            
+            // Only update global min/max if the candle is valid
+            if (cHigh > 0 && cHigh > maxPrice) maxPrice = cHigh;
+            if (cLow > 0 && cLow < minPrice) minPrice = cLow;
 
             runningCumDelta += cDelta;
             cumDeltaTimeline[t] = runningCumDelta;
@@ -1909,13 +1911,14 @@ let minPrice = Infinity, maxPrice = -Infinity;
             currentX -= (COL_WIDTH + GAP);
         }
 
-        // 🟢 DRAW ACCUMULATION ZONES
+       // 🟢 DRAW ACCUMULATION ZONES
         if (showZones) {
             accumulationZones.forEach(zone => {
                 const startX = xPositions[zone.startIdx];
                 const endX = xPositions[zone.endIdx];
 
-                if (startX > 0 && endX < width - Y_AXIS_WIDTH) {
+                // Failsafe: Ensure the arrays mapped successfully before drawing boxes
+                if (startX !== undefined && endX !== undefined && startX > 0 && endX < width - Y_AXIS_WIDTH) {
                     const yTop = getPriceY(zone.high);
                     const yBot = getPriceY(zone.low);
 
@@ -2139,10 +2142,10 @@ let minPrice = Infinity, maxPrice = -Infinity;
                 const cDeltaBaseY = height - X_AXIS_HEIGHT - SUBCHART_SPACING - SUBCHART_HEIGHT;
                 const volBaseY = height - X_AXIS_HEIGHT;
 
-                // 🟢 FIX: Fetch data safely using the timeKey, preventing 'undefined' crashes
+               // 🟢 SAFELY FETCH PREVIOUS TIMELINE
                 const cdVal = cumDeltaTimeline[timeKey] || 0;
-                const prevTimeKey = (i > 0) ? timeKeys[i-1] : null;
-                const prevCdVal = prevTimeKey ? (cumDeltaTimeline[prevTimeKey] || 0) : 0;
+                const prevTimeKey = (i < timeKeys.length - 1) ? timeKeys[i+1] : null; // i counts BACKWARDS!
+                const prevCdVal = prevTimeKey ? (cumDeltaTimeline[prevTimeKey] || 0) : cdVal;
 
                 const cdRange = Math.max(Math.abs(maxCumDelta), Math.abs(minCumDelta)) || 1;
                 const getYForCD = (val) => {
