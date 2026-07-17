@@ -1895,7 +1895,7 @@ const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE;
         const topBound = Math.max(priceAtTop, priceAtBottom);
         const botBound = Math.min(priceAtTop, priceAtBottom);
 
-        let gridStep = TICK_SIZE;
+       let gridStep = TICK_SIZE;
         if (priceScale < 8) gridStep = TICK_SIZE * 10;     
         else if (priceScale < 15) gridStep = TICK_SIZE * 4; 
         else if (priceScale < 30) gridStep = TICK_SIZE * 2; 
@@ -1903,18 +1903,13 @@ const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE;
         const startPrice = Math.floor(botBound / gridStep) * gridStep;
         const endPrice = Math.ceil(topBound / gridStep) * gridStep;
 
-// 🟢 FIX 2: Calculate startPrice and endPrice BEFORE using them
-const startPrice = Math.floor(botBound / gridStep) * gridStep;
-const endPrice = Math.ceil(topBound / gridStep) * gridStep;
-
-ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
-ctx.lineWidth = 1; ctx.beginPath();
-for (let p = startPrice; p <= endPrice; p += gridStep) {
-    const y = getPriceY(p);
-    if (y > 0 && y < MAIN_CHART_BOTTOM) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
-}
-ctx.stroke();
-
+        ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
+        ctx.lineWidth = 1; ctx.beginPath();
+        for (let p = startPrice; p <= endPrice; p += gridStep) {
+            const y = getPriceY(p);
+            if (y > 0 && y < MAIN_CHART_BOTTOM) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
+        }
+        ctx.stroke();
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
 
         const xPositions = [];
