@@ -620,7 +620,7 @@
             <div id="header-date-display" class="header-date-badge">Live (Today)</div>
         </div>
 
-    <!-- 🟢 The Gauge stays locked to the Absolute Center via CSS -->
+<!-- 🟢 The Gauge stays locked to the Absolute Center via CSS -->
     <div class="header-gauge-container" id="header-gauge">
         <div class="hg-text">
             <span id="hg-lbl">NEUTRAL</span>
@@ -630,6 +630,7 @@
             <div class="hg-marker" id="hg-marker"></div>
         </div>
     </div>
+    </div> <!-- 🟢 FIX 8: Close header-left div -->
 </header>
 
 
@@ -1183,13 +1184,10 @@ window.clearCanvas = function() {
     const TICK_SIZE = 1;
 
     // 🟢 PHASE 2: SUB-CHART DIMENSIONS
-    const SUBCHART_HEIGHT = 80;  
-    const SUBCHART_SPACING = 15; 
-    const TOTAL_BOTTOM_RESERVE = showSubCharts 
-        ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
-        : X_AXIS_HEIGHT; 
-        
-    const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
+const SUBCHART_HEIGHT = 80;  
+const SUBCHART_SPACING = 15;
+// 🟢 FIX 6: These are calculated dynamically inside renderCanvas() — remove static versions
+// TOTAL_BOTTOM_RESERVE and MAIN_CHART_BOTTOM are computed per-frame inside renderCanvas 
 
   // --- CAMERA / INTERACTION STATE ---
     let offsetX = 0; 
@@ -1559,16 +1557,22 @@ function resizeCanvas() {
         }
         // 👆 END GATEKEEPER 👆
 
-        window.forceLiveFetch = async function() {
-            if (!isLiveMode || !auth.currentUser) return;
-            try {
-                // THE KEY: Get a fresh Firebase token
-                const freshToken = await auth.currentUser.getIdToken();
+window.forceLiveFetch = async function() {
+    if (!isLiveMode || !auth.currentUser) return;
+    try {
+        const freshToken = await auth.currentUser.getIdToken();
 
-                // THE REQUEST: Hit the dynamic API variable for Live Data
-                const r = await fetch(`${UPSTOX_API}/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
-                    headers: { 'Authorization': `Bearer ${freshToken}` } 
-                });
+        // 🟢 FIX 1: Fetch ticker prices alongside footprint
+        try {
+            const tResp = await fetch(`${UPSTOX_API}/api/ticker-prices`);
+            const tData = await tResp.json();
+            if (tData["NIFTY 50"]) document.getElementById('hdr-spot').innerText = tData["NIFTY 50"].ltp.toFixed(2);
+            if (tData["NIFTY FUT"]) document.getElementById('hdr-fut').innerText = tData["NIFTY FUT"].ltp.toFixed(2);
+        } catch(te) {}
+
+        const r = await fetch(`${UPSTOX_API}/api/footprint?symbol=${currentInstrument}&timeframe=${currentTimeframe}`, { 
+            headers: { 'Authorization': `Bearer ${freshToken}` } 
+        });
                 const data = await r.json();
 
                 if (data.status === "success") {
@@ -1596,11 +1600,15 @@ function resizeCanvas() {
         let ibHigh = -Infinity, ibLow = Infinity;
 
 const parseTime = (t) => { 
-            if (!t) return 0;
-            const parts = t.split(':');
-            if (parts.length < 2) return 0;
-            return parseInt(parts[0]) * 60 + parseInt(parts[1]); 
-        };
+    if (!t) return 0;
+    // 🟢 FIX 5: Handle HH:MM format (zero-padded 24hr from backend)
+    const parts = t.split(':');
+    if (parts.length < 2) return 0;
+    const hours = parseInt(parts[0], 10);
+    const mins = parseInt(parts[1], 10);
+    if (isNaN(hours) || isNaN(mins)) return 0;
+    return hours * 60 + mins; 
+};
         const firstTimeMin = parseTime(times[0]) || (9 * 60 + 15); 
 
         times.forEach(t => {
@@ -1841,11 +1849,11 @@ let minPrice = Infinity, maxPrice = -Infinity;
             candle.smartScore = Math.max(-100, Math.min(100, score));
         });
 
-        const TOTAL_BOTTOM_RESERVE = showSubCharts 
-            ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
-            : X_AXIS_HEIGHT; 
+const TOTAL_BOTTOM_RESERVE = showSubCharts 
+    ? ((SUBCHART_HEIGHT * 2) + (SUBCHART_SPACING * 2) + X_AXIS_HEIGHT)
+    : X_AXIS_HEIGHT; 
 
-        const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
+const MAIN_CHART_BOTTOM = height - TOTAL_BOTTOM_RESERVE; 
 
         // 🟢 UPGRADED AUTO-CENTER LOGIC (Handles Candles + Pre-Market DOM)
         if (needsAutoCenter) {
@@ -1895,13 +1903,17 @@ let minPrice = Infinity, maxPrice = -Infinity;
         const startPrice = Math.floor(botBound / gridStep) * gridStep;
         const endPrice = Math.ceil(topBound / gridStep) * gridStep;
 
-        ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
-        ctx.lineWidth = 1; ctx.beginPath();
-        for (let p = startPrice; p <= endPrice; p += gridStep) {
-            const y = getPriceY(p);
-            if (y > 0 && y < MAIN_CHART_BOTTOM) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
-        }
-        ctx.stroke();
+// 🟢 FIX 2: Calculate startPrice and endPrice BEFORE using them
+const startPrice = Math.floor(botBound / gridStep) * gridStep;
+const endPrice = Math.ceil(topBound / gridStep) * gridStep;
+
+ctx.strokeStyle = isLight ? '#e2e8f0' : '#1e1e24'; 
+ctx.lineWidth = 1; ctx.beginPath();
+for (let p = startPrice; p <= endPrice; p += gridStep) {
+    const y = getPriceY(p);
+    if (y > 0 && y < MAIN_CHART_BOTTOM) { ctx.moveTo(0, y); ctx.lineTo(width - Y_AXIS_WIDTH, y); }
+}
+ctx.stroke();
 
         let currentX = width - Y_AXIS_WIDTH - COL_WIDTH - GAP + offsetX;
 
