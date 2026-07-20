@@ -1674,6 +1674,10 @@ window.loadExpiries = async function() {
       showErr("Server says: " + e.message); 
   }
 }
+// 🟢 NEW: Global caches for manual OI calculation
+let oiBaselineCache = {};
+let lastSessionDate = "";
+
 function getStrikeInterval(symbol) {
   switch(symbol) { 
     case 'BANKNIFTY': case 'SENSEX': return 100; 
@@ -1702,8 +1706,35 @@ async function fetchUpstoxChain(quiet = false) {
     if (data.error) throw new Error(data.details || data.error);
     
     document.getElementById('inp-spot').value = data.spot || 0;
+
+    // 🟢 NEW: Manual OI Change Calculator for MCX Commodities
+    const todayStr = new Date().toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
     
-    globalRows = data.chain || [];
+    // Wipe the baseline cache if a new day starts
+    if (lastSessionDate !== todayStr) {
+        oiBaselineCache = {};
+        lastSessionDate = todayStr;
+    }
+
+    // Process the rows and inject manual OI calculations
+    globalRows = (data.chain || []).map(r => {
+        const strikeKey = `${sym}_${expiry}_${r.strike}`;
+        
+        // If we haven't seen this strike today, save its current OI as the baseline
+        if (!oiBaselineCache[strikeKey]) {
+            oiBaselineCache[strikeKey] = {
+                ce: r.ce.oi || 0,
+                pe: r.pe.oi || 0
+            };
+        }
+
+        // Override the unreliable backend 'change_oi' with our rock-solid manual calculation
+        r.ce.change_oi = (r.ce.oi || 0) - oiBaselineCache[strikeKey].ce;
+        r.pe.change_oi = (r.pe.oi || 0) - oiBaselineCache[strikeKey].pe;
+
+        return r;
+    });
+    
     globalSym = sym; globalData = data;
     
   // 🟢 FIX: Strip the rogue Unicode spaces before saving to the RAM array
