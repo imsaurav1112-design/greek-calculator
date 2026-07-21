@@ -1748,16 +1748,19 @@ if (lastEntry !== nowStr) {
         time: nowStr,
         spot: data.spot,
         pcr: data.pcr,
-        rows: globalRows.map(r => ({
-            strike: r.strike,
-            ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
-            ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
-            ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
-            ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0,
-            ceGreeks: { iv: r.ce.iv || 0, delta: r.ce.delta || 0, theta: r.ce.theta || 0, vega: r.ce.vega || 0, gamma: r.ce.gamma || 0 },
-            peGreeks: { iv: r.pe.iv || 0, delta: r.pe.delta || 0, theta: r.pe.theta || 0, vega: r.pe.vega || 0, gamma: r.pe.gamma || 0 },
-            ce_prz: r.ce_prz || 0, pe_prz: r.pe_prz || 0
-        }))
+        rows: globalRows.map(r => {
+            // 🟢 FIX: Ensure we grab the manually calculated change_oi values here!
+            return {
+                strike: r.strike,
+                ceVol: r.ce.volume || 0, peVol: r.pe.volume || 0,
+                ceOI: r.ce.oi || 0, peOI: r.pe.oi || 0,
+                ceOIChg: r.ce.change_oi || 0, peOIChg: r.pe.change_oi || 0,
+                ceLTP: r.ce.ltp || 0, peLTP: r.pe.ltp || 0,
+                ceGreeks: { iv: r.ce.iv || 0, delta: r.ce.delta || 0, theta: r.ce.theta || 0, vega: r.ce.vega || 0, gamma: r.ce.gamma || 0 },
+                peGreeks: { iv: r.pe.iv || 0, delta: r.pe.delta || 0, theta: r.pe.theta || 0, vega: r.pe.vega || 0, gamma: r.pe.gamma || 0 },
+                ce_prz: r.ce_prz || 0, pe_prz: r.pe_prz || 0
+            };
+        })
     });
     
     // 🟢 DYNAMIC RAM CAPACITY: Cap at 380 minutes for standard indices (9:15 AM - 3:30 PM), 
