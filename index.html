@@ -1425,7 +1425,7 @@ initBgAnimation();
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithRedirect, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
   
   // 🟢 NEW: Import App Check
 
@@ -1761,22 +1761,22 @@ heroBox.innerHTML = `
       }
   };
 
-// 🟢 POPUP: Google Login
-  window.handleGoogleLogin = async function() {
+// 🟢 REDIRECT: Google Login
+  window.handleGoogleLogin = function() {
       try {
-          // Open the secure Google login popup
-          await signInWithPopup(auth, googleProvider);
+          // Change the button text to show it's loading
+          const btn = document.querySelector('.btn-google');
+          if (btn) btn.innerHTML = '<span style="font-size: 14px;">Redirecting to Google...</span>';
           
-          // Once successful, close the modal if it's open
-          closeAuthModal();
-          console.log("Successfully logged in with Google!");
+          // Redirect the user to Google
+          signInWithRedirect(auth, googleProvider);
+          
       } catch (error) {
-          console.error("Google Popup Error:", error.message);
+          console.error("Google Redirect Error:", error.message);
           
-          // Optional: Show error in the modal if it fails
           const errDiv = document.getElementById('modal-error');
           if (errDiv) {
-              errDiv.innerText = "Login cancelled or failed. Please try again.";
+              errDiv.innerText = "Login failed to initiate. Please try again.";
               errDiv.style.display = 'block';
           }
       }
