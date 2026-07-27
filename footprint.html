@@ -606,9 +606,9 @@
         <a href="/" class="logo"><span>GC</span></a>
 
 <div class="header-controls">
-            <select id="instrument-dropdown" class="header-dropdown" onchange="handleInstrumentChange(this.value)">
-                <option value="NIFTY" selected>NIFTY 50</option>
-            </select>
+<div style="background: rgba(30, 41, 59, 0.4); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: default;">
+        NIFTY 50
+    </div>
 
             <select id="timeframe-dropdown" class="header-dropdown" onchange="handleTimeframeChange(this.value)">
                 <option value="3">3m</option>
@@ -1432,12 +1432,6 @@ function resizeCanvas() {
 
     // --- DATA POLLING ---
     let isLiveMode = true;
-
-    // 🟢 Handle Instrument Change
-    window.handleInstrumentChange = function(newSymbol) {
-        currentInstrument = newSymbol;
-        resetChartAndFetch();
-    };
 
     // 🟢 Handle Timeframe Change
     window.handleTimeframeChange = function(newTime) {
